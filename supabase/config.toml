@@ -55,8 +55,6 @@ enable_confirmations = false
 
 [edge_runtime]
 enabled = true
-# Port to use for the Edge Runtime.
-port = 54321
 # The maximum duration an Edge Function can run for (in seconds).
 policy = "per_worker"
 inspector_port = 8083
