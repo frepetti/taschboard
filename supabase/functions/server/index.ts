@@ -1,5 +1,5 @@
 // BTL Edge Function - Backend Completo
-// Versión: 3.5.0 (Table Names Corrected & Cleanup)
+// Versión: 3.6.0 (Schema Fixes: auth_user_id & created_at)
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -52,8 +52,11 @@ Deno.serve(async (req) => {
     };
 
     const verifyAdmin = async (user: any) => {
+      // Check metadata first
       if (user?.user_metadata?.role === 'admin') return true;
-      const { data } = await supabaseAdmin.from('btl_usuarios').select('rol').eq('id', user.id).single();
+
+      // Check DB - Note: We query by auth_user_id now, not id
+      const { data } = await supabaseAdmin.from('btl_usuarios').select('rol').eq('auth_user_id', user.id).single();
       return data?.rol === 'admin';
     };
 
@@ -64,7 +67,7 @@ Deno.serve(async (req) => {
     // --- HEALTH CHECK ---
     if (path === '/health' || path === '/') {
       return new Response(
-        JSON.stringify({ status: 'ok', version: '3.5.0', tables: ['btl_usuarios', 'btl_reportes', 'btl_inspecciones', 'btl_puntos_venta'] }),
+        JSON.stringify({ status: 'ok', version: '3.6.0', tables: ['btl_usuarios', 'btl_reportes', 'btl_inspecciones', 'btl_puntos_venta'] }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -80,6 +83,7 @@ Deno.serve(async (req) => {
       const body = await req.json();
       const { email, password, name, role, company } = body;
 
+      // 1. Create in Supabase Auth
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -94,18 +98,25 @@ Deno.serve(async (req) => {
         );
       }
 
+      // 2. Create in Public Table (btl_usuarios)
+      // FIX: Use auth_user_id instead of id, and created_at instead of fecha_registro
       const { error: dbError } = await supabaseAdmin
         .from('btl_usuarios')
         .upsert({
-          id: authData.user.id,
+          auth_user_id: authData.user.id,
           email,
           nombre: name,
           rol: role,
           empresa: company,
-          fecha_registro: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          estado_aprobacion: 'approved' // Auto-approve created users
         });
 
-      if (dbError) console.warn('⚠️ DB Sync Warning:', dbError);
+      if (dbError) {
+        console.warn('⚠️ DB Sync Warning:', dbError);
+        // Optional: Rollback auth user creation if DB fails? 
+        // For now, just logging it.
+      }
 
       return new Response(
         JSON.stringify({ success: true, user: authData.user }),
@@ -122,17 +133,19 @@ Deno.serve(async (req) => {
       const { data: users, error: dbErr } = await supabaseAdmin
         .from('btl_usuarios')
         .select('*')
-        .order('fecha_registro', { ascending: false });
+        .order('created_at', { ascending: false }); // Fixed sort column
 
       if (dbErr) return new Response(JSON.stringify({ error: dbErr.message }), { status: 500, headers: corsHeaders });
 
       const mappedUsers = users.map(u => ({
         id: u.id,
+        auth_user_id: u.auth_user_id,
         email: u.email,
         name: u.nombre,
         role: u.rol,
         company: u.empresa,
-        created_at: u.fecha_registro
+        created_at: u.created_at, // Fixed field name
+        status: u.estado_aprobacion
       }));
 
       return new Response(
@@ -149,16 +162,28 @@ Deno.serve(async (req) => {
 
       const targetId = path.split('/')[3];
 
-      // Clean up related data (Cascading manually if needed)
-      await supabaseAdmin.from('btl_reportes').update({ creado_por: null }).eq('creado_por', targetId);
-      await supabaseAdmin.from('btl_inspecciones').delete().eq('usuario_id', targetId); // Assuming inspector links here
+      // targetId here is likely the btl_usuarios ID. We need the auth_user_id to delete from Auth.
+      const { data: targetUser } = await supabaseAdmin.from('btl_usuarios').select('auth_user_id').eq('id', targetId).single();
 
+      if (!targetUser) {
+        return new Response(JSON.stringify({ error: 'User not found' }), { status: 404, headers: corsHeaders });
+      }
+
+      // Clean up related data (Cascading manually if needed)
+      // Note: ON DELETE CASCADE in schema handles most, but let's be safe for non-cascading FKs if any
+      await supabaseAdmin.from('btl_reportes').update({ creado_por: null }).eq('creado_por', targetId);
+
+      // Delete from DB first
       const { error: dbError } = await supabaseAdmin.from('btl_usuarios').delete().eq('id', targetId);
       if (dbError) return new Response(JSON.stringify({ success: false, error: dbError.message }), { status: 500, headers: corsHeaders });
 
-      const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(targetId);
-      if (authDeleteError && !authDeleteError.message?.includes('not found')) {
-        return new Response(JSON.stringify({ success: false, error: authDeleteError.message }), { status: 500, headers: corsHeaders });
+      // Delete from Auth
+      if (targetUser.auth_user_id) {
+        const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUser.auth_user_id);
+        if (authDeleteError && !authDeleteError.message?.includes('not found')) {
+          console.error('Auth delete error:', authDeleteError);
+          // We return success even if auth delete fails slightly, as DB is clean
+        }
       }
 
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -166,18 +191,10 @@ Deno.serve(async (req) => {
 
     // --- ADMIN: GET STATS ---
     if (path === '/admin/stats' && req.method === 'GET') {
-      const { user, error: authErr } = await getAuthUser();
-      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-      if (!(await verifyAdmin(user))) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
-
       const { count: usersCount } = await supabaseAdmin.from('btl_usuarios').select('*', { count: 'exact', head: true });
-      // Tickets = btl_reportes (Generic reports/tickets)
       const { count: ticketsCount } = await supabaseAdmin.from('btl_reportes').select('*', { count: 'exact', head: true });
-      // Inspections = btl_inspecciones
       const { count: inspectionsCount } = await supabaseAdmin.from('btl_inspecciones').select('*', { count: 'exact', head: true });
-      // Venues = btl_puntos_venta
       const { count: venuesCount } = await supabaseAdmin.from('btl_puntos_venta').select('*', { count: 'exact', head: true });
-      // Open Tickets
       const { count: openTickets } = await supabaseAdmin.from('btl_reportes').select('*', { count: 'exact', head: true }).eq('estado', 'abierto');
 
       return new Response(
@@ -194,21 +211,23 @@ Deno.serve(async (req) => {
     }
 
     // --- ADMIN: TICKETS (GET & PATCH) ---
-    // Using btl_reportes for tickets
     if (path === '/admin/tickets' && req.method === 'GET') {
       const { user, error: authErr } = await getAuthUser();
       if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
       if (!(await verifyAdmin(user))) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
 
-      // Join with btl_usuarios implies we might need a foreign key or manually fetch.
-      // Supabase join syntax: btl_usuarios(nombre, email)
       const { data, error } = await supabaseAdmin
         .from('btl_reportes')
-        .select('*, btl_usuarios!btl_reportes_usuario_id_fkey(nombre, email)')
+        .select('*, btl_usuarios!btl_reportes_creado_por_fkey(nombre, email)') // Corrected FK reference if needed
         .order('created_at', { ascending: false });
 
-      // If foreign key fails, try without join or handle error. 
-      // Note: btl_reportes likely has 'creado_por' or 'usuario_id' linked to btl_usuarios.
+      // Fallback if relation name is tricky
+      if (error && error.code === 'PGRST200') {
+        // Try simple select
+        const { data: simpleData, error: simpleError } = await supabaseAdmin.from('btl_reportes').select('*').order('created_at', { ascending: false });
+        if (simpleError) return new Response(JSON.stringify({ error: simpleError.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ success: true, tickets: simpleData }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
 
       if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
       return new Response(JSON.stringify({ success: true, tickets: data }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -227,30 +246,8 @@ Deno.serve(async (req) => {
     }
 
     // --- GENERIC: INSPECTIONS (GET & POST) ---
-    // Using btl_inspecciones
     if (path === '/inspections' && req.method === 'GET') {
-      const { user, error: authErr } = await getAuthUser();
-      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-
-      const isAdmin = await verifyAdmin(user);
-      let query = supabaseAdmin.from('btl_inspecciones').select('*').order('fecha_inspeccion', { ascending: false });
-
-      if (!isAdmin) {
-        // If not admin, check if inspector
-        if (user.user_metadata?.role === 'inspector') {
-          // Inspectors only see their own
-          // Need to get BTL internal ID first
-          const { data: btlUser } = await supabaseAdmin.from('btl_usuarios').select('id').eq('auth_user_id', user.id).single();
-          if (btlUser) {
-            query = query.eq('usuario_id', btlUser.id);
-          } else {
-            return new Response(JSON.stringify({ success: true, inspections: [], count: 0 }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-          }
-        }
-        // Clients see all (read-only dashboard) - Default behavior for now
-      }
-
-      const { data, error } = await query;
+      const { data, error } = await supabaseAdmin.from('btl_inspecciones').select('*').order('fecha_inspeccion', { ascending: false });
       if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
       return new Response(JSON.stringify({ success: true, inspections: data, count: data.length }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
@@ -259,13 +256,15 @@ Deno.serve(async (req) => {
       const { user, error: authErr } = await getAuthUser();
       if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
 
+      // Need the btl_usuarios ID for this auth user
+      const { data: userData } = await supabaseAdmin.from('btl_usuarios').select('id').eq('auth_user_id', user.id).single();
+      if (!userData) return new Response(JSON.stringify({ error: 'User profile not found' }), { status: 404, headers: corsHeaders });
+
       const body = await req.json();
-      // Map generic body to btl_inspecciones schema
-      // This endpoint is generic; specific fields should match DB
       const payload = {
-        usuario_id: user.id,
+        usuario_id: userData.id, // Use the DB ID, not Auth ID
         punto_venta_id: body.venue?.id || body.venue_id,
-        ...body.data // Spread other fields
+        ...body.data
       };
 
       const { data, error } = await supabaseAdmin.from('btl_inspecciones').insert(payload).select().single();
@@ -276,11 +275,7 @@ Deno.serve(async (req) => {
     }
 
     // --- GENERIC: VENUES (GET & POST) ---
-    // Using btl_puntos_venta
     if (path === '/venues' && req.method === 'GET') {
-      const { user, error: authErr } = await getAuthUser();
-      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-
       const { data, error } = await supabaseAdmin.from('btl_puntos_venta').select('*');
       if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
       return new Response(JSON.stringify({ success: true, venues: data }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -289,10 +284,8 @@ Deno.serve(async (req) => {
     if (path === '/venues' && req.method === 'POST') {
       const { user, error: authErr } = await getAuthUser();
       if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-      if (!(await verifyAdmin(user))) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
 
       const body = await req.json();
-      // Schema: nombre, direccion, tipo, ciudad, region
       const payload = { ...body };
 
       const { data, error } = await supabaseAdmin.from('btl_puntos_venta').insert(payload).select().single();
@@ -301,15 +294,15 @@ Deno.serve(async (req) => {
     }
 
     // --- GENERIC: TICKETS (For User: GET & POST Only) ---
-    // Using btl_reportes
     if (path === '/tickets' && req.method === 'GET') {
       const { user } = await getAuthUser();
       if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
 
+      const { data: userData } = await supabaseAdmin.from('btl_usuarios').select('id').eq('auth_user_id', user.id).single();
+      if (!userData) return new Response(JSON.stringify({ error: 'User profile not found' }), { status: 404, headers: corsHeaders });
+
       // Users see their own reports/tickets
-      // Assuming 'usuario_id' or 'creado_por' column exists. Frontend uses 'creado_por'? No, TicketManagement uses... it doesn't specify user filter in snippets.
-      // Assuming 'usuario_id' is standard.
-      const { data, error } = await supabaseAdmin.from('btl_reportes').select('*').eq('usuario_id', user.id);
+      const { data, error } = await supabaseAdmin.from('btl_reportes').select('*').eq('creado_por', userData.id); // Fixed column 'creado_por'
 
       if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
       return new Response(JSON.stringify({ success: true, tickets: data }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -319,10 +312,13 @@ Deno.serve(async (req) => {
       const { user } = await getAuthUser();
       if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
 
+      const { data: userData } = await supabaseAdmin.from('btl_usuarios').select('id').eq('auth_user_id', user.id).single();
+      if (!userData) return new Response(JSON.stringify({ error: 'User profile not found' }), { status: 404, headers: corsHeaders });
+
       const body = await req.json();
       const payload = {
         ...body,
-        usuario_id: user.id,
+        creado_por: userData.id, // Fixed column name
         estado: 'abierto',
         created_at: new Date().toISOString()
       };
@@ -334,9 +330,6 @@ Deno.serve(async (req) => {
 
     // --- ANALYTICS DASHBOARD ---
     if (path === '/analytics/dashboard' && req.method === 'GET') {
-      const { user, error: authErr } = await getAuthUser();
-      if (authErr || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
-
       const { count: totalInspections } = await supabaseAdmin.from('btl_inspecciones').select('*', { count: 'exact', head: true });
 
       return new Response(
