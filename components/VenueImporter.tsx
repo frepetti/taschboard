@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import readXlsxFile from 'read-excel-file';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 
 interface VenueImporterProps {
@@ -14,6 +15,22 @@ export function VenueImporter({ session, onImportComplete }: VenueImporterProps)
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const processRows = (rows: any[]) => {
+    if (rows.length < 2) return [];
+
+    // First row is header
+    const headers = rows[0];
+    const dataRows = rows.slice(1);
+
+    return dataRows.map(row => {
+      const obj: any = {};
+      headers.forEach((header: string, index: number) => {
+        obj[header] = row[index];
+      });
+      return obj;
+    });
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
@@ -22,28 +39,16 @@ export function VenueImporter({ session, onImportComplete }: VenueImporterProps)
     setError(null);
     setSuccess(false);
 
-    // Read file and show preview
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const data = event.target?.result;
-        if (!data) return;
+    try {
+      const rows = await readXlsxFile(selectedFile);
+      const jsonData = processRows(rows);
 
-        // Parse Excel file
-        const XLSX = await import('xlsx');
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-        // Show first 5 rows as preview
-        setPreview(jsonData.slice(0, 5) as any[]);
-      } catch (err) {
-        console.error('Error reading file:', err);
-        setError('Error al leer el archivo Excel. Verifica que sea un archivo válido.');
-      }
-    };
-    reader.readAsBinaryString(selectedFile);
+      // Show first 5 rows as preview
+      setPreview(jsonData.slice(0, 5));
+    } catch (err) {
+      console.error('Error reading file:', err);
+      setError('Error al leer el archivo Excel. Verifica que sea un archivo válido.');
+    }
   };
 
   const handleImport = async () => {
@@ -53,66 +58,42 @@ export function VenueImporter({ session, onImportComplete }: VenueImporterProps)
     setError(null);
 
     try {
-      // Read file
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const data = event.target?.result;
-          if (!data) throw new Error('No se pudo leer el archivo');
+      const rows = await readXlsxFile(file);
+      const jsonData = processRows(rows);
 
-          // Parse Excel
-          const XLSX = await import('xlsx');
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(sheet);
+      console.log('📊 Parsed Excel data:', jsonData);
+      console.log('📍 Total rows to import:', jsonData.length);
 
-          console.log('📊 Parsed Excel data:', jsonData);
-          console.log('📍 Total rows to import:', jsonData.length);
+      // Transform Excel data to venue format
+      const venues = jsonData.map((row: any, index: number) => ({
+        id: row.ID || row.id || `venue-${index + 1}`,
+        name: row['Nombre del venue'] || row.nombre || row.name || `Venue ${index + 1}`,
+        address: row.Direccion || row.direccion || row.address || '',
+        zone: row['Zona geografica'] || row.zona || row.zone || '',
+        channel: row.Canal || row.canal || row.channel || 'Bar Premium',
+        city: row.Ciudad || row.ciudad || row.city || '',
+        lat: row.Latitud || row.lat || row.latitude || null,
+        lng: row.Longitud || row.lng || row.longitude || null,
+        imported: true,
+        importedAt: new Date().toISOString()
+      }));
 
-          // Transform Excel data to venue format
-          const venues = jsonData.map((row: any, index: number) => ({
-            id: row.ID || row.id || `venue-${index + 1}`,
-            name: row['Nombre del venue'] || row.nombre || row.name || `Venue ${index + 1}`,
-            address: row.Direccion || row.direccion || row.address || '',
-            zone: row['Zona geografica'] || row.zona || row.zone || '',
-            channel: row.Canal || row.canal || row.channel || 'Bar Premium',
-            city: row.Ciudad || row.ciudad || row.city || '',
-            lat: row.Latitud || row.lat || row.latitude || null,
-            lng: row.Longitud || row.lng || row.longitude || null,
-            imported: true,
-            importedAt: new Date().toISOString()
-          }));
+      console.log('✅ Transformed venues:', venues);
 
-          console.log('✅ Transformed venues:', venues);
+      // Save to localStorage (temporary solution until Edge Function is deployed)
+      localStorage.setItem('imported_venues', JSON.stringify(venues));
+      console.log('💾 Venues saved to localStorage');
 
-          // Save to localStorage (temporary solution until Edge Function is deployed)
-          localStorage.setItem('imported_venues', JSON.stringify(venues));
-          console.log('💾 Venues saved to localStorage');
+      setSuccess(true);
+      setError(null);
+      setImporting(false);
 
-          setSuccess(true);
-          setError(null);
-          setImporting(false);
-          
-          // Notify parent component
-          onImportComplete();
+      // Notify parent component
+      onImportComplete();
 
-        } catch (err: any) {
-          console.error('❌ Error processing file:', err);
-          setError(err.message || 'Error al procesar el archivo');
-          setImporting(false);
-        }
-      };
-
-      reader.onerror = () => {
-        setError('Error al leer el archivo');
-        setImporting(false);
-      };
-
-      reader.readAsBinaryString(file);
     } catch (err: any) {
-      console.error('❌ Error importing venues:', err);
-      setError(err.message || 'Error al importar venues');
+      console.error('❌ Error processing file:', err);
+      setError(err.message || 'Error al procesar el archivo');
       setImporting(false);
     }
   };
@@ -221,9 +202,9 @@ export function VenueImporter({ session, onImportComplete }: VenueImporterProps)
               <div className="mt-3 p-3 bg-slate-900/50 rounded border border-slate-700">
                 <p className="text-xs text-slate-300 font-medium mb-1">💡 Tip:</p>
                 <p className="text-xs text-slate-400">
-                  Asegúrate de que tu Excel tenga una columna llamada exactamente: 
-                  <strong className="text-amber-400"> "Nombre del venue"</strong>, 
-                  <strong className="text-amber-400"> "nombre"</strong>, o 
+                  Asegúrate de que tu Excel tenga una columna llamada exactamente:
+                  <strong className="text-amber-400"> "Nombre del venue"</strong>,
+                  <strong className="text-amber-400"> "nombre"</strong>, o
                   <strong className="text-amber-400"> "name"</strong>
                 </p>
               </div>
