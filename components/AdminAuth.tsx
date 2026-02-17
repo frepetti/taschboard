@@ -111,36 +111,50 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
 
       // Verify role in public table (Source of Truth) instead of metadata
       if (data.session && data.user) {
+        console.log('🔍 Checking user role for:', data.user.email, 'Auth ID:', data.user.id);
+
         const { data: userData, error: userError } = await supabase
           .from('btl_usuarios')
           .select('rol, estado_aprobacion')
           .eq('auth_user_id', data.user.id) // Use auth_user_id for lookup
           .single();
 
+        console.log('📊 Query by auth_user_id result:', { userData, userError });
+
         if (userError) {
           // Fallback: try email lookup if auth_user_id fails (migration support)
+          console.log('⚠️ auth_user_id lookup failed, trying email fallback');
+
           const { data: userDataByEmail, error: emailError } = await supabase
             .from('btl_usuarios')
             .select('rol, estado_aprobacion')
             .eq('email', data.user.email)
             .single();
 
+          console.log('📊 Query by email result:', { userDataByEmail, emailError });
+
           if (emailError) {
-            console.error('Error checking user role:', userError, emailError);
+            console.error('❌ Both lookups failed:', { userError, emailError });
             setError('Error al verificar permisos. Contacta soporte.');
             await supabase.auth.signOut();
             setLoading(false);
             return;
           }
 
+          console.log('✅ Found user by email, checking role:', userDataByEmail?.rol);
+
           if (userDataByEmail?.rol !== 'admin') {
+            console.error('❌ User role is not admin:', userDataByEmail?.rol);
             setError('Acceso denegado. Esta cuenta no tiene permisos de administrador.');
             await supabase.auth.signOut();
             setLoading(false);
             return;
           }
         } else {
+          console.log('✅ Found user by auth_user_id, checking role:', userData?.rol);
+
           if (userData?.rol !== 'admin') {
+            console.error('❌ User role is not admin:', userData?.rol);
             setError('Acceso denegado. Esta cuenta no tiene permisos de administrador.');
             await supabase.auth.signOut();
             setLoading(false);
@@ -148,6 +162,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
           }
 
           if (userData?.estado_aprobacion === 'pending') {
+            console.warn('⏳ User pending approval');
             setError('⏳ Tu cuenta está pendiente de aprobación.');
             await supabase.auth.signOut();
             setLoading(false);
@@ -155,12 +170,15 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
           }
 
           if (userData?.estado_aprobacion === 'rejected') {
+            console.warn('❌ User rejected');
             setError('❌ Tu solicitud de cuenta fue rechazada.');
             await supabase.auth.signOut();
             setLoading(false);
             return;
           }
         }
+
+        console.log('✅ All checks passed, proceeding with login');
       }
 
       if (data.session) {
