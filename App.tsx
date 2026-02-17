@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from './utils/AuthContext';
 import { LanguageProvider } from './utils/LanguageContext';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { Loader2, LogOut } from 'lucide-react';
-import { Toaster } from 'sonner@2.0.3';
+import { Toaster } from 'sonner';
 
 // ============================================
 // ULTRA-AGGRESSIVE EXTENSION BLOCKING

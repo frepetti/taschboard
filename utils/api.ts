@@ -1,7 +1,10 @@
-import { projectId, publicAnonKey } from './supabase/info';
+// import { projectId, publicAnonKey } from './supabase/info';
 import { supabase } from './supabase/client';
 
-const API_BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-364126c3`;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const API_BASE_URL = `${supabaseUrl}/functions/v1/make-server-364126c3`;
 
 // ============================================
 // 🔧 CONFIGURACIÓN DE MODO
@@ -12,7 +15,7 @@ const USE_MOCK_MODE = false;  // ✅ MODO REAL ACTIVADO - Backend conectado
 
 // Para cambiar al modo servidor después del despliegue:
 // 1. Despliega el Edge Function en Supabase ✅ DONE
-// 2. Verifica que funcione: fetch('https://afatvrttubtzjdjzrsfy.supabase.co/functions/v1/make-server-364126c3/health').then(r => r.json()).then(console.log) ✅ DONE
+// 2. Verifica que funcione: fetch(`${API_BASE_URL}/health`).then(r => r.json()).then(console.log) ✅ DONE
 // 3. Cambia USE_MOCK_MODE = false ✅ DONE
 // 4. Recarga la aplicación
 // ============================================
@@ -26,7 +29,7 @@ export async function apiRequest(
   if (USE_MOCK_MODE) {
     console.log('🎭 API Request in MOCK MODE:', { endpoint, method: options.method || 'GET' });
     console.log('💡 TIP: Change USE_MOCK_MODE to false in /utils/api.ts after deploying Edge Function');
-    
+
     // Return mock data based on endpoint
     return getMockData(endpoint, options.method || 'GET');
   }
@@ -34,8 +37,8 @@ export async function apiRequest(
   // REAL MODE: Make actual API requests
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    'apikey': publicAnonKey,  // Required by Supabase Edge Functions
-    'Authorization': `Bearer ${accessToken || publicAnonKey}`,
+    'apikey': supabaseAnonKey,  // Required by Supabase Edge Functions
+    'Authorization': `Bearer ${accessToken || supabaseAnonKey}`,
     ...options.headers,
   };
 
@@ -53,18 +56,18 @@ export async function apiRequest(
     // Handle 401 Unauthorized - Token might be expired or invalid
     if (response.status === 401) {
       console.warn('🔄 401 Unauthorized detected, attempting token refresh...');
-      
+
       try {
         // Attempt to refresh the session
         const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
-        
+
         if (refreshError || !session?.access_token) {
           console.error('❌ Failed to refresh session:', refreshError);
           throw new Error('Unauthorized: Session expired. Please login again.');
         }
 
         console.log('✅ Session refreshed successfully, retrying request...');
-        
+
         // Update authorization header with new token
         const newHeaders = {
           ...headers,
@@ -81,33 +84,33 @@ export async function apiRequest(
 
         // If still 401 after refresh, then it's a CONFIGURATION issue (wrong project secrets), not a login issue
         if (response.status === 401) {
-            let details = '';
-            try {
-                const errData = await response.clone().json();
-                details = JSON.stringify(errData);
-            } catch (e) { details = await response.clone().text(); }
-            
-            console.error('❌ Server rejected refreshed token (likely misconfigured secrets):', details);
-            
-            // IMPORTANT: Do NOT use "Unauthorized" in the message to avoid triggering the logout loop in UserManagement.tsx
-            // This allows the fallback (DB Delete) to proceed
-            throw new Error(`Server Forbidden: Token rejected after refresh. Check Edge Function secrets. Details: ${details}`);
+          let details = '';
+          try {
+            const errData = await response.clone().json();
+            details = JSON.stringify(errData);
+          } catch (e) { details = await response.clone().text(); }
+
+          console.error('❌ Server rejected refreshed token (likely misconfigured secrets):', details);
+
+          // IMPORTANT: Do NOT use "Unauthorized" in the message to avoid triggering the logout loop in UserManagement.tsx
+          // This allows the fallback (DB Delete) to proceed
+          throw new Error(`Server Forbidden: Token rejected after refresh. Check Edge Function secrets. Details: ${details}`);
         }
 
       } catch (refreshErr: any) {
         // Only dispatch unauthorized event if it was a REFRESH failure, not a CONFIG failure
         if (refreshErr.message?.includes('Server Forbidden')) {
-             throw refreshErr; // Re-throw to be caught by caller (and trigger fallback)
+          throw refreshErr; // Re-throw to be caught by caller (and trigger fallback)
         }
 
         console.error('🚫 Auth refresh failed:', refreshErr);
-        
+
         // Dispatch event to notify AuthContext to logout ONLY if refresh failed
         if (typeof window !== 'undefined') {
-            console.log('📢 Dispatching auth:unauthorized event');
-            window.dispatchEvent(new Event('auth:unauthorized'));
+          console.log('📢 Dispatching auth:unauthorized event');
+          window.dispatchEvent(new Event('auth:unauthorized'));
         }
-        
+
         throw refreshErr;
       }
     }
@@ -136,13 +139,13 @@ export async function apiRequest(
     return data;
   } catch (error: any) {
     console.error('❌ API request error:', error);
-    
+
     // Devolvemos el error tal cual para mostrar información real
     if (error.message?.includes('Failed to fetch')) {
-        // En este caso es casi seguro un problema de CORS (por fallo 503) o red
-        throw new Error('Error de red o servidor no disponible (CORS/503). Verifica los logs de Supabase.');
+      // En este caso es casi seguro un problema de CORS (por fallo 503) o red
+      throw new Error('Error de red o servidor no disponible (CORS/503). Verifica los logs de Supabase.');
     }
-    
+
     throw error;
   }
 }
@@ -181,7 +184,7 @@ function getMockData(endpoint: string, method: string) {
     // Check localStorage for imported venues
     const importedVenues = localStorage.getItem('imported_venues');
     const venueCount = importedVenues ? JSON.parse(importedVenues).length : 0;
-    
+
     return {
       success: true,
       totalUsers: 1,
@@ -220,7 +223,7 @@ function getMockData(endpoint: string, method: string) {
   if (endpoint === '/analytics/dashboard' && method === 'GET') {
     const inspections = localStorage.getItem('inspections');
     const inspectionCount = inspections ? JSON.parse(inspections).length : 0;
-    
+
     return {
       success: true,
       analytics: {

@@ -1,5 +1,8 @@
 import { supabase } from './supabase/client';
-import { projectId, publicAnonKey } from './supabase/info';
+// import { projectId, publicAnonKey } from './supabase/info';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 interface TicketNotificationData {
   ticketId: string;
@@ -21,10 +24,10 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
 
     // Obtenemos el token de sesión real del usuario para autenticación segura
     const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token ?? publicAnonKey;
+    const token = session?.access_token ?? supabaseAnonKey;
 
-    const functionUrl = `https://${projectId}.supabase.co/functions/v1/send-email`;
-    
+    const functionUrl = `${supabaseUrl}/functions/v1/send-email`;
+
     console.log('🚀 Calling Edge Function at:', functionUrl);
 
     const response = await fetch(functionUrl, {
@@ -32,10 +35,10 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'apikey': publicAnonKey
+        'apikey': supabaseAnonKey
       },
       body: JSON.stringify({
-        type: 'new_ticket', 
+        type: 'new_ticket',
         payload: {
           ticketId: data.ticketId,
           title: data.title,
@@ -43,7 +46,7 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
           category: data.category,
           priority: data.priority,
           userEmail: data.createdByEmail,
-          dashboardUrl: typeof window !== 'undefined' ? window.location.origin : '' 
+          dashboardUrl: typeof window !== 'undefined' ? window.location.origin : ''
         }
       })
     });
@@ -51,7 +54,7 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
     if (!response.ok) {
       const errorBody = await response.text();
       console.error('❌ Edge Function Error Response:', response.status, errorBody);
-      
+
       let errorMessage = `Edge Function returned ${response.status}`;
       try {
         const errorJson = JSON.parse(errorBody);
@@ -64,7 +67,7 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
       } catch (e) {
         errorMessage += `: ${errorBody}`;
       }
-      
+
       throw new Error(errorMessage);
     }
 

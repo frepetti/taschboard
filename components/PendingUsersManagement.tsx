@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Check, X, Loader2, AlertCircle, UserCheck, Clock, Mail, Briefcase } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface PendingUsersManagementProps {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Loader2, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { useLanguage } from '../utils/LanguageContext';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface TicketManagementProps {
   session: any;

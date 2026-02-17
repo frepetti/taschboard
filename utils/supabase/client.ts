@@ -1,7 +1,13 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from './info';
+// Eliminamos la dependencia de ./info
+// import { projectId, publicAnonKey } from './info';
 
-const supabaseUrl = `https://${projectId}.supabase.co`;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables');
+}
 
 // ULTRA-SINGLETON: Usar variable global para evitar múltiples instancias
 // incluso con Hot Module Replacement (HMR) en desarrollo
@@ -13,7 +19,7 @@ declare global {
 
 // Si ya existe una instancia global, usarla
 if (!window.__supabase_client__) {
-  window.__supabase_client__ = createSupabaseClient(supabaseUrl, publicAnonKey);
+  window.__supabase_client__ = createSupabaseClient(supabaseUrl!, supabaseAnonKey!);
   console.log('✅ Supabase Client initialized (singleton)');
 } else {
   console.log('♻️ Reusing existing Supabase Client (singleton preserved)');
