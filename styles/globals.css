@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -121,11 +125,13 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
+    outline-color: color-mix(in srgb, var(--color-ring) 50%, transparent);
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -195,12 +201,14 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155; /* slate-700 */
+  background: #334155;
+  /* slate-700 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #d97706; /* amber-600 - Highlighting interaction */
+  background: #d97706;
+  /* amber-600 - Highlighting interaction */
 }
 
 /* Firefox */
@@ -216,7 +224,8 @@ html {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  height: 6px; /* Slightly thinner for internal components */
+  height: 6px;
+  /* Slightly thinner for internal components */
   width: 6px;
 }
 
