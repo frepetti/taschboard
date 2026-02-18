@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('rol, estado_aprobacion, nombre, email')
       .eq('auth_user_id', session.user.id)
       .single()
-      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string; nombre: string | null; email: string } | null; error: any }) => {
+      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string | null; nombre: string; email: string } | null; error: any }) => {
         if (error || !data) {
           console.warn('⚠️ AuthContext: Could not fetch DB role for user', session.user.id, error?.message);
           setDbRole(null);

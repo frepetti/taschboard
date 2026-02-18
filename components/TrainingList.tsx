@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { 
-  GraduationCap, Calendar, Clock, MapPin, Users, 
+import {
+  GraduationCap, Calendar, Clock, MapPin, Users,
   Award, CheckCircle, XCircle, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,29 +9,29 @@ import { toast } from 'sonner';
 interface Training {
   id: string;
   titulo: string;
-  descripcion: string;
-  objetivo: string;
-  categoria: string;
-  tipo: string;
-  nivel: string;
+  descripcion: string | null;
+  objetivo: string | null;
+  categoria: string | null;
+  tipo: string | null;
+  nivel: string | null;
   fecha_inicio: string;
-  fecha_fin: string;
-  duracion_horas: number;
-  modalidad: string;
-  ubicacion: string;
-  instructor_nombre: string;
-  cupo_maximo: number;
-  certificado_emitido: boolean;
-  estado: string;
-  asistencia_real?: number;
+  fecha_fin: string | null;
+  duracion_horas: number | null;
+  modalidad: string | null;
+  ubicacion: string | null;
+  instructor_nombre: string | null;
+  cupo_maximo: number | null;
+  certificado_emitido: boolean | null;
+  estado: string | null;
+  asistencia_real?: number | null;
 }
 
 interface TrainingAttendee {
-  estado_inscripcion: string;
-  asistio?: boolean;
-  calificacion_evaluacion?: number;
-  aprobo?: boolean;
-  certificado_emitido: boolean;
+  estado_inscripcion: string | null;
+  asistio?: boolean | null;
+  calificacion_evaluacion?: number | null;
+  aprobo?: boolean | null;
+  certificado_emitido?: boolean | null;
 }
 
 interface TrainingWithAttendance extends Training {
@@ -193,41 +193,37 @@ export function TrainingList() {
       <div className="flex gap-2">
         <button
           onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'upcoming'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'upcoming'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
         >
           Próximas
         </button>
         <button
           onClick={() => setFilter('my-trainings')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'my-trainings'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'my-trainings'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
         >
           Mis Capacitaciones
         </button>
         <button
           onClick={() => setFilter('completed')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'completed'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'completed'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
         >
           Completadas
         </button>
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'all'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
+          className={`px-4 py-2 rounded-lg font-medium transition-all ${filter === 'all'
+            ? 'bg-amber-600 text-white'
+            : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
         >
           Todas
         </button>
@@ -268,7 +264,7 @@ export function TrainingList() {
                       <h3 className="text-white font-semibold mb-1">{training.titulo}</h3>
                       <p className="text-slate-400 text-sm line-clamp-2">{training.descripcion}</p>
                     </div>
-                    {getStatusBadge(training.estado)}
+                    {getStatusBadge(training.estado || 'programada')}
                   </div>
                 </div>
               </div>
@@ -277,8 +273,8 @@ export function TrainingList() {
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="flex items-center gap-2 text-sm text-slate-400">
                   <Calendar className="w-4 h-4" />
-                  {new Date(training.fecha_inicio).toLocaleDateString('es-MX', { 
-                    day: '2-digit', 
+                  {new Date(training.fecha_inicio).toLocaleDateString('es-MX', {
+                    day: '2-digit',
                     month: 'short',
                     year: 'numeric'
                   })}
@@ -326,15 +322,14 @@ export function TrainingList() {
                     <div>
                       <p className="text-slate-400 text-xs mb-1">Mi Estado</p>
                       <p className="text-white text-sm font-medium capitalize">
-                        {training.attendee.estado_inscripcion.replace('_', ' ')}
+                        {(training.attendee.estado_inscripcion || '').replace('_', ' ')}
                       </p>
                     </div>
                     {training.attendee.calificacion_evaluacion && (
                       <div className="text-right">
                         <p className="text-slate-400 text-xs mb-1">Calificación</p>
-                        <p className={`text-lg font-bold ${
-                          training.attendee.aprobo ? 'text-green-400' : 'text-red-400'
-                        }`}>
+                        <p className={`text-lg font-bold ${training.attendee.aprobo ? 'text-green-400' : 'text-red-400'
+                          }`}>
                           {training.attendee.calificacion_evaluacion.toFixed(1)}
                         </p>
                       </div>

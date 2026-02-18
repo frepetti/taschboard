@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Package, Plus, X, Check, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Package, Plus, X, Check, Trash2, Loader2 } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
@@ -12,28 +12,26 @@ interface Client {
   id: string;
   nombre: string;
   email: string;
-  empresa: string;
+  empresa: string | null;
 }
 
 interface Product {
   id: string;
   nombre: string;
   marca: string;
-  categoria: string;
-  presentacion: string;
+  categoria: string | null;
+  presentacion: string | null;
 }
 
 interface ClientProduct {
   id: string;
   producto_id: string;
-  activo: boolean;
-  prioridad: number;
   visible_dashboard: boolean;
-  notas: string;
+  notas: string | null;
   btl_productos: Product;
 }
 
-export function ClientProductManagement({ session }: ClientProductManagementProps) {
+export function ClientProductManagement({ session: _session }: ClientProductManagementProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientProducts, setClientProducts] = useState<ClientProduct[]>([]);
@@ -97,7 +95,6 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
         .select(`
           id,
           producto_id,
-          activo,
           prioridad,
           visible_dashboard,
           notas,
@@ -110,10 +107,10 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
           )
         `)
         .eq('usuario_id', selectedClient.id)
-        .order('prioridad', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setClientProducts(data || []);
+      setClientProducts((data as any) || []);
     } catch (error) {
       console.error('Error loading client products:', error);
     } finally {
@@ -126,15 +123,9 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
 
     setSaving(true);
     try {
-      const maxPriority = clientProducts.length > 0 
-        ? Math.max(...clientProducts.map(cp => cp.prioridad)) 
-        : 0;
-
-      const insertData = selectedProductsToAdd.map((productId, index) => ({
+      const insertData = selectedProductsToAdd.map((productId) => ({
         usuario_id: selectedClient.id,
         producto_id: productId,
-        activo: true,
-        prioridad: maxPriority + selectedProductsToAdd.length - index,
         visible_dashboard: true
       }));
 
@@ -196,9 +187,7 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
     }
   };
 
-  const handlePriorityChange = async (clientProductId: string, newPriority: number) => {
-    await handleUpdateProduct(clientProductId, { prioridad: newPriority });
-  };
+
 
   const filteredClients = clients.filter(client =>
     client.nombre?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -254,11 +243,10 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
                 <button
                   key={client.id}
                   onClick={() => setSelectedClient(client)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
-                    selectedClient?.id === client.id
-                      ? 'bg-amber-600/20 border-amber-600 text-white'
-                      : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-800 hover:border-slate-600'
-                  }`}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${selectedClient?.id === client.id
+                    ? 'bg-amber-600/20 border-amber-600 text-white'
+                    : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-800 hover:border-slate-600'
+                    }`}
                 >
                   <div className="font-medium text-sm">{client.nombre}</div>
                   <div className="text-xs text-slate-400 truncate">{client.email}</div>
@@ -333,56 +321,15 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
                           </div>
 
                           {/* Controls */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                            <div>
-                              <label className="block text-xs text-slate-400 mb-1">Prioridad</label>
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="number"
-                                  value={cp.prioridad}
-                                  onChange={(e) => handlePriorityChange(cp.id, Number(e.target.value))}
-                                  className="w-20 bg-slate-800 border border-slate-700 text-white text-sm px-2 py-1 rounded"
-                                />
-                                <div className="flex flex-col gap-1">
-                                  <button
-                                    onClick={() => handlePriorityChange(cp.id, cp.prioridad + 1)}
-                                    className="p-1 hover:bg-slate-700 rounded text-slate-400"
-                                  >
-                                    <ChevronUp className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handlePriorityChange(cp.id, Math.max(0, cp.prioridad - 1))}
-                                    className="p-1 hover:bg-slate-700 rounded text-slate-400"
-                                  >
-                                    <ChevronDown className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-xs text-slate-400 mb-1">Estado</label>
-                              <button
-                                onClick={() => handleUpdateProduct(cp.id, { activo: !cp.activo })}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                                  cp.activo
-                                    ? 'bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30'
-                                    : 'bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-700'
-                                }`}
-                              >
-                                {cp.activo ? 'Activo' : 'Inactivo'}
-                              </button>
-                            </div>
-
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                             <div>
                               <label className="block text-xs text-slate-400 mb-1">Dashboard</label>
                               <button
                                 onClick={() => handleUpdateProduct(cp.id, { visible_dashboard: !cp.visible_dashboard })}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                                  cp.visible_dashboard
-                                    ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30'
-                                    : 'bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-700'
-                                }`}
+                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${cp.visible_dashboard
+                                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30'
+                                  : 'bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-700'
+                                  }`}
                               >
                                 {cp.visible_dashboard ? 'Visible' : 'Oculto'}
                               </button>
@@ -459,11 +406,10 @@ export function ClientProductManagement({ session }: ClientProductManagementProp
                   {unassignedProducts.map((product) => (
                     <label
                       key={product.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                        selectedProductsToAdd.includes(product.id)
-                          ? 'bg-amber-600/10 border-amber-600 shadow-sm shadow-amber-500/20'
-                          : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
-                      }`}
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedProductsToAdd.includes(product.id)
+                        ? 'bg-amber-600/10 border-amber-600 shadow-sm shadow-amber-500/20'
+                        : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
+                        }`}
                     >
                       <input
                         type="checkbox"

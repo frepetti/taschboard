@@ -43,7 +43,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
     { brand: 'Others', value: 100 - venue.shareOfMenu - 19 - 15 },
   ];
 
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [_showRecommendations, _setShowRecommendations] = useState(false);
   const [showBTLModal, setShowBTLModal] = useState(false);
 
   return (
@@ -51,7 +51,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-3 sm:py-4">
-          <button 
+          <button
             onClick={onBack}
             className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
           >
@@ -67,7 +67,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-0">
             <div className="flex-1">
               <h1 className="text-2xl sm:text-4xl text-white font-bold mb-3 sm:mb-4">{venue.name}</h1>
-              
+
               {/* Contact Info - Stacked on mobile */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-slate-300 mb-4 sm:mb-6 text-sm sm:text-base">
                 <div className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                   <span className="text-amber-400 hover:underline cursor-pointer truncate">thedeadrabbit.com</span>
                 </div>
               </div>
-              
+
               {/* Badges */}
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-slate-700/50 text-slate-300 border border-slate-600/50">
@@ -102,7 +102,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                 <div className="text-4xl sm:text-6xl text-amber-400 font-bold">9.2</div>
                 <div className="text-xs sm:text-sm text-slate-400">out of 10</div>
               </div>
-              <button 
+              <button
                 className="shrink-0 lg:w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-lg shadow-amber-500/20"
                 onClick={() => setShowBTLModal(true)}
               >
@@ -225,28 +225,28 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={competitorData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
-                  <XAxis 
-                    dataKey="brand" 
-                    stroke="#94a3b8" 
+                  <XAxis
+                    dataKey="brand"
+                    stroke="#94a3b8"
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     axisLine={{ stroke: '#475569' }}
                   />
-                  <YAxis 
-                    stroke="#94a3b8" 
+                  <YAxis
+                    stroke="#94a3b8"
                     tick={{ fill: '#94a3b8', fontSize: 10 }}
                     axisLine={{ stroke: '#475569' }}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1e293b', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
                       border: '1px solid #475569',
                       borderRadius: '8px',
                       color: '#fff'
                     }}
                   />
-                  <Bar 
-                    dataKey="value" 
-                    fill="#f59e0b" 
+                  <Bar
+                    dataKey="value"
+                    fill="#f59e0b"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -295,7 +295,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
             <div className="sticky top-0 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border-b border-amber-500/30 p-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl text-white font-bold">Create BTL Action</h2>
-                <button 
+                <button
                   onClick={() => setShowBTLModal(false)}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
@@ -323,7 +323,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
               {/* Action Name */}
               <div>
                 <label className="block text-sm text-slate-300 mb-2">Action Name</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Hendrick's Premium Tasting Experience"
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
@@ -337,7 +337,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                     <Calendar className="w-4 h-4 inline mr-1" />
                     Scheduled Date
                   </label>
-                  <input 
+                  <input
                     type="date"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
                   />
@@ -347,7 +347,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                     <DollarSign className="w-4 h-4 inline mr-1" />
                     Budget (USD)
                   </label>
-                  <input 
+                  <input
                     type="number"
                     placeholder="2800"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
@@ -361,7 +361,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                   <Users className="w-4 h-4 inline mr-1" />
                   Expected Attendees
                 </label>
-                <input 
+                <input
                   type="number"
                   placeholder="50"
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
@@ -371,7 +371,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
               {/* Description */}
               <div>
                 <label className="block text-sm text-slate-300 mb-2">Description & Goals</label>
-                <textarea 
+                <textarea
                   rows={4}
                   placeholder="Describe the activation plan, objectives, and expected outcomes..."
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
@@ -382,7 +382,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-slate-300 mb-2">Expected Sales Lift (%)</label>
-                  <input 
+                  <input
                     type="number"
                     placeholder="25"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
@@ -390,7 +390,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
                 </div>
                 <div>
                   <label className="block text-sm text-slate-300 mb-2">Expected ROI (%)</label>
-                  <input 
+                  <input
                     type="number"
                     placeholder="150"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
@@ -400,7 +400,7 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
 
               {/* Approval Required */}
               <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                <input 
+                <input
                   type="checkbox"
                   id="approval"
                   className="w-5 h-5 rounded border-amber-500 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
@@ -413,13 +413,13 @@ export function VenueDetail({ venue, onBack }: VenueDetailProps) {
 
             {/* Modal Footer */}
             <div className="sticky bottom-0 bg-slate-800/80 backdrop-blur-sm border-t border-slate-700/50 p-6 flex gap-4">
-              <button 
+              <button
                 onClick={() => setShowBTLModal(false)}
                 className="flex-1 px-6 py-3 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowBTLModal(false);
                   // TODO: Save to Supabase

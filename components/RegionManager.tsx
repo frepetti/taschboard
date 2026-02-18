@@ -7,7 +7,7 @@ import { ConfirmDialog } from './ui/ConfirmDialog';
 interface Region {
   id: string;
   nombre: string;
-  descripcion?: string;
+  descripcion?: string | null;
   created_at?: string;
 }
 
@@ -15,7 +15,7 @@ interface RegionManagerProps {
   session: any;
 }
 
-export function RegionManager({ session }: RegionManagerProps) {
+export function RegionManager({ session: _session }: RegionManagerProps) {
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -220,7 +220,7 @@ export function RegionManager({ session }: RegionManagerProps) {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">
@@ -234,7 +234,7 @@ export function RegionManager({ session }: RegionManagerProps) {
                   placeholder="Ej: Zona Norte"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">
                   Descripción

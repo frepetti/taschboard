@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { translations } from './translations';
 
 type Language = 'es' | 'en';
@@ -30,7 +30,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = (path: string): string => {
     const keys = path.split('.');
     let current: any = translations[language];
-    
+
     for (const key of keys) {
       if (current === undefined || current[key] === undefined) {
         console.warn(`Translation missing for key: ${path} in language: ${language}`);
@@ -38,7 +38,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       }
       current = current[key];
     }
-    
+
     return current as string;
   };
 

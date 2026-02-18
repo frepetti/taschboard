@@ -12,9 +12,9 @@ interface Product {
   id: string;
   nombre: string;
   marca: string;
-  categoria: string;
-  subcategoria: string;
-  presentacion: string;
+  categoria: string | null;
+  subcategoria: string | null;
+  presentacion: string | null;
   logo_url: string | null;
   color_primario: string | null;
 }
@@ -45,10 +45,10 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
         console.error('❌ Error loading products:', loadError);
         throw loadError;
       }
-      
+
       console.log('✅ Loaded products:', data?.length || 0);
       setProducts(data || []);
-      
+
       if (!data || data.length === 0) {
         setError('No hay productos disponibles en el sistema. Por favor contacta al administrador para que cargue productos.');
       }
@@ -65,12 +65,12 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
 
   // Filter products
   const filteredProducts = products.filter(product => {
-    const matchesSearch = 
+    const matchesSearch =
       product.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.marca.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesCategory = selectedCategory === 'all' || product.categoria === selectedCategory;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -182,12 +182,11 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
           {categories.map(category => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                selectedCategory === category
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              onClick={() => setSelectedCategory(category || 'all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === category
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               {category === 'all' ? 'Todos' : category}
             </button>
@@ -210,17 +209,17 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
               >
                 <div className="flex items-start gap-3">
                   {/* Product Icon/Logo */}
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{
-                      backgroundColor: product.color_primario 
-                        ? `${product.color_primario}20` 
+                      backgroundColor: product.color_primario
+                        ? `${product.color_primario}20`
                         : 'rgba(100, 116, 139, 0.2)'
                     }}
                   >
                     {product.logo_url ? (
-                      <img 
-                        src={product.logo_url} 
+                      <img
+                        src={product.logo_url}
                         alt={product.marca}
                         className="w-10 h-10 object-contain"
                       />
@@ -239,7 +238,7 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
                     </div>
                     <p className="text-slate-400 text-xs mb-2 line-clamp-2">{product.nombre}</p>
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-0.5 rounded text-xs border ${getCategoryColor(product.categoria)}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs border ${getCategoryColor(product.categoria || '')}`}>
                         {product.categoria}
                       </span>
                       {product.presentacion && (

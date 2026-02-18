@@ -12,7 +12,7 @@ interface ClientDashboardProps {
 
 export function ClientDashboard({ session, isDemo = false }: ClientDashboardProps) {
   const [showTicketModal, setShowTicketModal] = useState(false);
-  const [showProductMetrics, setShowProductMetrics] = useState(true);
+  const [showProductMetrics, _setShowProductMetrics] = useState(true);
 
   return (
     <>

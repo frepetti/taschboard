@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { X, Eye, EyeOff, Package, Settings, Check, TrendingUp } from 'lucide-react';
+import { X, Eye, EyeOff, Package, Check } from 'lucide-react';
 
 interface Product {
   id: string;
   nombre: string;
   marca: string;
-  categoria: string;
-  subcategoria: string;
-  presentacion: string;
-  color_primario: string;
-  color_secundario: string;
-  objetivo_presencia: number;
-  objetivo_stock: number;
-  objetivo_pop: number;
-  logo_url?: string;
+  categoria: string | null;
+  subcategoria: string | null;
+  presentacion: string | null;
+  color_primario: string | null;
+  color_secundario: string | null;
+  objetivo_presencia: number | null;
+  objetivo_stock: number | null;
+  objetivo_pop: number | null;
+  logo_url?: string | null;
   visible_dashboard?: boolean;
-  orden?: number;
+  orden?: number | null;
 }
 
 interface ProductSelectorProps {
@@ -183,21 +183,19 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                activeTab === 'all'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'all'
+                ? 'bg-amber-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
             >
               Todos ({products.length})
             </button>
             <button
               onClick={() => setActiveTab('selected')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                activeTab === 'selected'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'selected'
+                ? 'bg-amber-600 text-white'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
             >
               Seleccionados ({selectedCount})
             </button>
@@ -220,7 +218,7 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
                 {activeTab === 'selected' ? 'No hay productos seleccionados' : 'No hay productos disponibles'}
               </h3>
               <p className="text-slate-400">
-                {activeTab === 'selected' 
+                {activeTab === 'selected'
                   ? 'Selecciona productos de la pestaña "Todos" para verlos aquí'
                   : 'Contacta al administrador para agregar productos'
                 }
@@ -231,11 +229,10 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className={`bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border rounded-xl p-4 transition-all ${
-                    product.visible_dashboard
-                      ? 'border-amber-500/50 shadow-lg shadow-amber-500/10'
-                      : 'border-slate-700/50 hover:border-slate-600/50'
-                  }`}
+                  className={`bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border rounded-xl p-4 transition-all ${product.visible_dashboard
+                    ? 'border-amber-500/50 shadow-lg shadow-amber-500/10'
+                    : 'border-slate-700/50 hover:border-slate-600/50'
+                    }`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Product Icon */}
@@ -252,7 +249,7 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
                       ) : (
                         <span
                           className="text-2xl font-bold"
-                          style={{ color: product.color_primario }}
+                          style={{ color: product.color_primario || undefined }}
                         >
                           {product.marca.charAt(0)}
                         </span>
@@ -272,11 +269,10 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
                         </div>
                         <button
                           onClick={() => toggleProductVisibility(product.id)}
-                          className={`p-2 rounded-lg transition-all flex-shrink-0 ${
-                            product.visible_dashboard
-                              ? 'bg-amber-600 text-white hover:bg-amber-500'
-                              : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white'
-                          }`}
+                          className={`p-2 rounded-lg transition-all flex-shrink-0 ${product.visible_dashboard
+                            ? 'bg-amber-600 text-white hover:bg-amber-500'
+                            : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white'
+                            }`}
                           title={product.visible_dashboard ? 'Ocultar del dashboard' : 'Mostrar en dashboard'}
                         >
                           {product.visible_dashboard ? (

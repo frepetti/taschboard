@@ -16,7 +16,6 @@ export const TABLES = {
   ANALYTICS: 'btl_analytics',
   PRODUCTOS: 'btl_productos',
   CLIENTE_PRODUCTOS: 'btl_cliente_productos',
-  INSPECCION_PRODUCTOS: 'btl_inspeccion_productos',
   CAPACITACIONES: 'btl_capacitaciones',
   CAPACITACION_ASISTENTES: 'btl_capacitacion_asistentes',
   TEMAS_CAPACITACION: 'btl_temas_capacitacion'
@@ -29,25 +28,27 @@ export const INSPECCIONES_FIELDS = {
   ID: 'id',
   PUNTO_VENTA_ID: 'punto_venta_id',
   USUARIO_ID: 'usuario_id',
+  PRODUCTO_ID: 'producto_id',
   FECHA_INSPECCION: 'fecha_inspeccion',
-  
-  // Datos de inspección
+
+  // Datos del Producto
   TIENE_PRODUCTO: 'tiene_producto',
+  STOCK_NIVEL: 'stock_nivel',
+  STOCK_UNIDADES: 'stock_unidades',
+  PRECIO_VENTA: 'precio_venta',
+  EN_PROMOCION: 'en_promocion',
+  VISIBILIDAD_SCORE: 'visibilidad_score',
+
+  // Material POP
   TIENE_MATERIAL_POP: 'tiene_material_pop',
   MATERIAL_POP_DETALLE: 'material_pop_detalle',
+  MATERIAL_POP_TIPOS: 'material_pop_tipos',
+
+  // General
   TEMPERATURA_REFRIGERACION: 'temperatura_refrigeracion',
-  STOCK_ESTIMADO: 'stock_estimado',
   OBSERVACIONES: 'observaciones',
   FOTOS_URLS: 'fotos_urls',
-  
-  // Activación BTL
-  ACTIVACION_EJECUTADA: 'activacion_ejecutada',
-  TIPO_ACTIVACION: 'tipo_activacion',
-  PERSONAS_IMPACTADAS: 'personas_impactadas',
-  
-  // Métricas
-  COMPLIANCE_SCORE: 'compliance_score',
-  
+
   // Metadata
   CREATED_AT: 'created_at',
   UPDATED_AT: 'updated_at'

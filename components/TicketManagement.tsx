@@ -10,7 +10,7 @@ interface TicketManagementProps {
   initialTicketId?: string | null;
 }
 
-export function TicketManagement({ session, onUpdate, initialTicketId }: TicketManagementProps) {
+export function TicketManagement({ session: _session, onUpdate, initialTicketId }: TicketManagementProps) {
   const { t } = useLanguage();
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +117,7 @@ export function TicketManagement({ session, onUpdate, initialTicketId }: TicketM
   };
 
   const getStatusLabel = (s: string) => {
-    switch(s) {
+    switch (s) {
       case 'abierto': return t('tickets.status_open');
       case 'en_progreso': return t('tickets.status_progress');
       case 'resuelto': return t('tickets.status_resolved');
@@ -180,23 +180,21 @@ export function TicketManagement({ session, onUpdate, initialTicketId }: TicketM
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    ticket.type === 'ticket'
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${ticket.type === 'ticket'
                       ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                       : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                  }`}>
+                    }`}>
                     {ticket.type === 'ticket' ? '🎫 ' + t('tickets.ticket') : '📋 ' + t('tickets.request')}
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    ['high', 'alta', 'critica', 'urgent'].includes(ticket.priority)
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(ticket.priority)
                       ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                       : ['medium', 'media'].includes(ticket.priority)
-                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  }`}>
-                    {['high', 'alta'].includes(ticket.priority) ? '🟠 ' : 
-                     ['critica', 'urgent'].includes(ticket.priority) ? '🔴 ' :
-                     ['medium', 'media'].includes(ticket.priority) ? '🟡 ' : '🟢 '}
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    }`}>
+                    {['high', 'alta'].includes(ticket.priority) ? '🟠 ' :
+                      ['critica', 'urgent'].includes(ticket.priority) ? '🔴 ' :
+                        ['medium', 'media'].includes(ticket.priority) ? '🟡 ' : '🟢 '}
                     {getPriorityLabel(ticket.priority)}
                   </span>
                 </div>
@@ -224,15 +222,14 @@ export function TicketManagement({ session, onUpdate, initialTicketId }: TicketM
               <div className="text-xs text-slate-500">
                 {new Date(ticket.created_at).toLocaleDateString()}
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                ticket.status === 'abierto'
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${ticket.status === 'abierto'
                   ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                   : ticket.status === 'en_progreso'
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  : ticket.status === 'resuelto'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
-              }`}>
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    : ticket.status === 'resuelto'
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                }`}>
                 {getStatusLabel(ticket.status)}
               </span>
             </div>
@@ -256,20 +253,18 @@ export function TicketManagement({ session, onUpdate, initialTicketId }: TicketM
                 <div>
                   <h3 className="text-2xl text-white font-semibold mb-2">{selectedTicket.subject}</h3>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      selectedTicket.type === 'ticket'
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedTicket.type === 'ticket'
                         ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                         : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                    }`}>
+                      }`}>
                       {selectedTicket.type === 'ticket' ? t('tickets.ticket') : t('tickets.request')}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      ['high', 'alta', 'critica', 'urgent'].includes(selectedTicket.priority)
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(selectedTicket.priority)
                         ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                         : ['medium', 'media'].includes(selectedTicket.priority)
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    }`}>
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      }`}>
                       {t('tickets.priority')}: {getPriorityLabel(selectedTicket.priority)}
                     </span>
                   </div>
@@ -337,11 +332,10 @@ export function TicketManagement({ session, onUpdate, initialTicketId }: TicketM
                       <button
                         key={item.status}
                         onClick={() => handleUpdateStatus(selectedTicket.id, item.status)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${
-                          isActive
+                        className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${isActive
                             ? `bg-${item.color}-500/20 border-${item.color}-500/50 text-${item.color}-400`
                             : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
-                        }`}
+                          }`}
                       >
                         <Icon className="w-5 h-5" />
                         <span className="text-xs font-medium">{item.label}</span>

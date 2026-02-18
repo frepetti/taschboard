@@ -352,8 +352,8 @@ ALTER TABLE btl_reportes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_ticket_comentarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_clientes_venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_cliente_productos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE btl_inspeccion_productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_capacitacion_asistentes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE btl_temas_capacitacion ENABLE ROW LEVEL SECURITY;
 
 -- ==============================================================================
 -- POLÍTICAS RLS - FIXED TO AVOID INFINITE RECURSION

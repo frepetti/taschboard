@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { GraduationCap, X, Search, MapPin, Users, Calendar, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
+import { GraduationCap, X, Search, MapPin, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 
 interface VenueTrainingAnalyticsProps {
@@ -18,16 +18,16 @@ interface TrainingStats {
 interface VenueWithTraining {
   id: string;
   nombre: string;
-  direccion: string;
-  ciudad: string;
-  tipo_establecimiento: string;
+  direccion: string | null;
+  ciudad: string | null;
+  tipo: string | null;
   trainedStaff: number;
   totalStaff: number;
   lastTrainingDate?: string;
   hasTrained: boolean;
 }
 
-export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps) {
+export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnalyticsProps) {
   const [stats, setStats] = useState<TrainingStats>({
     totalVenues: 0,
     venuesWithTraining: 0,
@@ -37,7 +37,7 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
     totalAttendees: 0
   });
   const [venues, setVenues] = useState<VenueWithTraining[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [detailFilter, setDetailFilter] = useState<'all' | 'trained' | 'untrained'>('untrained');
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,10 +105,10 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
             totalStaff: new Set(),
           });
         }
-        
+
         const venueData = venueTrainingMap.get(visit.punto_venta_id)!;
         venueData.totalStaff.add(visit.usuario_id);
-        
+
         if (trainedInspectors.has(visit.usuario_id)) {
           venueData.trainedStaff.add(visit.usuario_id);
         }
@@ -119,8 +119,8 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
       trainingsData?.forEach(training => {
         const date = training.btl_capacitaciones.fecha_inicio;
         if (date) {
-          if (!latestTrainingDates.has(training.usuario_id) || 
-              new Date(date) > new Date(latestTrainingDates.get(training.usuario_id)!)) {
+          if (!latestTrainingDates.has(training.usuario_id) ||
+            new Date(date) > new Date(latestTrainingDates.get(training.usuario_id)!)) {
             latestTrainingDates.set(training.usuario_id, date);
           }
         }
@@ -131,7 +131,7 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
         const trainingData = venueTrainingMap.get(venue.id);
         const trainedCount = trainingData?.trainedStaff.size || 0;
         const totalCount = trainingData?.totalStaff.size || 0;
-        
+
         // Get most recent training date from staff
         let lastTrainingDate: string | undefined;
         if (trainingData?.trainedStaff) {
@@ -148,7 +148,7 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
           nombre: venue.nombre,
           direccion: venue.direccion,
           ciudad: venue.ciudad,
-          tipo_establecimiento: venue.tipo_establecimiento,
+          tipo: venue.tipo,
           trainedStaff: trainedCount,
           totalStaff: totalCount,
           lastTrainingDate,
@@ -189,7 +189,7 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
         venue.nombre.toLowerCase().includes(query) ||
         venue.ciudad?.toLowerCase().includes(query) ||
         venue.direccion?.toLowerCase().includes(query) ||
-        venue.tipo_establecimiento?.toLowerCase().includes(query)
+        venue.tipo?.toLowerCase().includes(query)
       );
     }
 
@@ -312,31 +312,28 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => setDetailFilter('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    detailFilter === 'all'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'all'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    }`}
                 >
                   Todos ({venues.length})
                 </button>
                 <button
                   onClick={() => setDetailFilter('trained')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    detailFilter === 'trained'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'trained'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    }`}
                 >
                   Con Capacitación ({stats.venuesWithTraining})
                 </button>
                 <button
                   onClick={() => setDetailFilter('untrained')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    detailFilter === 'untrained'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'untrained'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    }`}
                 >
                   Sin Capacitación ({stats.venuesWithoutTraining})
                 </button>
@@ -386,9 +383,9 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
                             <MapPin className="w-4 h-4" />
                             <span className="truncate">{venue.ciudad || venue.direccion}</span>
                           </div>
-                          {venue.tipo_establecimiento && (
+                          {venue.tipo && (
                             <div className="text-slate-500">
-                              {venue.tipo_establecimiento}
+                              {venue.tipo}
                             </div>
                           )}
                           {venue.lastTrainingDate && (
@@ -414,13 +411,12 @@ export function VenueTrainingAnalytics({ session }: VenueTrainingAnalyticsProps)
                             </div>
                             <div className="w-full h-2 bg-slate-700/50 rounded-full overflow-hidden">
                               <div
-                                className={`h-full transition-all ${
-                                  venue.trainedStaff === venue.totalStaff
-                                    ? 'bg-green-500'
-                                    : venue.trainedStaff > 0
+                                className={`h-full transition-all ${venue.trainedStaff === venue.totalStaff
+                                  ? 'bg-green-500'
+                                  : venue.trainedStaff > 0
                                     ? 'bg-amber-500'
                                     : 'bg-red-500'
-                                }`}
+                                  }`}
                                 style={{ width: `${(venue.trainedStaff / venue.totalStaff) * 100}%` }}
                               />
                             </div>

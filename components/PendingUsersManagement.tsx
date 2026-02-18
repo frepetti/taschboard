@@ -15,8 +15,8 @@ interface PendingUser {
   email: string;
   rol: string;
   empresa: string | null;
-  created_at: string;
-  estado_aprobacion: string;
+  created_at: string | null;
+  estado_aprobacion: string | null;
 }
 
 export function PendingUsersManagement({ session, onUpdate }: PendingUsersManagementProps) {
@@ -43,7 +43,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      
+
       setPendingUsers(data || []);
     } catch (error) {
       console.error('Error loading pending users:', error);
@@ -90,9 +90,9 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       // Actualizar el user_metadata en auth.users para que puedan acceder
       // Nota: Esto requiere privilegios de admin en Supabase Auth
       // Por ahora, solo actualizamos btl_usuarios y el login verificará el estado
-      
+
       toast.success(`✅ Usuario ${user.nombre} aprobado exitosamente`);
-      
+
       await loadPendingUsers();
       onUpdate();
     } catch (error: any) {
@@ -106,7 +106,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
 
   const handleRejectUser = async () => {
     if (!selectedUser) return;
-    
+
     if (!rejectionNote.trim()) {
       toast.error('Por favor ingresa una razón para el rechazo');
       return;
@@ -140,11 +140,11 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       if (updateError) throw updateError;
 
       toast.success(`Usuario ${selectedUser.nombre} rechazado`);
-      
+
       setShowRejectionModal(false);
       setSelectedUser(null);
       setRejectionNote('');
-      
+
       await loadPendingUsers();
       onUpdate();
     } catch (error: any) {
@@ -200,10 +200,10 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
     } else if (diffDays < 7) {
       return `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
     } else {
-      return date.toLocaleDateString('es-ES', { 
-        day: 'numeric', 
-        month: 'short', 
-        year: 'numeric' 
+      return date.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
       });
     }
   };
@@ -230,7 +230,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
             )}
           </p>
         </div>
-        
+
         {pendingUsers.length > 0 && (
           <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
             <Clock className="w-4 h-4 text-amber-400" />
@@ -250,7 +250,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
           <div className="flex-1">
             <h4 className="text-white font-semibold mb-1">Sistema de Aprobación de Usuarios</h4>
             <p className="text-sm text-slate-300">
-              Los nuevos usuarios deben ser aprobados por un administrador antes de poder acceder al sistema. 
+              Los nuevos usuarios deben ser aprobados por un administrador antes de poder acceder al sistema.
               Revisa cada solicitud cuidadosamente y verifica que el email corporativo y la información sean correctos.
             </p>
           </div>
@@ -281,7 +281,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
             {searchQuery ? 'No se encontraron solicitudes' : '¡Todo al día!'}
           </h3>
           <p className="text-slate-400">
-            {searchQuery 
+            {searchQuery
               ? 'Intenta con otros términos de búsqueda'
               : 'No hay solicitudes de registro pendientes de aprobación'
             }
@@ -323,7 +323,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
                       )}
                       <div className="flex items-center gap-2 text-slate-500 text-xs mt-2">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>{formatDate(user.created_at)}</span>
+                        <span>{formatDate(user.created_at || '')}</span>
                       </div>
                     </div>
                   </div>

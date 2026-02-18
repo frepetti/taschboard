@@ -72,7 +72,7 @@ export async function sendAdminNotification(data: TicketNotificationData): Promi
     }
 
     const responseData = await response.json();
-    const error = null; // Compatibilidad con lógica anterior
+    const _error = null; // Compatibilidad con lógica anterior
 
     console.log('✅ [Notification System] Email enviado exitosamente:', responseData);
     return true;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Loader2, Shield, Mail, Lock, User, AlertCircle, LogIn, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, LogIn, ArrowLeft } from 'lucide-react';
 
 interface AdminAuthProps {
   onAuthSuccess: (session: any) => void;
@@ -128,7 +128,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
           const { data: userDataByEmail, error: emailError } = await supabase
             .from('btl_usuarios')
             .select('rol, estado_aprobacion')
-            .eq('email', data.user.email)
+            .eq('email', data.user.email!)
             .single();
 
           console.log('📊 Query by email result:', { userDataByEmail, emailError });

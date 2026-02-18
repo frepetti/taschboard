@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 interface ConfirmDialogProps {
@@ -29,11 +28,10 @@ export function ConfirmDialog({
       <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 shadow-2xl rounded-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-              variant === 'danger' 
-                ? 'bg-red-500/20 text-red-500 border border-red-500/30' 
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${variant === 'danger'
+                ? 'bg-red-500/20 text-red-500 border border-red-500/30'
                 : 'bg-amber-500/20 text-amber-500 border border-amber-500/30'
-            }`}>
+              }`}>
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div className="flex-1">
@@ -44,7 +42,7 @@ export function ConfirmDialog({
             </div>
           </div>
         </div>
-        
+
         <div className="bg-slate-900/50 p-4 border-t border-slate-800 flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -57,11 +55,10 @@ export function ConfirmDialog({
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 rounded-lg text-white text-sm font-medium shadow-lg transition-all hover:scale-105 ${
-              variant === 'danger'
+            className={`px-4 py-2 rounded-lg text-white text-sm font-medium shadow-lg transition-all hover:scale-105 ${variant === 'danger'
                 ? 'bg-red-600 hover:bg-red-500 shadow-red-900/20'
                 : 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/20'
-            }`}
+              }`}
           >
             {confirmText}
           </button>

@@ -15,22 +15,22 @@ interface Training {
   id: string;
   titulo: string;
   fecha_inicio: string;
-  instructor_nombre: string;
-  estado: string;
+  instructor_nombre: string | null;
+  estado: string | null;
 }
 
 interface Venue {
   id: string;
   nombre: string;
-  ciudad: string;
-  tipo: string;
+  ciudad: string | null;
+  tipo: string | null;
 }
 
 interface Product {
   id: string;
   nombre: string;
   marca: string;
-  categoria: string;
+  categoria: string | null;
 }
 
 interface MaterialItem {
@@ -38,10 +38,10 @@ interface MaterialItem {
   cantidad: number;
 }
 
-export function TicketModal({ session, onClose }: TicketModalProps) {
+export function TicketModal({ session: _session, onClose }: TicketModalProps) {
   const [category, setCategory] = useState<TicketCategory>('general');
   const [loading, setLoading] = useState(false);
-  
+
   // Datos para selects
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -89,7 +89,7 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
           .select('id, titulo, fecha_inicio, instructor_nombre, estado')
           .in('estado', ['programada', 'en_curso'])
           .order('fecha_inicio');
-        
+
         if (data) setTrainings(data);
       }
 
@@ -99,7 +99,7 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
           .from('btl_puntos_venta')
           .select('id, nombre, ciudad, tipo')
           .order('nombre');
-        
+
         if (data) setVenues(data);
       }
 
@@ -168,8 +168,8 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
   };
 
   const toggleProduct = (productId: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
+    setSelectedProducts(prev =>
+      prev.includes(productId)
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
@@ -282,11 +282,10 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                 <button
                   type="button"
                   onClick={() => setCategory('capacitacion')}
-                  className={`p-4 rounded-lg font-medium transition-all border-2 ${
-                    category === 'capacitacion'
-                      ? 'bg-amber-600/20 border-amber-600 text-white'
-                      : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
-                  }`}
+                  className={`p-4 rounded-lg font-medium transition-all border-2 ${category === 'capacitacion'
+                    ? 'bg-amber-600/20 border-amber-600 text-white'
+                    : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
+                    }`}
                 >
                   <GraduationCap className="w-8 h-8 mx-auto mb-2" />
                   <div className="text-sm">Capacitación</div>
@@ -294,11 +293,10 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                 <button
                   type="button"
                   onClick={() => setCategory('accion_btl')}
-                  className={`p-4 rounded-lg font-medium transition-all border-2 ${
-                    category === 'accion_btl'
-                      ? 'bg-amber-600/20 border-amber-600 text-white'
-                      : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
-                  }`}
+                  className={`p-4 rounded-lg font-medium transition-all border-2 ${category === 'accion_btl'
+                    ? 'bg-amber-600/20 border-amber-600 text-white'
+                    : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
+                    }`}
                 >
                   <Zap className="w-8 h-8 mx-auto mb-2" />
                   <div className="text-sm">Acción BTL</div>
@@ -306,11 +304,10 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                 <button
                   type="button"
                   onClick={() => setCategory('material_pop')}
-                  className={`p-4 rounded-lg font-medium transition-all border-2 ${
-                    category === 'material_pop'
-                      ? 'bg-amber-600/20 border-amber-600 text-white'
-                      : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
-                  }`}
+                  className={`p-4 rounded-lg font-medium transition-all border-2 ${category === 'material_pop'
+                    ? 'bg-amber-600/20 border-amber-600 text-white'
+                    : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
+                    }`}
                 >
                   <Package className="w-8 h-8 mx-auto mb-2" />
                   <div className="text-sm">Material POP</div>
@@ -318,11 +315,10 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                 <button
                   type="button"
                   onClick={() => setCategory('general')}
-                  className={`p-4 rounded-lg font-medium transition-all border-2 ${
-                    category === 'general'
-                      ? 'bg-amber-600/20 border-amber-600 text-white'
-                      : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
-                  }`}
+                  className={`p-4 rounded-lg font-medium transition-all border-2 ${category === 'general'
+                    ? 'bg-amber-600/20 border-amber-600 text-white'
+                    : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
+                    }`}
                 >
                   <MessageSquare className="w-8 h-8 mx-auto mb-2" />
                   <div className="text-sm">General</div>
@@ -381,7 +377,7 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                   <GraduationCap className="w-5 h-5 text-amber-400" />
                   Detalles de Capacitación
                 </h3>
-                
+
                 <div>
                   <label className="block text-sm text-slate-300 mb-2">Capacitación Solicitada</label>
                   <select
@@ -498,11 +494,10 @@ export function TicketModal({ session, onClose }: TicketModalProps) {
                         {products.map((product) => (
                           <label
                             key={product.id}
-                            className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                              selectedProducts.includes(product.id)
-                                ? 'bg-amber-600/10 border-amber-600 shadow-sm shadow-amber-500/20'
-                                : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
-                            }`}
+                            className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedProducts.includes(product.id)
+                              ? 'bg-amber-600/10 border-amber-600 shadow-sm shadow-amber-500/20'
+                              : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
+                              }`}
                           >
                             <input
                               type="checkbox"

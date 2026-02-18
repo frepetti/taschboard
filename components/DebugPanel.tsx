@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Bug, X, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { Bug, X, RefreshCw } from 'lucide-react';
+// import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { checkAuthStatus } from '../utils/api-direct';
 
 interface DebugPanelProps {
@@ -40,7 +40,7 @@ export function DebugPanel({ session }: DebugPanelProps) {
     try {
       console.log('🔍 Testing Direct API auth...');
       const authStatus = await checkAuthStatus();
-      
+
       results.directAPI.authCheck = {
         status: authStatus.authenticated ? '✅ Authenticated' : '❌ Not Authenticated',
         authenticated: authStatus.authenticated,
@@ -180,7 +180,7 @@ export function DebugPanel({ session }: DebugPanelProps) {
                   ) : (
                     <p className="text-red-300">❌ Session is missing or invalid</p>
                   )}
-                  
+
                   {debugResults.directAPI.authCheck.authenticated ? (
                     <p className="text-green-300">✅ Direct API auth check passed</p>
                   ) : (

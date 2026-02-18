@@ -66,16 +66,16 @@ export function ProductMetrics() {
           marca,
           btl_cliente_productos!inner(visible_dashboard, orden)
         `)
-        .eq('btl_cliente_productos.usuario_id', btlUser.id)
+        .eq('btl_cliente_productos.usuario_id', (btlUser as any).id)
         .eq('activo', true)
         .order('marca', { ascending: true });
 
       if (error) throw error;
 
       if (productsData && productsData.length > 0) {
-        setProducts(productsData);
+        setProducts(productsData as any);
         // Auto-select the first product
-        setSelectedProductId(productsData[0].id);
+        setSelectedProductId((productsData[0] as any).id);
       }
     } catch (error) {
       console.error('Error loading products:', error);
@@ -87,7 +87,7 @@ export function ProductMetrics() {
   const loadMetricsForProduct = async (productId: string) => {
     try {
       setLoadingMetrics(true);
-      
+
       const { data: product, error: productError } = await supabase
         .from('btl_productos')
         .select('*')
@@ -96,9 +96,9 @@ export function ProductMetrics() {
 
       if (productError) throw productError;
 
-      // Obtener inspecciones con este producto
+      // Obtener inspecciones con este producto (ahora directamente de btl_inspecciones)
       const { data: inspectionProducts, error: inspError } = await supabase
-        .from('btl_inspeccion_productos')
+        .from('btl_inspecciones')
         .select('*')
         .eq('producto_id', productId);
 
@@ -106,36 +106,37 @@ export function ProductMetrics() {
 
       // Contar puntos de venta únicos con el producto
       const uniqueVenues = new Set(
-        inspectionProducts?.map(ip => ip.inspeccion_id) || []
+        inspectionProducts?.map((ip: any) => ip.punto_venta_id) || []
       );
 
       // Calcular métricas
       const totalInspections = inspectionProducts?.length || 0;
-      const withProduct = inspectionProducts?.filter(ip => ip.tiene_producto).length || 0;
-      const withStock = inspectionProducts?.filter(ip => 
+      const withProduct = inspectionProducts?.filter((ip: any) => ip.tiene_producto).length || 0;
+      const withStock = inspectionProducts?.filter((ip: any) =>
         ip.tiene_producto && ip.stock_nivel && ip.stock_nivel !== 'agotado'
       ).length || 0;
-      const withPOP = inspectionProducts?.filter(ip => ip.tiene_material_pop).length || 0;
+      const withPOP = inspectionProducts?.filter((ip: any) => ip.tiene_material_pop).length || 0;
 
       const presenciaActual = totalInspections > 0 ? (withProduct / totalInspections) * 100 : 0;
       const stockActual = totalInspections > 0 ? (withStock / totalInspections) * 100 : 0;
       const popActual = totalInspections > 0 ? (withPOP / totalInspections) * 100 : 0;
 
+      const p = product as any;
       const calculatedMetric: ProductMetric = {
-        id: product.id,
-        nombre: product.nombre,
-        marca: product.marca,
-        categoria: product.categoria,
-        color_primario: product.color_primario,
+        id: p.id,
+        nombre: p.nombre,
+        marca: p.marca,
+        categoria: p.categoria,
+        color_primario: p.color_primario,
         presencia_actual: Math.round(presenciaActual * 10) / 10,
-        presencia_objetivo: product.objetivo_presencia,
+        presencia_objetivo: p.objetivo_presencia,
         stock_actual: Math.round(stockActual * 10) / 10,
-        stock_objetivo: product.objetivo_stock,
+        stock_objetivo: p.objetivo_stock,
         pop_actual: Math.round(popActual * 10) / 10,
-        pop_objetivo: product.objetivo_pop,
+        pop_objetivo: p.objetivo_pop,
         puntos_venta_con_producto: uniqueVenues.size,
         total_puntos_venta: totalInspections,
-        tendencia: presenciaActual >= product.objetivo_presencia ? 'up' : 'down'
+        tendencia: presenciaActual >= (p.objetivo_presencia || 0) ? 'up' : 'down'
       };
 
       setMetric(calculatedMetric);
@@ -196,7 +197,7 @@ export function ProductMetrics() {
             Selecciona un producto para ver su desempeño detallado
           </p>
         </div>
-        
+
         <div className="relative w-full sm:w-64">
           <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-400">
             <ChevronDown className="w-4 h-4" />
@@ -217,9 +218,9 @@ export function ProductMetrics() {
 
       {/* Metrics Card */}
       {loadingMetrics || !metric ? (
-         <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-12 shadow-xl flex justify-center">
-            <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-         </div>
+        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-12 shadow-xl flex justify-center">
+          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
       ) : (
         <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8 shadow-xl">
           {/* Product Header */}
@@ -239,30 +240,30 @@ export function ProductMetrics() {
                 {metric.marca.charAt(0)}
               </span>
             </div>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl text-white font-bold mb-1">{metric.marca}</h3>
-                    <p className="text-slate-400 text-lg mb-2">{metric.nombre}</p>
-                    <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-2xl text-white font-bold mb-1">{metric.marca}</h3>
+                  <p className="text-slate-400 text-lg mb-2">{metric.nombre}</p>
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="px-3 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-full border border-slate-600/30">
-                        {metric.categoria}
+                      {metric.categoria}
                     </span>
                     <span className="px-3 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-full border border-slate-600/30 flex items-center gap-1">
-                        <Package className="w-3.5 h-3.5" />
-                        {metric.puntos_venta_con_producto} PDV Activos
+                      <Package className="w-3.5 h-3.5" />
+                      {metric.puntos_venta_con_producto} PDV Activos
                     </span>
-                    </div>
+                  </div>
                 </div>
                 {metric.tendencia === 'up' ? (
-                    <div className="bg-green-500/10 p-3 rounded-xl border border-green-500/20">
-                        <TrendingUp className="w-8 h-8 text-green-400" />
-                    </div>
+                  <div className="bg-green-500/10 p-3 rounded-xl border border-green-500/20">
+                    <TrendingUp className="w-8 h-8 text-green-400" />
+                  </div>
                 ) : (
-                    <div className="bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-                        <TrendingDown className="w-8 h-8 text-red-400" />
-                    </div>
+                  <div className="bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+                    <TrendingDown className="w-8 h-8 text-red-400" />
+                  </div>
                 )}
               </div>
             </div>
@@ -335,16 +336,16 @@ export function ProductMetrics() {
           {(metric.presencia_actual < metric.presencia_objetivo * 0.75 ||
             metric.stock_actual < metric.stock_objetivo * 0.75 ||
             metric.pop_actual < metric.pop_objetivo * 0.75) && (
-            <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-red-400 font-medium text-sm mb-1">Atención Requerida</h4>
-                <p className="text-sm text-red-300/80">
-                  Uno o más indicadores están significativamente por debajo del objetivo establecido (menos del 75%). Se recomienda revisar la ejecución en punto de venta.
-                </p>
+              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-red-400 font-medium text-sm mb-1">Atención Requerida</h4>
+                  <p className="text-sm text-red-300/80">
+                    Uno o más indicadores están significativamente por debajo del objetivo establecido (menos del 75%). Se recomienda revisar la ejecución en punto de venta.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       )}
     </div>

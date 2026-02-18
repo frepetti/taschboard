@@ -1,4 +1,4 @@
-import { Users, ClipboardList, Ticket, AlertCircle, MapPin } from 'lucide-react';
+import { Users, ClipboardList, AlertCircle, MapPin } from 'lucide-react';
 
 interface AdminStatsProps {
   stats: any;

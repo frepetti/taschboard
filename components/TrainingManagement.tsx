@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
 import {
   GraduationCap, Plus, Edit2, Trash2, Search, X, Check,
-  Calendar, Users, MapPin, Clock, Award, TrendingUp,
+  Calendar, Users, MapPin, Clock, TrendingUp,
   CheckCircle, XCircle, AlertCircle, FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,34 +11,34 @@ import { ConfirmDialog } from './ui/ConfirmDialog';
 interface Training {
   id?: string;
   titulo: string;
-  descripcion: string;
-  objetivo: string;
-  categoria: string;
-  tipo: string;
-  nivel: string;
+  descripcion: string | null;
+  objetivo: string | null;
+  categoria: string | null;
+  tipo: string | null;
+  nivel: string | null;
   fecha_inicio: string;
-  fecha_fin: string;
-  duracion_horas: number;
-  modalidad: string;
-  ubicacion: string;
-  plataforma?: string;
-  link_sesion?: string;
-  instructor_nombre: string;
-  instructor_empresa?: string;
-  instructor_contacto?: string;
-  cupo_maximo: number;
-  cupo_minimo: number;
-  certificado_emitido: boolean;
-  requiere_evaluacion: boolean;
-  nota_minima_aprobacion?: number;
-  estado: string;
-  asistencia_esperada: number;
-  asistencia_real?: number;
-  porcentaje_asistencia?: number;
-  promedio_calificacion?: number;
-  promedio_satisfaccion?: number;
-  temas?: string[];
-  costo_total?: number;
+  fecha_fin: string | null;
+  duracion_horas: number | null;
+  modalidad: string | null;
+  ubicacion: string | null;
+  plataforma?: string | null;
+  link_sesion?: string | null;
+  instructor_nombre: string | null;
+  instructor_empresa?: string | null;
+  instructor_contacto?: string | null;
+  cupo_maximo: number | null;
+  cupo_minimo: number | null;
+  certificado_emitido: boolean | null;
+  requiere_evaluacion?: boolean;
+  nota_minima_aprobacion?: number | null;
+  estado: string | null;
+  asistencia_esperada: number | null;
+  asistencia_real?: number | null;
+  porcentaje_asistencia?: number | null;
+  promedio_calificacion?: number | null;
+  promedio_satisfaccion?: number | null;
+  temas?: string[] | null;
+  costo_total?: number | null;
 }
 
 interface TrainingManagementProps {
@@ -192,7 +192,7 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
 
   const filteredTrainings = trainings.filter(t => {
     const matchesSearch = t.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.instructor_nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      (t.instructor_nombre || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || t.estado === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -315,7 +315,7 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
                           <h3 className="text-white font-semibold text-lg mb-1">{training.titulo}</h3>
                           <p className="text-slate-400 text-sm line-clamp-2">{training.descripcion}</p>
                         </div>
-                        {getStatusBadge(training.estado)}
+                        {getStatusBadge(training.estado || 'programada')}
                       </div>
 
                       <div className="flex items-center gap-4 mt-3 text-sm">
@@ -492,7 +492,7 @@ function TrainingForm({
                   <label className="block text-slate-300 text-sm mb-2">Descripción</label>
                   <textarea
                     rows={3}
-                    value={formData.descripcion}
+                    value={formData.descripcion || ''}
                     onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
@@ -501,7 +501,7 @@ function TrainingForm({
                   <label className="block text-slate-300 text-sm mb-2">Objetivo de Aprendizaje</label>
                   <textarea
                     rows={2}
-                    value={formData.objetivo}
+                    value={formData.objetivo || ''}
                     onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
@@ -510,7 +510,7 @@ function TrainingForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Categoría</label>
                     <select
-                      value={formData.categoria}
+                      value={formData.categoria || ''}
                       onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     >
@@ -524,7 +524,7 @@ function TrainingForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Tipo</label>
                     <select
-                      value={formData.tipo}
+                      value={formData.tipo || ''}
                       onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     >
@@ -537,7 +537,7 @@ function TrainingForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Nivel</label>
                     <select
-                      value={formData.nivel}
+                      value={formData.nivel || ''}
                       onChange={(e) => setFormData({ ...formData, nivel: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     >
@@ -571,7 +571,7 @@ function TrainingForm({
                   <label className="block text-slate-300 text-sm mb-2">Fecha Fin</label>
                   <input
                     type="datetime-local"
-                    value={formData.fecha_fin}
+                    value={formData.fecha_fin || ''}
                     onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
@@ -582,7 +582,7 @@ function TrainingForm({
                     type="number"
                     min="0"
                     step="0.5"
-                    value={formData.duracion_horas}
+                    value={formData.duracion_horas ?? 0}
                     onChange={(e) => setFormData({ ...formData, duracion_horas: Number(e.target.value) })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
@@ -600,7 +600,7 @@ function TrainingForm({
                 <div>
                   <label className="block text-slate-300 text-sm mb-2">Modalidad</label>
                   <select
-                    value={formData.modalidad}
+                    value={formData.modalidad || ''}
                     onChange={(e) => setFormData({ ...formData, modalidad: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   >
@@ -613,7 +613,7 @@ function TrainingForm({
                   <label className="block text-slate-300 text-sm mb-2">Ubicación/Plataforma</label>
                   <input
                     type="text"
-                    value={formData.ubicacion}
+                    value={formData.ubicacion || ''}
                     onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
                     placeholder="Dirección o nombre de plataforma"
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
@@ -634,7 +634,7 @@ function TrainingForm({
                   <input
                     type="text"
                     required
-                    value={formData.instructor_nombre}
+                    value={formData.instructor_nombre || ''}
                     onChange={(e) => setFormData({ ...formData, instructor_nombre: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
@@ -671,7 +671,7 @@ function TrainingForm({
                     <input
                       type="number"
                       min="1"
-                      value={formData.cupo_maximo}
+                      value={formData.cupo_maximo ?? 0}
                       onChange={(e) => setFormData({ ...formData, cupo_maximo: Number(e.target.value) })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
@@ -681,7 +681,7 @@ function TrainingForm({
                     <input
                       type="number"
                       min="1"
-                      value={formData.cupo_minimo}
+                      value={formData.cupo_minimo ?? 0}
                       onChange={(e) => setFormData({ ...formData, cupo_minimo: Number(e.target.value) })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
@@ -691,7 +691,7 @@ function TrainingForm({
                     <input
                       type="number"
                       min="0"
-                      value={formData.asistencia_esperada}
+                      value={formData.asistencia_esperada ?? 0}
                       onChange={(e) => setFormData({ ...formData, asistencia_esperada: Number(e.target.value) })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
@@ -727,7 +727,7 @@ function TrainingForm({
                   <label className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      checked={formData.certificado_emitido}
+                      checked={formData.certificado_emitido ?? false}
                       onChange={(e) => setFormData({ ...formData, certificado_emitido: e.target.checked })}
                       className="w-5 h-5 rounded bg-slate-800/50 border-slate-700/50 text-amber-600 focus:ring-amber-500"
                     />
@@ -741,7 +741,7 @@ function TrainingForm({
             <div>
               <label className="block text-slate-300 text-sm mb-2">Estado</label>
               <select
-                value={formData.estado}
+                value={formData.estado || ''}
                 onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
                 className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
               >

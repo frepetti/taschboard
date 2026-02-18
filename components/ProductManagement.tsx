@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Package, Plus, Edit2, Trash2, Search, X, Check } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 
@@ -8,19 +8,19 @@ interface Product {
   id?: string;
   nombre: string;
   marca: string;
-  categoria: string;
-  subcategoria: string;
-  sku: string;
-  codigo_barras: string;
-  presentacion: string;
-  color_primario: string;
-  color_secundario: string;
-  objetivo_presencia: number;
-  objetivo_stock: number;
-  objetivo_pop: number;
-  descripcion: string;
-  activo: boolean;
-  orden_visualizacion: number;
+  categoria: string | null;
+  subcategoria: string | null;
+  sku: string | null;
+  codigo_barras: string | null;
+  presentacion: string | null;
+  color_primario: string | null;
+  color_secundario: string | null;
+  objetivo_presencia: number | null;
+  objetivo_stock: number | null;
+  objetivo_pop: number | null;
+  descripcion: string | null;
+  activo: boolean | null;
+  orden_visualizacion: number | null;
 }
 
 export function ProductManagement() {
@@ -127,7 +127,7 @@ export function ProductManagement() {
   const filteredProducts = products.filter(p =>
     p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.sku || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -187,7 +187,7 @@ export function ProductManagement() {
                 >
                   <span
                     className="text-xl font-bold"
-                    style={{ color: product.color_primario }}
+                    style={{ color: product.color_primario || undefined }}
                   >
                     {product.marca.charAt(0)}
                   </span>
@@ -332,7 +332,7 @@ function ProductForm({
                 <input
                   type="text"
                   required
-                  value={formData.sku}
+                  value={formData.sku || ''}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 />
@@ -354,7 +354,7 @@ function ProductForm({
               <div>
                 <label className="block text-slate-300 text-sm mb-2">Categoría</label>
                 <select
-                  value={formData.categoria}
+                  value={formData.categoria || ''}
                   onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 >
@@ -370,7 +370,7 @@ function ProductForm({
               <div>
                 <label className="block text-slate-300 text-sm mb-2">Subcategoría</label>
                 <select
-                  value={formData.subcategoria}
+                  value={formData.subcategoria || ''}
                   onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 >
@@ -383,7 +383,7 @@ function ProductForm({
                 <label className="block text-slate-300 text-sm mb-2">Presentación</label>
                 <input
                   type="text"
-                  value={formData.presentacion}
+                  value={formData.presentacion || ''}
                   onChange={(e) => setFormData({ ...formData, presentacion: e.target.value })}
                   placeholder="355ml, 750ml..."
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
@@ -396,7 +396,7 @@ function ProductForm({
                 <label className="block text-slate-300 text-sm mb-2">Color Primario</label>
                 <input
                   type="color"
-                  value={formData.color_primario}
+                  value={formData.color_primario || '#000000'}
                   onChange={(e) => setFormData({ ...formData, color_primario: e.target.value })}
                   className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
                 />
@@ -405,7 +405,7 @@ function ProductForm({
                 <label className="block text-slate-300 text-sm mb-2">Color Secundario</label>
                 <input
                   type="color"
-                  value={formData.color_secundario}
+                  value={formData.color_secundario || '#000000'}
                   onChange={(e) => setFormData({ ...formData, color_secundario: e.target.value })}
                   className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
                 />
@@ -419,7 +419,7 @@ function ProductForm({
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.objetivo_presencia}
+                  value={formData.objetivo_presencia ?? 0}
                   onChange={(e) => setFormData({ ...formData, objetivo_presencia: Number(e.target.value) })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 />
@@ -430,7 +430,7 @@ function ProductForm({
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.objetivo_stock}
+                  value={formData.objetivo_stock ?? 0}
                   onChange={(e) => setFormData({ ...formData, objetivo_stock: Number(e.target.value) })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 />
@@ -441,7 +441,7 @@ function ProductForm({
                   type="number"
                   min="0"
                   max="100"
-                  value={formData.objetivo_pop}
+                  value={formData.objetivo_pop ?? 0}
                   onChange={(e) => setFormData({ ...formData, objetivo_pop: Number(e.target.value) })}
                   className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                 />

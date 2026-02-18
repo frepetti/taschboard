@@ -1,6 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-// Eliminamos la dependencia de ./info
-// import { projectId, publicAnonKey } from './info';
+import type { Database } from './database.types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -13,20 +12,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // incluso con Hot Module Replacement (HMR) en desarrollo
 declare global {
   interface Window {
-    __supabase_client__: ReturnType<typeof createSupabaseClient> | undefined;
+    __supabase_client__: ReturnType<typeof createSupabaseClient<Database>> | undefined;
   }
 }
 
 // Si ya existe una instancia global, usarla
 if (!window.__supabase_client__) {
-  window.__supabase_client__ = createSupabaseClient(supabaseUrl!, supabaseAnonKey!);
+  window.__supabase_client__ = createSupabaseClient<Database>(supabaseUrl!, supabaseAnonKey!);
   console.log('✅ Supabase Client initialized (singleton)');
 } else {
   console.log('♻️ Reusing existing Supabase Client (singleton preserved)');
 }
 
 // Exportar la instancia global
-export const supabase = window.__supabase_client__;
+export const supabase = window.__supabase_client__!;
 
 // Mantener compatibilidad con código existente
 export function createClient() {
