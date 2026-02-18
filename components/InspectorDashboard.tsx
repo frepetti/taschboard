@@ -9,7 +9,6 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getInspections, createInspection } from '../utils/api-direct'; // ✅ Usar API directa
 import { supabase } from '../utils/supabase/client';
-import { projectId } from '../utils/supabase/info';
 
 interface InspectorDashboardProps {
   session: any;
@@ -23,7 +22,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const accessToken = session.access_token;
+  // const accessToken = session.access_token;
 
   // Load inspections on mount
   useEffect(() => {
@@ -40,7 +39,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
       console.log('✅ [Inspector Dashboard] Loaded', data.length, 'inspections');
     } catch (error: any) {
       console.error('❌ [Inspector Dashboard] Error loading inspections:', error);
-      
+
       // Check if it's an authentication error
       if (error.message?.includes('autenticado') || error.message?.includes('sesión')) {
         setAuthError('Tu sesión ha expirado. Por favor cierra sesión e inicia sesión nuevamente.');
@@ -73,39 +72,44 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
     try {
       console.log('📝 [Inspector Dashboard] Submitting inspection via Direct API...');
       console.log('📦 Selected Product:', selectedProduct);
-      
-      // Crear objeto de inspección SOLO con las columnas que existen en la base de datos
+
+      // Crear objeto de inspección (Modelo 1:1)
       const inspectionData = {
         punto_venta_id: selectedVenue.id,
-        producto_id: selectedProduct.id, // Agregar producto_id
+        producto_id: selectedProduct.id,
         fecha_inspeccion: new Date().toISOString(),
-        tiene_producto: data.brand_present || false,
-        tiene_material_pop: (data.pos_materials && data.pos_materials.length > 0) || false,
+
+        // Datos del Producto
+        tiene_producto: data.brandOnMenu || data.brand_present || false,
+        stock_nivel: data.stockLevel || 'adequate',
+
+        // Material POP
+        tiene_material_pop: (data.backBarSignage !== 'missing' && data.backBarSignage !== 'not-applicable') ||
+          (data.pos_materials && data.pos_materials.length > 0) || false,
         material_pop_detalle: data.pos_materials ? JSON.stringify(data.pos_materials) : null,
+        material_pop_tipos: data.pos_materials || [],
+
+        // Otros datos
         temperatura_refrigeracion: data.temperature || null,
-        stock_estimado: data.stock_level || null,
         observaciones: data.notes || '',
         fotos_urls: data.photos || [],
-        // Datos del producto para vincular
-        productData: {
-          producto_id: selectedProduct.id,
-          tiene_producto: data.brandOnMenu || false,
-          stock_nivel: data.stockLevel || 'adequate',
-          tiene_material_pop: (data.backBarSignage !== 'missing' && data.backBarSignage !== 'not-applicable') || false,
-          observaciones: data.notes || '',
-        }
+
+        // Default / Placeholder columns introduced in migration
+        precio_venta: 0,
+        en_promocion: false,
+        visibilidad_score: 5
       };
 
       await createInspection(inspectionData as any);
-      
+
       console.log('✅ [Inspector Dashboard] Inspection created successfully');
       toast.success('Inspección Enviada', {
         description: 'Datos guardados exitosamente'
       });
-      
+
       // Reload inspections
       await loadInspections();
-      
+
       setSelectedVenue(null);
       setSelectedProduct(null);
     } catch (error: any) {
@@ -129,7 +133,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
   return (
     <>
-      <InspectorHeader 
+      <InspectorHeader
         currentView={currentView}
         onViewChange={setCurrentView}
       />
@@ -150,7 +154,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
                 onProductSelect={handleProductSelect}
               />
             ) : (
-              <InspectionForm 
+              <InspectionForm
                 venue={selectedVenue}
                 product={selectedProduct}
                 onBack={handleBackToProductSelection}
@@ -159,8 +163,8 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
             )}
           </>
         ) : (
-          <InspectionHistory 
-            inspections={inspections} 
+          <InspectionHistory
+            inspections={inspections}
             onRefresh={loadInspections}
             onBack={() => setCurrentView('new')}
           />

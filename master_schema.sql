@@ -152,18 +152,30 @@ CREATE TABLE btl_capacitaciones (
 
 -- 7. TABLA DE INSPECCIONES
 -- ==============================================================================
+-- 7. TABLA DE INSPECCIONES (1:1 Model - One Inspection per Product)
+-- ==============================================================================
 CREATE TABLE btl_inspecciones (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   punto_venta_id UUID NOT NULL REFERENCES btl_puntos_venta(id) ON DELETE CASCADE,
   usuario_id UUID NOT NULL REFERENCES btl_usuarios(id) ON DELETE CASCADE,
+  producto_id UUID REFERENCES btl_productos(id) ON DELETE CASCADE, -- Link to specific product
   fecha_inspeccion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   
-  -- Datos generales
+  -- Datos del Producto (Product Specific Metrics)
   tiene_producto BOOLEAN DEFAULT false,
+  stock_nivel VARCHAR(50), -- 'Alto', 'Medio', 'Bajo', 'Agotado'
+  stock_unidades INTEGER,
+  precio_venta DECIMAL(10,2),
+  en_promocion BOOLEAN DEFAULT FALSE,
+  visibilidad_score DECIMAL(5,2),
+  
+  -- Material POP (Point of Purchase)
   tiene_material_pop BOOLEAN DEFAULT false,
-  material_pop_detalle TEXT,
+  material_pop_detalle TEXT, -- e.g. "Poster, Cenefa" (Legacy/Simple)
+  material_pop_tipos TEXT[], -- Array of specific types
+  
+  -- General / Other
   temperatura_refrigeracion NUMERIC(5,2),
-  stock_estimado TEXT, -- 'Alto', 'Medio', 'Bajo', 'Agotado'
   observaciones TEXT,
   fotos_urls TEXT[],
   
@@ -173,6 +185,7 @@ CREATE TABLE btl_inspecciones (
 
 CREATE INDEX idx_inspecciones_punto_venta ON btl_inspecciones(punto_venta_id);
 CREATE INDEX idx_inspecciones_usuario ON btl_inspecciones(usuario_id);
+CREATE INDEX idx_inspecciones_producto ON btl_inspecciones(producto_id);
 CREATE INDEX idx_inspecciones_fecha ON btl_inspecciones(fecha_inspeccion DESC);
 
 -- 8. TABLA DE REPORTES (TICKETS)
@@ -263,25 +276,6 @@ CREATE TABLE btl_cliente_productos (
   UNIQUE(usuario_id, producto_id)
 );
 
--- Inspección <-> Productos (Detalle)
-CREATE TABLE btl_inspeccion_productos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  inspeccion_id UUID NOT NULL REFERENCES btl_inspecciones(id) ON DELETE CASCADE,
-  producto_id UUID NOT NULL REFERENCES btl_productos(id) ON DELETE CASCADE,
-  tiene_producto BOOLEAN DEFAULT FALSE,
-  stock_nivel VARCHAR(50),
-  stock_unidades INTEGER,
-  tiene_material_pop BOOLEAN DEFAULT FALSE,
-  material_pop_tipos TEXT[],
-  precio_venta DECIMAL(10,2),
-  en_promocion BOOLEAN DEFAULT FALSE,
-  visibilidad_score DECIMAL(5,2),
-  observaciones TEXT,
-  fotos_urls TEXT[],
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(inspeccion_id, producto_id)
-);
 
 -- Capacitación <-> Asistentes
 CREATE TABLE btl_capacitacion_asistentes (

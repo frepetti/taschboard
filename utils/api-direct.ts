@@ -216,15 +216,13 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
       rol: btlUser.rol
     });
 
-    // ✅ PASO 2: Separar datos de inspección y datos de producto
-    const { productData, ...inspectionFields } = inspectionData as any;
-
-    // ✅ PASO 3: Crear inspección con el ID correcto de btl_usuarios
+    // ✅ PASO 2: Crear inspección (Modelo 1:1 - Todo en una tabla)
+    // Ya no separamos productData, insertamos todo junto
     const data = await executeWithRetry(async () => {
       const { data, error } = await supabase
         .from('btl_inspecciones')
         .insert({
-          ...inspectionFields,
+          ...inspectionData,
           usuario_id: btlUser.id, // ✅ Usar ID de btl_usuarios, no auth.users
         } as any)
         .select()
@@ -234,31 +232,6 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
     });
 
     console.log('✅ [API Direct] Inspection created:', data.id);
-
-    // ✅ PASO 4: Guardar datos del producto si existen
-    if (productData && data.id) {
-      console.log('📦 [API Direct] Saving product data for inspection:', data.id);
-
-      const productInsert = {
-        inspeccion_id: data.id,
-        producto_id: productData.producto_id,
-        tiene_producto: productData.tiene_producto,
-        stock_nivel: productData.stock_nivel,
-        tiene_material_pop: productData.tiene_material_pop,
-        observaciones: productData.observaciones
-      };
-
-      await executeWithRetry(async () => {
-        const { data, error } = await supabase
-          .from('btl_inspeccion_productos')
-          .insert(productInsert as any)
-          .select();
-
-        return { data: data as any, error };
-      });
-
-      console.log('✅ [API Direct] Product data saved successfully');
-    }
 
     return data;
   } catch (error: any) {
