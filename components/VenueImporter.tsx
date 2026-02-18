@@ -146,30 +146,47 @@ export function VenueImporter({ onImportComplete }: VenueImporterProps) {
       console.log('📊 Parsed Excel data:', jsonData);
       console.log('📍 Total rows to import:', jsonData.length);
 
+      // Fetch regions for mapping
+      const { data: regions } = await supabase.from('btl_regiones').select('id, nombre');
+      const regionMap = new Map();
+      if (regions) {
+        regions.forEach((r: any) => {
+          if (r.nombre) regionMap.set(normalizeHeader(r.nombre), r.id);
+        });
+      }
+
       // Prepare data for Supabase insert
       // We map our parsed objects to the DB columns
-      const venuesToInsert = jsonData.map((row: any) => ({
-        // If ID column existed and is valid UUID, we could use it, but safer to let DB gen ID or ignore
-        // If the user wants to upsert based on an external ID, they should ensure it matches
-        // For now, we omit 'id' to let Supabase generate UUIDs, unless specifically needed.
-        // But if the excel HAS IDs that match existing DB IDs, we might want to upsert.
-        // The user's excel shows integer IDs (e.g. 72302834), which are NOT UUIDs. 
-        // Supabase id is uuid default gen_random_uuid(). 
-        // We should store this external ID in a separate field if we want to keep it, 
-        // OR just ignore it and create new venues.
-        // Let's assume we are creating NEW venues for now.
+      const venuesToInsert = jsonData.map((row: any) => {
+        let regionId = null;
+        if (row.region) {
+          const norm = normalizeHeader(row.region);
+          regionId = regionMap.get(norm) || null;
+        }
 
-        nombre: row.nombre,
-        direccion: row.direccion,
-        ciudad: row.ciudad,
-        region: row.region, // This goes to the text field 'region' for now
-        tipo: row.tipo,
-        latitud: row.latitud,
-        longitud: row.longitud,
-        // Default values
-        activo: true,
-        segmento: 'General'
-      }));
+        return {
+          // If ID column existed and is valid UUID, we could use it, but safer to let DB gen ID or ignore
+          // If the user wants to upsert based on an external ID, they should ensure it matches
+          // For now, we omit 'id' to let Supabase generate UUIDs, unless specifically needed.
+          // But if the excel HAS IDs that match existing DB IDs, we might want to upsert.
+          // The user's excel shows integer IDs (e.g. 72302834), which are NOT UUIDs. 
+          // Supabase id is uuid default gen_random_uuid(). 
+          // We should store this external ID in a separate field if we want to keep it, 
+          // OR just ignore it and create new venues.
+          // Let's assume we are creating NEW venues for now.
+
+          nombre: row.nombre,
+          direccion: row.direccion,
+          ciudad: row.ciudad,
+          region_id: regionId, // Map text to UUID from DB
+          tipo: row.tipo,
+          latitud: row.latitud,
+          longitud: row.longitud,
+          // Default values
+          // activo: true, // Column 'activo' does not exist in schema
+          segmento: 'General'
+        };
+      });
 
       // Insert into Supabase
       const { data, error: insertError } = await supabase
