@@ -19,7 +19,7 @@ export function VenueManager({ session }: VenueManagerProps) {
   const [regions, setRegions] = useState<Region[]>([]);
   const [loading, setLoading] = useState(true);
   const [showImporter, setShowImporter] = useState(false);
-  
+
   // Edit State
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentVenue, setCurrentVenue] = useState<any>({});
@@ -46,7 +46,7 @@ export function VenueManager({ session }: VenueManagerProps) {
         .from('btl_regiones')
         .select('id, nombre')
         .order('nombre', { ascending: true });
-      
+
       if (!error && data) {
         setRegions(data);
       }
@@ -58,16 +58,16 @@ export function VenueManager({ session }: VenueManagerProps) {
   const loadVenues = async () => {
     try {
       console.log('📍 VenueManager: Loading venues...');
-      
+
       let data, error;
-      
+
       // Intentamos cargar con la relación de region_id
       try {
         const result = await supabase
           .from('btl_puntos_venta')
           .select('*, region_rel:region_id(id, nombre)')
           .order('nombre', { ascending: true });
-          
+
         data = result.data;
         error = result.error;
       } catch (e) {
@@ -76,7 +76,7 @@ export function VenueManager({ session }: VenueManagerProps) {
           .from('btl_puntos_venta')
           .select('*')
           .order('nombre', { ascending: true });
-          
+
         data = result.data;
         error = result.error;
       }
@@ -87,16 +87,16 @@ export function VenueManager({ session }: VenueManagerProps) {
           .from('btl_puntos_venta')
           .select('*')
           .order('nombre', { ascending: true });
-          
+
         data = result.data;
         error = result.error;
       }
 
       if (error) throw error;
-      
+
       console.log('✅ Loaded venues:', data?.length || 0);
       setVenues(data || []);
-      
+
     } catch (error: any) {
       console.error('❌ Error loading venues:', error);
       toast.error('Error al cargar los puntos de venta');
@@ -124,7 +124,7 @@ export function VenueManager({ session }: VenueManagerProps) {
         .eq('id', venueId);
 
       if (error) throw error;
-      
+
       toast.success('Punto de venta eliminado exitosamente');
       await loadVenues();
     } catch (error: any) {
@@ -144,7 +144,7 @@ export function VenueManager({ session }: VenueManagerProps) {
       if (matchingRegion) regionId = matchingRegion.id;
     }
 
-    setCurrentVenue({ 
+    setCurrentVenue({
       ...venue,
       region_id: regionId
     });
@@ -153,10 +153,6 @@ export function VenueManager({ session }: VenueManagerProps) {
 
   const handleUpdate = async () => {
     try {
-      // Obtenemos el nombre de la región seleccionada para mantener consistencia 
-      // si aún se usa el campo de texto 'region'
-      const selectedRegion = regions.find(r => r.id === currentVenue.region_id);
-      
       const updates: any = {
         nombre: currentVenue.nombre,
         direccion: currentVenue.direccion,
@@ -166,14 +162,14 @@ export function VenueManager({ session }: VenueManagerProps) {
         potencial_ventas: currentVenue.potencial_ventas,
         contacto_nombre: currentVenue.contacto_nombre,
         contacto_telefono: currentVenue.contacto_telefono,
-        
-        // Guardamos tanto el ID como el texto para compatibilidad
-        region_id: currentVenue.region_id || null,
-        region: selectedRegion ? selectedRegion.nombre : currentVenue.region
+
+        // Guardamos solo el ID
+        region_id: currentVenue.region_id || null
       };
 
       const { error } = await supabase
         .from('btl_puntos_venta')
+        // @ts-ignore
         .update(updates)
         .eq('id', currentVenue.id);
 
@@ -192,16 +188,16 @@ export function VenueManager({ session }: VenueManagerProps) {
   const getRegionName = (venue: any) => {
     // Prioridad 1: Relación cargada por Supabase
     if (venue.region_rel && venue.region_rel.nombre) return venue.region_rel.nombre;
-    
+
     // Prioridad 2: ID que coincide con la lista de regiones
     if (venue.region_id) {
       const r = regions.find(reg => reg.id === venue.region_id);
       if (r) return r.nombre;
     }
-    
+
     // Prioridad 3: Texto plano guardado en campo 'region'
     if (venue.region) return venue.region;
-    
+
     return '-';
   };
 
@@ -288,18 +284,18 @@ export function VenueManager({ session }: VenueManagerProps) {
                       <td className="py-3 px-4 text-slate-400 text-sm max-w-xs truncate" title={venue.direccion}>{venue.direccion}</td>
                       <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
-                            <span className="inline-block px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded w-fit">
-                              {venue.tipo || 'General'}
-                            </span>
-                            {venue.segmento && (
-                                <span className="text-xs text-slate-500">{venue.segmento}</span>
-                            )}
+                          <span className="inline-block px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded w-fit">
+                            {venue.tipo || 'General'}
+                          </span>
+                          {venue.segmento && (
+                            <span className="text-xs text-slate-500">{venue.segmento}</span>
+                          )}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-slate-400 text-sm">
                         <div className="flex flex-col">
-                            <span>{venue.contacto_nombre || '-'}</span>
-                            {venue.contacto_telefono && <span className="text-xs text-slate-500">{venue.contacto_telefono}</span>}
+                          <span>{venue.contacto_nombre || '-'}</span>
+                          {venue.contacto_telefono && <span className="text-xs text-slate-500">{venue.contacto_telefono}</span>}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -352,42 +348,42 @@ export function VenueManager({ session }: VenueManagerProps) {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-2">
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Nombre del Venue</label>
-                    <input
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Nombre del Venue</label>
+                  <input
                     type="text"
                     value={currentVenue.nombre || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, nombre: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
-                    />
+                  />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Región</label>
-                    <select
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Región</label>
+                  <select
                     value={currentVenue.region_id || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, region_id: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
-                    >
+                  >
                     <option value="">Seleccionar Región...</option>
                     {regions.map(r => (
-                        <option key={r.id} value={r.id}>{r.nombre}</option>
+                      <option key={r.id} value={r.id}>{r.nombre}</option>
                     ))}
-                    </select>
+                  </select>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Ciudad</label>
-                    <input
+                  <label className="block text-sm font-medium text-slate-400 mb-1">Ciudad</label>
+                  <input
                     type="text"
                     value={currentVenue.ciudad || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, ciudad: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
-                    />
+                  />
                 </div>
               </div>
 

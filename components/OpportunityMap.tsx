@@ -37,162 +37,6 @@ interface ImportedVenue {
 // Coordenadas base de Buenos Aires
 const BA_CENTER: [number, number] = [-34.6037, -58.3816];
 
-// Mock data sincronizada con VenueTable pero ubicada en BA para el mapa
-const DEMO_VENUES: ImportedVenue[] = [
-  {
-    id: "1",
-    name: "The Dead Rabbit",
-    address: "Av. Alvear 1891",
-    zone: "Recoleta",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.5883,
-    lng: -58.3963,
-    imported: true,
-    importedAt: "2026-01-10",
-    image:
-      "https://images.unsplash.com/photo-1617524455280-327a0ffc561b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDF8fHx8MTc2NzY4NTc0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 92,
-    perfectServe: 88,
-    materialStatus: "Complete",
-    shareOfMenu: 28,
-    competitor: "Tanqueray",
-  },
-  {
-    id: "2",
-    name: "Employees Only",
-    address: "Av. Corrientes 1500",
-    zone: "Centro",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.6037,
-    lng: -58.3816,
-    imported: true,
-    importedAt: "2026-01-10",
-    image:
-      "https://images.unsplash.com/photo-1739799120521-c5f44a9335a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcGVha2Vhc3klMjBiYXJ8ZW58MXx8fHwxNzY3NzMwNzAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 85,
-    perfectServe: 91,
-    materialStatus: "Complete",
-    shareOfMenu: 22,
-    competitor: "Bombay Sapphire",
-  },
-  {
-    id: "3",
-    name: "The Up & Up",
-    address: "Av. del Libertador 5000",
-    zone: "Belgrano",
-    channel: "Club",
-    city: "Buenos Aires",
-    lat: -34.5625,
-    lng: -58.4402,
-    imported: true,
-    importedAt: "2026-01-11",
-    image:
-      "https://images.unsplash.com/photo-1702814160779-4a88cfb330c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBsb3VuZ2V8ZW58MXx8fHwxNzY3NzMwNzAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 78,
-    perfectServe: 72,
-    materialStatus: "Partial",
-    shareOfMenu: 18,
-    competitor: "Beefeater",
-  },
-  {
-    id: "4",
-    name: "Eleven Madison Park",
-    address: "Puerto Madero",
-    zone: "Puerto Madero",
-    channel: "Restaurant",
-    city: "Buenos Aires",
-    lat: -34.6128,
-    lng: -58.3615,
-    imported: true,
-    importedAt: "2026-01-11",
-    image:
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaW5lJTIwZGluaW5nJTIwcmVzdGF1cmFudHxlbnwxfHx8fDE3Njc2MTMyNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 94,
-    perfectServe: 96,
-    materialStatus: "Complete",
-    shareOfMenu: 31,
-    competitor: "Roku Gin",
-  },
-  {
-    id: "5",
-    name: "Attaboy",
-    address: "Av. de Mayo 825",
-    zone: "San Telmo",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.6215,
-    lng: -58.3732,
-    imported: true,
-    importedAt: "2026-01-12",
-    image:
-      "https://images.unsplash.com/photo-1617524455280-327a0ffc561b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDF8fHx8MTc2NzY4NTc0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 81,
-    perfectServe: 79,
-    materialStatus: "Partial",
-    shareOfMenu: 25,
-    competitor: "Tanqueray",
-  },
-  {
-    id: "6",
-    name: "Dante NYC",
-    address: "Av. Santa Fe 3200",
-    zone: "Palermo",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.5889,
-    lng: -58.4105,
-    imported: true,
-    importedAt: "2026-01-12",
-    image:
-      "https://images.unsplash.com/photo-1674033746275-e898356e0d27?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cHNjYWxlJTIwbmlnaHRjbHVifGVufDF8fHx8MTc2NzczMDcwMXww&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 88,
-    perfectServe: 84,
-    materialStatus: "Complete",
-    shareOfMenu: 27,
-    competitor: "Monkey 47",
-  },
-  {
-    id: "7",
-    name: "Please Don't Tell",
-    address: "Av. Rivadavia 4900",
-    zone: "Caballito",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.6186,
-    lng: -58.4357,
-    imported: true,
-    importedAt: "2026-01-13",
-    image:
-      "https://images.unsplash.com/photo-1739799120521-c5f44a9335a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzcGVha2Vhc3klMjBiYXJ8ZW58MXx8fHwxNzY3NzMwNzAyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 76,
-    perfectServe: 68,
-    materialStatus: "Missing",
-    shareOfMenu: 15,
-    competitor: "Aviation Gin",
-  },
-  {
-    id: "8",
-    name: "Death & Co",
-    address: "Av. Juan B. Justo",
-    zone: "Villa Crespo",
-    channel: "Bar",
-    city: "Buenos Aires",
-    lat: -34.5954,
-    lng: -58.4398,
-    imported: true,
-    importedAt: "2026-01-13",
-    image:
-      "https://images.unsplash.com/photo-1617524455280-327a0ffc561b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDF8fHx8MTc2NzY4NTc0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-    brandPresence: 90,
-    perfectServe: 87,
-    materialStatus: "Complete",
-    shareOfMenu: 29,
-    competitor: "Tanqueray",
-  },
-];
-
 export function OpportunityMap({
   filter: externalFilter,
   onFilterChange: externalOnFilterChange,
@@ -235,7 +79,7 @@ export function OpportunityMap({
       try {
         const { data, error } = await supabase
           .from('btl_puntos_venta')
-          .select('id, nombre, direccion, zona, canal, ciudad, latitud, longitud')
+          .select('id, nombre, direccion, region:region_id(nombre), tipo, ciudad, latitud, longitud')
           .order('nombre');
 
         if (error) throw error;
@@ -245,8 +89,8 @@ export function OpportunityMap({
             id: String(v.id),
             name: v.nombre,
             address: v.direccion || '',
-            zone: v.zona || '',
-            channel: v.canal || '',
+            zone: v.region?.nombre || '', // Map region name from relation
+            channel: v.tipo || '', // Map tipo to channel
             city: v.ciudad || '',
             lat: v.latitud || null,
             lng: v.longitud || null,
@@ -256,13 +100,13 @@ export function OpportunityMap({
           setImportedVenues(mapped);
           console.log('📍 Loaded', mapped.length, 'venues from DB for map');
         } else {
-          // No venues in DB yet — show demo data as placeholder
-          console.log('📍 No venues in DB, using demo venues for map');
-          setImportedVenues(DEMO_VENUES);
+          // No venues in DB yet
+          console.log('📍 No venues in DB');
+          setImportedVenues([]);
         }
       } catch (err) {
         console.error('Error loading venues from DB:', err);
-        setImportedVenues(DEMO_VENUES);
+        setImportedVenues([]);
       }
     };
 
