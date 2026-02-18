@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { 
-  GraduationCap, Plus, Edit2, Trash2, Search, X, Check, 
+import {
+  GraduationCap, Plus, Edit2, Trash2, Search, X, Check,
   Calendar, Users, MapPin, Clock, Award, TrendingUp,
   CheckCircle, XCircle, AlertCircle, FileText
 } from 'lucide-react';
@@ -41,7 +41,11 @@ interface Training {
   costo_total?: number;
 }
 
-export function TrainingManagement() {
+interface TrainingManagementProps {
+  session?: any;
+}
+
+export function TrainingManagement({ session }: TrainingManagementProps) {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -96,14 +100,19 @@ export function TrainingManagement() {
 
   const handleSaveTraining = async (training: Training) => {
     try {
-      // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Obtener usuario actual (usar session si existe, sino getUser)
+      let userId = session?.user?.id;
+
+      if (!userId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        userId = user.id;
+      }
 
       const { data: btlUser } = await supabase
         .from('btl_usuarios')
         .select('id')
-        .eq('auth_user_id', user.id)
+        .eq('auth_user_id', userId)
         .single();
 
       if (training.id) {
@@ -183,7 +192,7 @@ export function TrainingManagement() {
 
   const filteredTrainings = trainings.filter(t => {
     const matchesSearch = t.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         t.instructor_nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      t.instructor_nombre.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || t.estado === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -308,14 +317,14 @@ export function TrainingManagement() {
                         </div>
                         {getStatusBadge(training.estado)}
                       </div>
-                      
+
                       <div className="flex items-center gap-4 mt-3 text-sm">
                         <div className="flex items-center gap-1.5 text-slate-400">
                           <Calendar className="w-4 h-4" />
-                          {new Date(training.fecha_inicio).toLocaleDateString('es-MX', { 
-                            day: '2-digit', 
-                            month: 'short', 
-                            year: 'numeric' 
+                          {new Date(training.fecha_inicio).toLocaleDateString('es-MX', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
                           })}
                         </div>
                         <div className="flex items-center gap-1.5 text-slate-400">

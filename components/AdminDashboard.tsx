@@ -7,7 +7,7 @@ import { VenueManager } from './VenueManager';
 import { ClientProductManagement } from './ClientProductManagement';
 import { ProductManagement } from './ProductManagement';
 import { PendingUsersManagement } from './PendingUsersManagement';
-import { TrainingManagementAdmin } from './TrainingManagementAdmin';
+import { TrainingManagement } from './TrainingManagement';
 import { RegionManager } from './RegionManager';
 import { supabase } from '../utils/supabase/client';
 
@@ -315,7 +315,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             </div>
           )}
           {activeTab === 'pending' && <PendingUsersManagement session={session} onUpdate={() => { loadStats(); loadPendingCount(); }} />}
-          {activeTab === 'trainings' && <TrainingManagementAdmin session={session} />}
+          {activeTab === 'trainings' && <TrainingManagement session={session} />}
         </>
       )}
     </main>
