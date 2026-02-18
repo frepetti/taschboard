@@ -33,7 +33,7 @@ import { Toaster } from 'sonner';
         get() {
           return blockedValue;
         },
-        set(value) {
+        set(_value) {
           // Silently ignore any attempts to set the property
           console.log(`🚫 Blocked attempt to inject ${prop}`);
           return true;
@@ -654,17 +654,28 @@ function LandingPage() {
 
 // Inspector App Component - USANDO HOOK
 function InspectorAppContent() {
-  const { session, loading, signOut } = useAuth();
+  const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
   }
 
   // Check if user has inspector role OR admin role (admins can access all views)
-  const isInspector = session?.user?.user_metadata?.role === 'inspector';
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+  const isInspector = dbRole === 'inspector';
+  const isAdmin = dbRole === 'admin';
 
-  if (!session || (!isInspector && !isAdmin)) {
+  if (!session || roleLoading) {
+    if (!session && !loading) {
+      return (
+        <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
+          <InspectorAuth onAuthSuccess={() => { }} />
+        </Suspense>
+      );
+    }
+    return <LoadingScreen message="Verificando permisos..." />;
+  }
+
+  if (!isInspector && !isAdmin) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
         <InspectorAuth onAuthSuccess={() => { }} />
@@ -689,7 +700,7 @@ function InspectorAppContent() {
               <div>
                 <h1 className="text-lg text-white font-semibold">Inspector Dashboard</h1>
                 <p className="text-xs text-slate-400">
-                  {session.user.user_metadata?.name || session.user.email}
+                  {dbUser?.nombre || session.user.email}
                   {isAdmin && <span className="ml-2 px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded text-xs">Admin</span>}
                 </p>
               </div>
@@ -722,23 +733,31 @@ function InspectorAppContent() {
   );
 }
 
-function InspectorApp() {
-  return <InspectorAppContent />;
-}
 
 // Client App Component - USANDO HOOK
 function ClientAppContent() {
-  const { session, loading, signOut } = useAuth();
+  const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
   }
 
   // Check if user has client role OR admin role (admins can access all views)
-  const isClient = session?.user?.user_metadata?.role === 'client';
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+  const isClient = dbRole === 'client';
+  const isAdmin = dbRole === 'admin';
 
-  if (!session || (!isClient && !isAdmin)) {
+  if (!session || roleLoading) {
+    if (!session && !loading) {
+      return (
+        <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
+          <ClientAuth onAuthSuccess={() => { }} />
+        </Suspense>
+      );
+    }
+    return <LoadingScreen message="Verificando permisos..." />;
+  }
+
+  if (!isClient && !isAdmin) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
         <ClientAuth onAuthSuccess={() => { }} />
@@ -763,7 +782,7 @@ function ClientAppContent() {
               <div>
                 <h1 className="text-lg text-white font-semibold">Dashboard Cliente</h1>
                 <p className="text-xs text-slate-400">
-                  {session.user.user_metadata?.name || session.user.email}
+                  {dbUser?.nombre || session.user.email}
                   {isAdmin && <span className="ml-2 px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded text-xs">Admin</span>}
                 </p>
               </div>
@@ -796,50 +815,13 @@ function ClientAppContent() {
   );
 }
 
-function ClientApp() {
-  return <ClientAppContent />;
-}
 
 // Admin App Component - USANDO HOOK
 function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null }) {
-  const { session, loading, signOut } = useAuth();
+  const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'admin' | 'inspector' | 'client'>('admin');
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [roleLoading, setRoleLoading] = useState(false);
 
-  // Fetch role from btl_usuarios table (source of truth)
-  useEffect(() => {
-    if (!session?.user?.id) {
-      setIsAdmin(null);
-      return;
-    }
-    console.log('🔍 AdminAppContent: Fetching role for auth_user_id:', session.user.id);
-    setRoleLoading(true);
-    supabase
-      .from('btl_usuarios')
-      .select('rol, estado_aprobacion, email, auth_user_id')
-      .eq('auth_user_id', session.user.id)
-      .single()
-      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string; email: string; auth_user_id: string } | null; error: any }) => {
-        console.log('📊 btl_usuarios query result:', { data, error });
-        if (error) {
-          console.error('❌ Role query error - code:', error.code, 'message:', error.message, 'details:', error.details);
-          // If PGRST116 = no rows found, user not in btl_usuarios
-          if (error.code === 'PGRST116') {
-            console.error('❌ No row found in btl_usuarios for this auth_user_id. Run fix_admin_user.sql in Supabase.');
-          }
-          setIsAdmin(false);
-        } else if (!data) {
-          console.error('❌ No data returned from btl_usuarios');
-          setIsAdmin(false);
-        } else {
-          const adminOk = data.rol === 'admin' && data.estado_aprobacion === 'approved';
-          console.log('🔑 Role check from DB:', { rol: data.rol, estado: data.estado_aprobacion, email: data.email, adminOk });
-          setIsAdmin(adminOk);
-        }
-        setRoleLoading(false);
-      });
-  }, [session?.user?.id]);
+  const isAdmin = dbRole === 'admin' && dbUser?.estado_aprobacion === 'approved';
 
   // Show auth loading screen only while Supabase session is being fetched
   if (loading) {
@@ -859,7 +841,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
   }
 
   // Session exists but role not yet fetched → show loading
-  if (roleLoading || isAdmin === null) {
+  if (roleLoading || dbRole === null) {
     return <LoadingScreen message="Verificando permisos..." />;
   }
 
@@ -921,7 +903,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
                   {currentView === 'client' && 'Vista Cliente (Admin)'}
                 </h1>
                 <p className="text-xs text-slate-400 truncate">
-                  {session.user.user_metadata?.name || session.user.email}
+                  {dbUser?.nombre || session.user.email}
                 </p>
               </div>
             </div>
@@ -982,9 +964,6 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
   );
 }
 
-function AdminApp() {
-  return <AdminAppContent />;
-}
 
 // Demo Mode Component
 function DemoApp() {

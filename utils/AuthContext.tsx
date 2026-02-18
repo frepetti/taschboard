@@ -2,15 +2,30 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { supabase } from './supabase/client';
 import type { Session } from '@supabase/supabase-js';
 
+export type UserRole = 'admin' | 'inspector' | 'client' | null;
+
+interface UserDbData {
+  rol: UserRole;
+  estado_aprobacion: string;
+  nombre: string | null;
+  email: string;
+}
+
 interface AuthContextType {
   session: Session | null;
   loading: boolean;
+  dbRole: UserRole;           // Role from btl_usuarios (source of truth)
+  dbUser: UserDbData | null;  // Full user data from btl_usuarios
+  roleLoading: boolean;       // True while fetching role from DB
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
+  dbRole: null,
+  dbUser: null,
+  roleLoading: false,
   signOut: async () => { },
 });
 
@@ -24,15 +39,45 @@ declare global {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dbRole, setDbRole] = useState<UserRole>(null);
+  const [dbUser, setDbUser] = useState<UserDbData | null>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
 
   // Ref to track session state across closures/events without dependencies
-  // This prevents "Session Expired" loops when already on the login screen
   const isSessionActiveRef = useRef(false);
 
   // Sync ref with session state
   useEffect(() => {
     isSessionActiveRef.current = !!session;
   }, [session]);
+
+  // Fetch role from DB whenever session user changes
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setDbRole(null);
+      setDbUser(null);
+      return;
+    }
+
+    setRoleLoading(true);
+    supabase
+      .from('btl_usuarios')
+      .select('rol, estado_aprobacion, nombre, email')
+      .eq('auth_user_id', session.user.id)
+      .single()
+      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string; nombre: string | null; email: string } | null; error: any }) => {
+        if (error || !data) {
+          console.warn('⚠️ AuthContext: Could not fetch DB role for user', session.user.id, error?.message);
+          setDbRole(null);
+          setDbUser(null);
+        } else {
+          console.log('✅ AuthContext: DB role fetched:', data.rol, '| approval:', data.estado_aprobacion);
+          setDbRole(data.rol as UserRole);
+          setDbUser(data as UserDbData);
+        }
+        setRoleLoading(false);
+      });
+  }, [session?.user?.id]);
 
   useEffect(() => {
     // Prevenir múltiples listeners globalmente usando window
@@ -65,15 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Handle session expiry or sign out
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out or session expired');
-        handleSessionExpired(session, false); // Don't show toast for voluntary logout
-      }
-
-      // Handle token expired
-      if (event === 'TOKEN_EXPIRED') {
-        console.log('⏰ Token expired, redirecting to login...');
-        handleSessionExpired(session, true);
+        handleSessionExpired(session, false);
       }
 
       setSession(session);
@@ -82,9 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Handle 401 from API calls
     const handleUnauthorized = () => {
       console.log('🚫 Received auth:unauthorized event, handling expiration...');
-      // Get current session for redirect logic
       supabase.auth.getSession().then(({ data }) => {
-        // Always trigger if we receive an explicit unauthorized event from API
         handleSessionExpired(data.session, true);
       });
     };
@@ -94,13 +131,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check session on window focus/visibility change
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {
-        // Only check if we haven't just processed an event
         console.log('👀 Window visible, checking session...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error || !currentSession) {
-          // IMPORTANT: Only trigger expiration if we thought we were logged in.
-          // This prevents infinite reload loops on the login page.
           if (isSessionActiveRef.current) {
             console.log('❌ Session invalid on resume, logging out...');
             handleSessionExpired(null, true);
@@ -108,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('ℹ️ No session found, but user was already logged out. No action needed.');
           }
         } else {
-          // Verify if token is close to expiry (within 5 mins)
           const expiresAt = currentSession.expires_at || 0;
           const now = Math.floor(Date.now() / 1000);
           if (expiresAt - now < 300) {
@@ -116,7 +149,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const { error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError) {
               console.log('❌ Refresh failed on resume:', refreshError.message);
-              // Only expire if we were logged in
               if (isSessionActiveRef.current) {
                 handleSessionExpired(currentSession, true);
               }
@@ -140,27 +172,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Helper function to handle session expiration
-  const handleSessionExpired = (expiredSession: Session | null, showToast: boolean = true) => {
-    // Clear session state
+  const handleSessionExpired = (_expiredSession: Session | null, showToast: boolean = true) => {
     setSession(null);
+    setDbRole(null);
+    setDbUser(null);
 
-    // Clear any stored data
     localStorage.clear();
     sessionStorage.clear();
 
-    // Determine which login page to redirect to based on user role
-    const role = expiredSession?.user?.user_metadata?.role;
+    // Determine redirect based on current URL mode (since user_metadata.role is unreliable)
     const currentParams = new URLSearchParams(window.location.search);
     const currentMode = currentParams.get('mode');
 
-    // If we can determine the role from session or current URL mode, redirect there
     let redirectPath = '/';
-
-    if (role === 'inspector' || currentMode === 'inspector') {
+    if (currentMode === 'inspector') {
       redirectPath = '/?mode=inspector';
-    } else if (role === 'client' || currentMode === 'client') {
+    } else if (currentMode === 'client') {
       redirectPath = '/?mode=client';
-    } else if (role === 'admin' || currentMode === 'admin') {
+    } else if (currentMode === 'admin') {
       redirectPath = '/?mode=admin';
     }
 
@@ -177,9 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (showToast) {
-      // Show notification to user
       const showExpirationNotice = () => {
-        // Create a temporary toast notification
         const toast = document.createElement('div');
         toast.innerHTML = `
             <div style="
@@ -208,24 +235,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             </div>
           `;
 
-        // Add animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideDown {
-              from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-20px);
-              }
-              to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-              }
+              from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+              to { opacity: 1; transform: translateX(-50%) translateY(0); }
             }
           `;
         document.head.appendChild(style);
         document.body.appendChild(toast);
 
-        // Remove after 3 seconds
         setTimeout(() => {
           toast.remove();
           style.remove();
@@ -235,8 +254,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     console.log('🔄 Redirecting to login page:', redirectPath);
-
-    // Redirect after showing the notice
     setTimeout(() => {
       window.location.href = redirectPath;
     }, 1000);
@@ -245,10 +262,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
+    setDbRole(null);
+    setDbUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, signOut }}>
+    <AuthContext.Provider value={{ session, loading, dbRole, dbUser, roleLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

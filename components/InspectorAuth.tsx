@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Loader2, Eye, Lock, AlertCircle, LogIn, ArrowLeft, UserPlus, Sparkles, Mail } from 'lucide-react';
+import { Lock, AlertCircle, ArrowLeft, Sparkles, Mail } from 'lucide-react';
 import { authAPI } from '../utils/api';
 
 interface InspectorAuthProps {
@@ -56,7 +56,7 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false, 
+          shouldCreateUser: false,
         }
       });
 
@@ -141,43 +141,40 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
         return;
       }
 
-      // Verify role is inspector
-      if (data.session && data.session.user.user_metadata?.role !== 'inspector') {
+      // Verify role is inspector via DB (user_metadata.role is not reliable)
+      const { data: roleData, error: roleError } = await supabase
+        .from('btl_usuarios')
+        .select('rol, estado_aprobacion')
+        .eq('auth_user_id', data.user.id)
+        .single() as { data: { rol: string; estado_aprobacion: string } | null; error: any };
+
+      if (roleError || !roleData) {
+        setError('Error al verificar el rol de la cuenta. Por favor contacta al administrador.');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
+      if (roleData.rol !== 'inspector') {
         setError('Acceso denegado. Esta cuenta no está registrada como inspector.');
         await supabase.auth.signOut();
         setLoading(false);
         return;
       }
 
-      // Check approval status in btl_usuarios
-      if (data.user) {
-        const { data: userData, error: userError } = await supabase
-          .from('btl_usuarios')
-          .select('estado_aprobacion')
-          .eq('email', data.user.email)
-          .single();
+      // Check approval status
+      if (roleData.estado_aprobacion === 'pending') {
+        setError('⏳ Tu cuenta está pendiente de aprobación. Un administrador debe aprobar tu solicitud antes de que puedas acceder.');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
 
-        if (userError) {
-          console.error('Error checking user approval status:', userError);
-          setError('Error al verificar el estado de la cuenta. Por favor contacta al administrador.');
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
-
-        if (userData?.estado_aprobacion === 'pending') {
-          setError('⏳ Tu cuenta está pendiente de aprobación. Un administrador debe aprobar tu solicitud antes de que puedas acceder.');
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
-
-        if (userData?.estado_aprobacion === 'rejected') {
-          setError('❌ Tu solicitud de cuenta fue rechazada. Por favor contacta al administrador para más información.');
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
+      if (roleData.estado_aprobacion === 'rejected') {
+        setError('❌ Tu solicitud de cuenta fue rechazada. Por favor contacta al administrador para más información.');
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
       }
 
       if (data.session) {
@@ -222,12 +219,12 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
 
 ⏳ **Paso 2:** Un administrador revisará y aprobará tu solicitud. Recibirás una notificación cuando puedas acceder.`);
       setLoading(false);
-      
+
       // Clear form
       setEmail('');
       setPassword('');
       setName('');
-      
+
       // Switch to login mode after 5 seconds
       setTimeout(() => {
         setMode('login');
@@ -329,156 +326,156 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
 
           {/* Form */}
           {mode === 'forgot_password' ? (
-             <div className="space-y-4">
-                {resetStep === 'email' ? (
-                  <form onSubmit={handleSendRecoveryCode} className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="tu@empresa.com"
-                        required
-                        className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none flex items-center justify-center gap-2"
-                    >
-                      <Mail className="w-5 h-5" />
-                      <span>{loading ? 'Enviando...' : 'Enviar Código de Acceso'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSkipToOtp}
-                      className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 mt-2"
-                    >
-                      ¿Ya tienes un código? Ingrésalo aquí
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyCode} className="space-y-4">
-                     <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
-                        <p className="text-sm text-blue-300 text-center">
-                           {successMessage || <>Ingresa el código enviado a <strong>{email}</strong></>}
-                        </p>
-                     </div>
-                     <div>
-                      <label className="block text-sm text-slate-300 mb-2">Código de Verificación</label>
-                      <input
-                        type="text"
-                        value={otpToken}
-                        onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                        placeholder="123456"
-                        required
-                        className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-center text-2xl tracking-widest font-mono"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={loading || otpToken.length < 6}
-                      className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-green-500/20 disabled:shadow-none flex items-center justify-center gap-2"
-                    >
-                      <Lock className="w-5 h-5" />
-                      <span>{loading ? 'Validando...' : 'Verificar y Cambiar Password'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setResetStep('email');
-                        setOtpToken('');
-                        setError('');
-                      }}
-                      className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
-                    >
-                      Volver a ingresar email
-                    </button>
-                  </form>
-                )}
-                
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('login');
-                    setResetStep('email');
-                    setError('');
-                    setSuccessMessage('');
-                  }}
-                  className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 border-t border-slate-700/50 mt-4"
-                >
-                  Volver al Login
-                </button>
-             </div>
+            <div className="space-y-4">
+              {resetStep === 'email' ? (
+                <form onSubmit={handleSendRecoveryCode} className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="tu@empresa.com"
+                      required
+                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                  >
+                    <Mail className="w-5 h-5" />
+                    <span>{loading ? 'Enviando...' : 'Enviar Código de Acceso'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkipToOtp}
+                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 mt-2"
+                  >
+                    ¿Ya tienes un código? Ingrésalo aquí
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
+                    <p className="text-sm text-blue-300 text-center">
+                      {successMessage || <>Ingresa el código enviado a <strong>{email}</strong></>}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">Código de Verificación</label>
+                    <input
+                      type="text"
+                      value={otpToken}
+                      onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                      placeholder="123456"
+                      required
+                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-center text-2xl tracking-widest font-mono"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading || otpToken.length < 6}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-green-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                  >
+                    <Lock className="w-5 h-5" />
+                    <span>{loading ? 'Validando...' : 'Verificar y Cambiar Password'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetStep('email');
+                      setOtpToken('');
+                      setError('');
+                    }}
+                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
+                  >
+                    Volver a ingresar email
+                  </button>
+                </form>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login');
+                  setResetStep('email');
+                  setError('');
+                  setSuccessMessage('');
+                }}
+                className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 border-t border-slate-700/50 mt-4"
+              >
+                Volver al Login
+              </button>
+            </div>
           ) : (
-          <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-4">
-            {mode === 'signup' && (
+            <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-4">
+              {mode === 'signup' && (
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Nombre Completo</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Tu nombre"
+                    required={mode === 'signup'}
+                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  />
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Nombre Completo</label>
+                <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
                 <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Tu nombre"
-                  required={mode === 'signup'}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@empresa.com"
+                  required
                   className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                 />
               </div>
-            )}
 
-            <div>
-              <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@empresa.com"
-                required
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-              />
-              {mode === 'signup' && (
-                <p className="text-xs text-slate-500 mt-1">Mínimo 6 caracteres</p>
-              )}
-              {mode === 'login' && (
-                    <div className="flex justify-end mt-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMode('forgot_password');
-                            setError('');
-                            setSuccessMessage('');
-                          }}
-                          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                          ¿Olvidaste tu contraseña?
-                        </button>
-                    </div>
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
+                {mode === 'signup' && (
+                  <p className="text-xs text-slate-500 mt-1">Mínimo 6 caracteres</p>
                 )}
-            </div>
+                {mode === 'login' && (
+                  <div className="flex justify-end mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('forgot_password');
+                        setError('');
+                        setSuccessMessage('');
+                      }}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none"
-            >
-              {loading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none"
+              >
+                {loading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              </button>
+            </form>
           )}
 
           {/* Footer - HIDDEN */}
