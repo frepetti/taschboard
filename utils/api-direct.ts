@@ -13,15 +13,15 @@ import { supabase } from './supabase/client';
 
 async function verifyAuthOrThrow() {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+
   if (authError || !user) {
     console.warn('⚠️ [API Direct] getUser failed, trying to refresh session...', authError);
-    
+
     const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
-    
+
     if (refreshError || !session?.user) {
       console.error('❌ [API Direct] Auth error after refresh:', refreshError);
-      
+
       // Dispatch event to notify AuthContext
       if (typeof window !== 'undefined') {
         console.log('📢 Dispatching auth:unauthorized event from API Direct');
@@ -30,11 +30,11 @@ async function verifyAuthOrThrow() {
 
       throw new Error('No estás autenticado. Por favor inicia sesión nuevamente.');
     }
-    
+
     console.log('✅ [API Direct] Session refreshed, user authenticated:', session.user.email);
     return session.user;
   }
-  
+
   console.log('✅ [API Direct] User authenticated:', user.email);
   return user;
 }
@@ -51,36 +51,36 @@ async function executeWithRetry<T>(
   if (!error) return data;
 
   // Check if it's an auth error (401 or JWT invalid)
-  const isAuthError = 
-    error.code === '401' || 
+  const isAuthError =
+    error.code === '401' ||
     error.code === 'PGRST301' ||
     (error.message && (
-      error.message.includes('JWT') || 
+      error.message.includes('JWT') ||
       error.message.includes('unauthorized') ||
       error.message.includes('session')
     ));
 
   if (isAuthError) {
     console.warn('⚠️ [API Direct] Auth error detected, attempting to refresh session...', error);
-    
+
     // Attempt refresh
     const { data: sessionData, error: refreshError } = await supabase.auth.refreshSession();
-    
+
     if (refreshError || !sessionData.session) {
       console.error('❌ [API Direct] Session refresh failed:', refreshError);
       throw new Error('Unauthorized: Invalid JWT. Please try logging out and logging in again.');
     }
 
     console.log('✅ [API Direct] Session refreshed successfully, retrying query...');
-    
+
     // Retry query
     const { data: retryData, error: retryError } = await queryFn();
-    
+
     if (retryError) {
       console.error('❌ [API Direct] Query failed after refresh:', retryError);
       throw retryError;
     }
-    
+
     return retryData;
   }
 
@@ -110,19 +110,21 @@ export interface Inspection {
  */
 export async function getInspections(): Promise<Inspection[]> {
   console.log('📡 [API Direct] Fetching inspections from Supabase...');
-  
+
   try {
     // Verificar autenticación
     const user = await verifyAuthOrThrow();
 
     // ✅ Obtener el usuario en btl_usuarios
-    const btlUser = await executeWithRetry(async () => 
-      supabase
+    const btlUser = await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_usuarios')
         .select('id, rol')
         .eq('auth_user_id', user.id)
-        .single()
-    );
+        .single();
+
+      return { data: data as any, error };
+    });
 
     if (!btlUser) {
       console.log('⚠️ [API Direct] Usuario no encontrado en btl_usuarios');
@@ -132,16 +134,18 @@ export async function getInspections(): Promise<Inspection[]> {
     console.log('✅ [API Direct] Usuario BTL ID:', btlUser.id, 'Rol:', btlUser.rol);
 
     // Obtener inspecciones del usuario
-    const data = await executeWithRetry(() => 
-      supabase
+    const data = await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_inspecciones')
         .select('*')
         .eq('usuario_id', btlUser.id) // ✅ Usar ID de btl_usuarios
-        .order('fecha_inspeccion', { ascending: false })
-    );
+        .order('fecha_inspeccion', { ascending: false });
+
+      return { data: data as any, error };
+    });
 
     console.log(`✅ [API Direct] Loaded ${data?.length || 0} inspections`);
-    
+
     return data || [];
   } catch (error: any) {
     console.error('❌ [API Direct] Error:', error);
@@ -154,7 +158,7 @@ export async function getInspections(): Promise<Inspection[]> {
  */
 export async function createInspection(inspectionData: Omit<Inspection, 'id' | 'created_at' | 'inspector_id'>) {
   console.log('📡 [API Direct] Creating inspection...');
-  
+
   try {
     // Verificar autenticación
     const user = await verifyAuthOrThrow();
@@ -162,13 +166,15 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
     // ✅ PASO 1: Obtener o crear el usuario en btl_usuarios
     let btlUser;
     try {
-      btlUser = await executeWithRetry(() => 
-        supabase
+      btlUser = await executeWithRetry(async () => {
+        const { data, error } = await supabase
           .from('btl_usuarios')
           .select('id, nombre, rol')
           .eq('auth_user_id', user.id)
-          .single()
-      );
+          .single();
+
+        return { data: data as any, error };
+      });
     } catch (e: any) {
       if (e.code === 'PGRST116') {
         btlUser = null;
@@ -180,9 +186,9 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
     // Si el usuario no existe, crearlo automáticamente
     if (!btlUser) {
       console.log('⚠️ [API Direct] Usuario no existe en btl_usuarios, creando...');
-      
-      btlUser = await executeWithRetry(() => 
-        supabase
+
+      btlUser = await executeWithRetry(async () => {
+        const { data, error } = await supabase
           .from('btl_usuarios')
           .insert({
             auth_user_id: user.id,
@@ -190,10 +196,12 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
             nombre: user.email?.split('@')[0] || 'Inspector',
             rol: 'inspector',
             activo: true
-          })
+          } as any)
           .select('id, nombre, rol')
-          .single()
-      );
+          .single();
+
+        return { data: data as any, error };
+      });
 
       if (!btlUser) {
         throw new Error('No se pudo crear el usuario. Por favor contacta al administrador.');
@@ -208,20 +216,50 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
       rol: btlUser.rol
     });
 
-    // ✅ PASO 2: Crear inspección con el ID correcto de btl_usuarios
-    const data = await executeWithRetry(() => 
-      supabase
+    // ✅ PASO 2: Separar datos de inspección y datos de producto
+    const { productData, ...inspectionFields } = inspectionData as any;
+
+    // ✅ PASO 3: Crear inspección con el ID correcto de btl_usuarios
+    const data = await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_inspecciones')
         .insert({
-          ...inspectionData,
+          ...inspectionFields,
           usuario_id: btlUser.id, // ✅ Usar ID de btl_usuarios, no auth.users
-        })
+        } as any)
         .select()
-        .single()
-    );
+        .single();
+
+      return { data: data as any, error };
+    });
 
     console.log('✅ [API Direct] Inspection created:', data.id);
-    
+
+    // ✅ PASO 4: Guardar datos del producto si existen
+    if (productData && data.id) {
+      console.log('📦 [API Direct] Saving product data for inspection:', data.id);
+
+      const productInsert = {
+        inspeccion_id: data.id,
+        producto_id: productData.producto_id,
+        tiene_producto: productData.tiene_producto,
+        stock_nivel: productData.stock_nivel,
+        tiene_material_pop: productData.tiene_material_pop,
+        observaciones: productData.observaciones
+      };
+
+      await executeWithRetry(async () => {
+        const { data, error } = await supabase
+          .from('btl_inspeccion_productos')
+          .insert(productInsert as any)
+          .select();
+
+        return { data: data as any, error };
+      });
+
+      console.log('✅ [API Direct] Product data saved successfully');
+    }
+
     return data;
   } catch (error: any) {
     console.error('❌ [API Direct] Error:', error);
@@ -252,17 +290,19 @@ export interface Venue {
  */
 export async function getVenues(): Promise<Venue[]> {
   console.log('📡 [API Direct] Fetching venues from Supabase...');
-  
+
   try {
-    const data = await executeWithRetry(() => 
-      supabase
+    const data = await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_puntos_venta')
         .select('*')
-        .order('nombre')
-    );
+        .order('nombre');
+
+      return { data: data as any, error };
+    });
 
     console.log(`✅ [API Direct] Loaded ${data?.length || 0} venues`);
-    
+
     return data || [];
   } catch (error: any) {
     console.error('❌ [API Direct] Error:', error);
@@ -281,10 +321,10 @@ export async function createVenue(venueData: {
   region?: string;
 }): Promise<Venue> {
   console.log('📡 [API Direct] Creating venue...');
-  
+
   try {
-    const data = await executeWithRetry(() => 
-      supabase
+    const data = await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_puntos_venta')
         .insert([{
           nombre: venueData.nombre,
@@ -292,10 +332,12 @@ export async function createVenue(venueData: {
           tipo: venueData.tipo,
           ciudad: venueData.ciudad || 'Sin especificar',
           region: venueData.region || 'Sin especificar',
-        }])
+        }] as any)
         .select()
-        .single()
-    );
+        .single();
+
+      return { data: data as any, error };
+    });
 
     console.log('✅ [API Direct] Venue created:', data.id);
     return data;
@@ -329,7 +371,7 @@ export interface DashboardAnalytics {
  */
 export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   console.log('📡 [API Direct] Fetching dashboard analytics...');
-  
+
   try {
     // Verificar autenticación
     const user = await verifyAuthOrThrow();
@@ -337,13 +379,15 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
     // ✅ Obtener el usuario en btl_usuarios
     let btlUser;
     try {
-      btlUser = await executeWithRetry(() => 
-        supabase
+      btlUser = await executeWithRetry(async () => {
+        const { data, error } = await supabase
           .from('btl_usuarios')
           .select('id')
           .eq('auth_user_id', user.id)
-          .single()
-      );
+          .single();
+
+        return { data: data as any, error };
+      });
     } catch (e: any) {
       if (e.code === 'PGRST116') {
         btlUser = null;
@@ -369,38 +413,40 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
     }
 
     // Obtener todas las inspecciones del usuario
-    const inspections = await executeWithRetry(() => 
-      supabase
+    const inspections = (await executeWithRetry(async () => {
+      const { data, error } = await supabase
         .from('btl_inspecciones')
         .select('*')
-        .eq('usuario_id', btlUser.id) // ✅ Usar ID de btl_usuarios
-    );
+        .eq('usuario_id', btlUser.id); // ✅ Usar ID de btl_usuarios
 
-    const allInspections = inspections || [];
+      return { data: data as any, error };
+    })) as any;
+
+    const allInspections = (inspections || []) as any;
     const totalInspections = allInspections.length;
 
     // Calcular venues únicos
-    const uniqueVenues = new Set(allInspections.map(i => i.punto_venta_id));
+    const uniqueVenues = new Set(allInspections.map((i: any) => i.punto_venta_id));
     const activeVenues = uniqueVenues.size;
 
     // Calcular presencia de marca promedio
     const avgBrandPresence = allInspections.length > 0
-      ? (allInspections.filter(i => i.tiene_producto).length / allInspections.length) * 100
+      ? (allInspections.filter((i: any) => i.tiene_producto).length / allInspections.length) * 100
       : 0;
 
     // Calcular tendencias del último mes
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    
+
     const lastMonthInspections = allInspections.filter(
-      i => new Date(i.fecha_inspeccion) >= oneMonthAgo
+      (i: any) => new Date(i.fecha_inspeccion) >= oneMonthAgo
     );
 
     const twoMonthsAgo = new Date();
     twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
-    
+
     const previousMonthInspections = allInspections.filter(
-      i => new Date(i.fecha_inspeccion) >= twoMonthsAgo && new Date(i.fecha_inspeccion) < oneMonthAgo
+      (i: any) => new Date(i.fecha_inspeccion) >= twoMonthsAgo && new Date(i.fecha_inspeccion) < oneMonthAgo
     );
 
     const inspectionsTrend = previousMonthInspections.length > 0
@@ -409,7 +455,7 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
 
     // Inspecciones recientes
     const recentInspections = allInspections
-      .sort((a, b) => new Date(b.fecha_inspeccion).getTime() - new Date(a.fecha_inspeccion).getTime())
+      .sort((a: any, b: any) => new Date(b.fecha_inspeccion).getTime() - new Date(a.fecha_inspeccion).getTime())
       .slice(0, 10);
 
     console.log('✅ [API Direct] Analytics calculated successfully');
@@ -441,7 +487,7 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
 export async function checkAuthStatus() {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
-    
+
     if (error) {
       console.error('❌ [API Direct] Session error:', error);
       return { authenticated: false, error: error.message };
@@ -453,7 +499,7 @@ export async function checkAuthStatus() {
     }
 
     console.log('✅ [API Direct] Session active:', session.user.email);
-    
+
     return {
       authenticated: true,
       user: {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VenueImporter } from './VenueImporter';
-import { MapPin, Edit2, Trash2, Loader2, Plus, Save, X, Map, Phone, Briefcase, TrendingUp } from 'lucide-react';
+import { MapPin, Edit2, Trash2, Loader2, Plus, Save, X, Map } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
