@@ -4,7 +4,8 @@ import { supabase } from './supabase/client';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const API_BASE_URL = `${supabaseUrl}/functions/v1/make-server-364126c3`;
+const API_FUNCTION_NAME = import.meta.env.VITE_API_FUNCTION_NAME || 'make-server-364126c3';
+const API_BASE_URL = `${supabaseUrl}/functions/v1/${API_FUNCTION_NAME}`;
 
 // ============================================
 // 🔧 CONFIGURACIÓN DE MODO
@@ -35,10 +36,17 @@ export async function apiRequest(
   }
 
   // REAL MODE: Make actual API requests
+  // Auto-fetch the current session token if not provided
+  let token = accessToken;
+  if (!token) {
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token || supabaseAnonKey;
+  }
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     'apikey': supabaseAnonKey,  // Required by Supabase Edge Functions
-    'Authorization': `Bearer ${accessToken || supabaseAnonKey}`,
+    'Authorization': `Bearer ${token}`,
     ...options.headers,
   };
 
@@ -49,6 +57,7 @@ export async function apiRequest(
     let response = await fetch(url, {
       ...options,
       headers,
+      mode: 'cors',
     });
 
     console.log('📡 Server Response status:', response.status);
@@ -371,3 +380,4 @@ export const adminAPI = {
     return apiRequest('/admin/stats', { method: 'GET' }, accessToken);
   },
 };
+

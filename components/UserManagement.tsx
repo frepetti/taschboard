@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Loader2, UserPlus, X, Check, Store, Key } from 'lucide-react';
+import { Search, Edit, Trash2, Loader2, UserPlus, X, Store, Key } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { authAPI, adminAPI } from '../utils/api';
 import { ClientVenueManager } from './ClientVenueManager';
@@ -40,7 +40,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
     try {
       console.log('🔍 Loading users from btl_usuarios...');
       console.log('📝 Current session:', session?.user?.id, session?.user?.email);
-      
+
       const { data, error } = await supabase
         .from('btl_usuarios')
         .select('*')
@@ -50,14 +50,14 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
         console.error('❌ Error loading users:', error);
         throw error;
       }
-      
+
       console.log('👥 Users loaded:', data?.length || 0);
       console.log('📊 Raw users data:', data);
-      
+
       // Format data to match expected structure
       const formattedUsers = (data || []).map((user: any) => ({
         id: user.id,
-        auth_id: user.usuario_id, // Added auth_id for admin API calls
+        auth_id: user.auth_user_id, // auth_user_id is the UUID from auth.users
         name: user.nombre,
         email: user.email,
         role: user.rol,
@@ -65,7 +65,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
         estado_aprobacion: user.estado_aprobacion || 'approved', // Default to approved for legacy users
         created_at: user.created_at
       }));
-      
+
       console.log('✅ Formatted users:', formattedUsers);
       setUsers(formattedUsers);
     } catch (error) {
@@ -85,28 +85,28 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
     // 1. Validate session before attempting operation
     const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-    
+
     if (sessionError || !currentSession) {
-       console.log('❌ Session invalid before delete operation');
-       toast.error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-       // Allow the AuthContext to handle the redirect naturally or force it
-       window.dispatchEvent(new Event('auth:unauthorized'));
-       return;
+      console.log('❌ Session invalid before delete operation');
+      toast.error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+      // Allow the AuthContext to handle the redirect naturally or force it
+      window.dispatchEvent(new Event('auth:unauthorized'));
+      return;
     }
 
     try {
       // Try to use Admin API to delete from Auth + DB
       // We need to use auth_id (the uuid from auth.users) not the profile id
-      const targetId = user.auth_id || user.id; 
-      
+      const targetId = user.auth_id || user.id;
+
       console.log('🗑️ Deleting user via API:', targetId);
-      
+
       const result = await adminAPI.deleteUser(targetId, currentSession.access_token);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Error deleting user');
       }
-      
+
       await loadUsers();
       onUpdate();
       toast.success('Usuario eliminado exitosamente');
@@ -115,12 +115,12 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
       // If it's a 401, we must stop and let the auth handler work
       if (error.message?.includes('Unauthorized')) {
-         return; // AuthContext/api.ts will handle the logout
+        return; // AuthContext/api.ts will handle the logout
       }
-      
+
       console.error('❌ Deletion failed:', error);
       toast.error('Error al eliminar usuario (API): ' + error.message);
-      
+
       /*
       // Fallback: Try direct DB delete if Admin API fails (e.g. 500, 404, or 403 deployment issue)
       // This is crucial for "phantom" users who might not exist in Auth anymore
@@ -146,19 +146,19 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
   const filteredUsers = users.filter(user => {
     // Filter by search query
-    const matchesSearch = 
+    const matchesSearch =
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.role?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Filter by status - handle undefined/null status
     const userStatus = user.estado_aprobacion || 'approved';
     const matchesStatus = statusFilter[userStatus as keyof typeof statusFilter] !== false;
-    
+
     // Filter by role
     const userRole = user.role || 'inspector'; // Default fallback
     const matchesRole = roleFilter[userRole as keyof typeof roleFilter] !== false;
-    
+
     console.log('User filter:', {
       name: user.name,
       estado: userStatus,
@@ -167,7 +167,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
       matchesRole,
       statusFilter
     });
-    
+
     return matchesSearch && matchesStatus && matchesRole;
   });
 
@@ -178,7 +178,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
   const getRoleBadgeStyle = (role: string, isActive: boolean = true) => {
     if (!isActive) return 'bg-transparent text-slate-500 border-slate-700 border hover:border-slate-500';
-    
+
     switch (role) {
       case 'admin':
         return 'bg-purple-500/20 text-purple-400 border-purple-500/30 border';
@@ -197,7 +197,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
   const getStatusBadgeStyle = (status: string, isActive: boolean = true) => {
     if (!isActive) return 'bg-transparent text-slate-500 border-slate-700 border hover:border-slate-500';
-    
+
     switch (status) {
       case 'pending':
         return 'bg-amber-500/20 text-amber-300 border-amber-500/30 border';
@@ -266,30 +266,30 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
       {/* Filters */}
       <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 space-y-4 sm:space-y-0 sm:flex sm:items-start sm:gap-8">
-        
+
         {/* Status Filters */}
         <div className="flex flex-col gap-3">
-            <span className="text-slate-300 text-sm font-medium">Filtrar por estado:</span>
-            <div className="flex flex-wrap items-center gap-2">
-                <button
-                    onClick={() => setStatusFilter({ ...statusFilter, approved: !statusFilter.approved })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('approved', statusFilter.approved)}`}
-                >
-                    Aprobados
-                </button>
-                <button
-                    onClick={() => setStatusFilter({ ...statusFilter, pending: !statusFilter.pending })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('pending', statusFilter.pending)}`}
-                >
-                    Pendientes
-                </button>
-                <button
-                    onClick={() => setStatusFilter({ ...statusFilter, rejected: !statusFilter.rejected })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('rejected', statusFilter.rejected)}`}
-                >
-                    Rechazados
-                </button>
-            </div>
+          <span className="text-slate-300 text-sm font-medium">Filtrar por estado:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setStatusFilter({ ...statusFilter, approved: !statusFilter.approved })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('approved', statusFilter.approved)}`}
+            >
+              Aprobados
+            </button>
+            <button
+              onClick={() => setStatusFilter({ ...statusFilter, pending: !statusFilter.pending })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('pending', statusFilter.pending)}`}
+            >
+              Pendientes
+            </button>
+            <button
+              onClick={() => setStatusFilter({ ...statusFilter, rejected: !statusFilter.rejected })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getStatusBadgeStyle('rejected', statusFilter.rejected)}`}
+            >
+              Rechazados
+            </button>
+          </div>
         </div>
 
         {/* Separator for desktop */}
@@ -297,27 +297,27 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
         {/* Role Filters */}
         <div className="flex flex-col gap-3">
-            <span className="text-slate-300 text-sm font-medium">Filtrar por rol:</span>
-            <div className="flex flex-wrap items-center gap-2">
-                <button
-                    onClick={() => setRoleFilter({ ...roleFilter, admin: !roleFilter.admin })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('admin', roleFilter.admin)}`}
-                >
-                    Admin
-                </button>
-                <button
-                    onClick={() => setRoleFilter({ ...roleFilter, client: !roleFilter.client })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('client', roleFilter.client)}`}
-                >
-                    Cliente
-                </button>
-                <button
-                    onClick={() => setRoleFilter({ ...roleFilter, inspector: !roleFilter.inspector })}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('inspector', roleFilter.inspector)}`}
-                >
-                    Inspector
-                </button>
-            </div>
+          <span className="text-slate-300 text-sm font-medium">Filtrar por rol:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setRoleFilter({ ...roleFilter, admin: !roleFilter.admin })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('admin', roleFilter.admin)}`}
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => setRoleFilter({ ...roleFilter, client: !roleFilter.client })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('client', roleFilter.client)}`}
+            >
+              Cliente
+            </button>
+            <button
+              onClick={() => setRoleFilter({ ...roleFilter, inspector: !roleFilter.inspector })}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${getRoleBadgeStyle('inspector', roleFilter.inspector)}`}
+            >
+              Inspector
+            </button>
+          </div>
         </div>
       </div>
 
@@ -338,8 +338,8 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
-                <tr 
-                  key={user.id} 
+                <tr
+                  key={user.id}
                   className="border-b border-slate-700/30 hover:bg-slate-800/30 cursor-pointer transition-colors"
                   onClick={() => setSelectedUser(user)}
                 >
@@ -349,7 +349,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                   <td className="p-4 text-slate-300">{user.email}</td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleBadge(user.role)}`}>
-                        {user.role === 'admin' ? 'Admin' : user.role === 'inspector' ? 'Inspector' : 'Cliente'}
+                      {user.role === 'admin' ? 'Admin' : user.role === 'inspector' ? 'Inspector' : 'Cliente'}
                     </span>
                   </td>
                   <td className="p-4">
@@ -363,37 +363,37 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSecurityUser(user);
-                            setShowSecurityModal(true);
-                          }}
-                          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-amber-400 transition-colors"
-                          title="Gestionar Contraseña"
-                        >
-                          <Key className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedUser(user);
-                          }}
-                          className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
-                          title="Editar"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteUser(user);
-                          }}
-                          className="p-2 hover:bg-red-600/20 rounded-lg text-red-400 transition-colors"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSecurityUser(user);
+                          setShowSecurityModal(true);
+                        }}
+                        className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-amber-400 transition-colors"
+                        title="Gestionar Contraseña"
+                      >
+                        <Key className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedUser(user);
+                        }}
+                        className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteUser(user);
+                        }}
+                        className="p-2 hover:bg-red-600/20 rounded-lg text-red-400 transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -423,7 +423,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
       )}
 
       {/* Client Venue Manager Modal - REMOVED since it's now inside EditUserModal */}
-      
+
       {/* Security Management Modal */}
       {showSecurityModal && securityUser && (
         <SecurityModal
@@ -450,13 +450,13 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
       {/* Edit User Modal */}
       {selectedUser && (
         <EditUserModal
-            user={selectedUser}
-            onClose={() => setSelectedUser(null)}
-            onSuccess={() => {
-                loadUsers();
-                onUpdate();
-                setSelectedUser(null);
-            }}
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onSuccess={() => {
+            loadUsers();
+            onUpdate();
+            setSelectedUser(null);
+          }}
         />
       )}
     </div>
@@ -488,12 +488,12 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
     } catch (error: any) {
       console.error('Error sending reset code:', error);
       if (error.message?.includes('security purposes') || error.status === 429) {
-         // Extract seconds if available
-         const secondsMatch = error.message.match(/after (\d+) seconds/);
-         const seconds = secondsMatch ? secondsMatch[1] : 'unos';
-         toast.error(`Por seguridad, debes esperar ${seconds} segundos antes de solicitar otro código.`);
+        // Extract seconds if available
+        const secondsMatch = error.message.match(/after (\d+) seconds/);
+        const seconds = secondsMatch ? secondsMatch[1] : 'unos';
+        toast.error(`Por seguridad, debes esperar ${seconds} segundos antes de solicitar otro código.`);
       } else {
-         toast.error('Error al enviar código: ' + error.message);
+        toast.error('Error al enviar código: ' + error.message);
       }
     } finally {
       setLoading(false);
@@ -506,13 +506,13 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
       toast.error('La contraseña debe tener al menos 6 caracteres');
       return;
     }
-    
+
     setLoading(true);
     try {
       if (isSelfUpdate) {
         // Permitir cambio directo si es el propio usuario
-        const { error } = await supabase.auth.updateUser({ 
-          password: manualPassword 
+        const { error } = await supabase.auth.updateUser({
+          password: manualPassword
         });
 
         if (error) throw error;
@@ -527,13 +527,13 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
         const targetId = user.auth_id || user.id;
 
         const result = await adminAPI.updateUser(
-          targetId, 
-          { password: manualPassword }, 
+          targetId,
+          { password: manualPassword },
           session.access_token
         );
 
         if (!result.success) {
-           throw new Error(result.error || 'Error al actualizar contraseña');
+          throw new Error(result.error || 'Error al actualizar contraseña');
         }
 
         toast.success(`Contraseña actualizada para ${user.email}`);
@@ -596,33 +596,33 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
           {/* Option 2: Manual Update (Admin Override) */}
           <div className={`transition-all duration-300 ${showManualInput ? 'opacity-100' : 'opacity-80'}`}>
             {!showManualInput ? (
-               <button 
-                 onClick={() => setShowManualInput(true)}
-                 className="w-full py-2 border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 rounded-lg text-sm transition-colors"
-               >
-                 Establecer contraseña manualmente
-               </button>
+              <button
+                onClick={() => setShowManualInput(true)}
+                className="w-full py-2 border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 rounded-lg text-sm transition-colors"
+              >
+                Establecer contraseña manualmente
+              </button>
             ) : (
               <form onSubmit={handleManualUpdate} className="space-y-3 bg-slate-800/20 p-4 rounded-lg border border-slate-700/50">
                 <div>
-                   <label className="block text-sm text-slate-300 mb-1.5">Nueva Contraseña</label>
-                   <input 
-                      type="text" 
-                      value={manualPassword}
-                      onChange={(e) => setManualPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
-                      className="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-amber-500 text-sm"
-                   />
+                  <label className="block text-sm text-slate-300 mb-1.5">Nueva Contraseña</label>
+                  <input
+                    type="text"
+                    value={manualPassword}
+                    onChange={(e) => setManualPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-amber-500 text-sm"
+                  />
                 </div>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
                     className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm transition-colors"
                   >
                     Cancelar
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     disabled={loading || manualPassword.length < 6}
                     className="flex-1 py-2 bg-amber-600/80 hover:bg-amber-500 text-white rounded text-sm transition-colors font-medium"
@@ -631,10 +631,10 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
                   </button>
                 </div>
                 {!isSelfUpdate && (
-                    <p className="text-[10px] text-red-400 flex items-start gap-1 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
+                  <p className="text-[10px] text-red-400 flex items-start gap-1 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
                     <Store className="w-3 h-3 mt-0.5 shrink-0" />
                     <span>Nota: Solo el propio usuario puede cambiar su contraseña directamente desde aquí. Para otros usuarios, usa el correo de recuperación.</span>
-                    </p>
+                  </p>
                 )}
               </form>
             )}
@@ -646,184 +646,182 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
 }
 
 function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () => void, onSuccess: () => void }) {
-    const [name, setName] = useState(user.name || '');
-    const [role, setRole] = useState(user.role || 'inspector');
-    const [company, setCompany] = useState(user.company || '');
-    const [status, setStatus] = useState(user.estado_aprobacion || 'approved');
-    const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'profile' | 'venues'>('profile');
+  const [name, setName] = useState(user.name || '');
+  const [role, setRole] = useState(user.role || 'inspector');
+  const [company, setCompany] = useState(user.company || '');
+  const [status, setStatus] = useState(user.estado_aprobacion || 'approved');
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'venues'>('profile');
 
-    const handleSave = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const { error } = await supabase
-                .from('btl_usuarios')
-                .update({
-                    nombre: name,
-                    rol: role,
-                    empresa: role === 'client' ? company : null,
-                    estado_aprobacion: status
-                })
-                .eq('id', user.id);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('btl_usuarios')
+        .update({
+          nombre: name,
+          rol: role,
+          empresa: role === 'client' ? company : null,
+          estado_aprobacion: status
+        })
+        .eq('id', user.id);
 
-            if (error) throw error;
-            
-            toast.success('Usuario actualizado correctamente');
-            onSuccess();
-        } catch (error: any) {
-            console.error('Error updating user:', error);
-            toast.error('Error al actualizar usuario');
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (error) throw error;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 shadow-2xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
-                {/* Header */}
-                <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-                    <div>
-                        <h3 className="text-xl text-white font-bold">Editar Usuario</h3>
-                        <p className="text-slate-400 text-sm mt-1">{user.email}</p>
-                    </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+      toast.success('Usuario actualizado correctamente');
+      onSuccess();
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      toast.error('Error al actualizar usuario');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                {/* Tabs (only for clients) */}
-                {role === 'client' && (
-                    <div className="flex border-b border-slate-800 px-6">
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === 'profile' 
-                                    ? 'border-purple-500 text-purple-400' 
-                                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                            }`}
-                        >
-                            Perfil
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('venues')}
-                            className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === 'venues' 
-                                    ? 'border-amber-500 text-amber-400' 
-                                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                            }`}
-                        >
-                            Asignar Venues
-                        </button>
-                    </div>
-                )}
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
-                    {activeTab === 'profile' ? (
-                        <form id="edit-user-form" onSubmit={handleSave} className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-2">Nombre</label>
-                                    <input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-2">Email (Solo lectura)</label>
-                                    <input
-                                        type="text"
-                                        value={user.email}
-                                        disabled
-                                        className="w-full bg-slate-900/50 border border-slate-800 text-slate-500 px-4 py-2.5 rounded-lg cursor-not-allowed"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-2">Rol</label>
-                                    <select
-                                        value={role}
-                                        onChange={(e) => setRole(e.target.value)}
-                                        className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                                    >
-                                        <option value="inspector">Inspector</option>
-                                        <option value="client">Cliente</option>
-                                        <option value="admin">Administrador</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-2">Estado</label>
-                                    <select
-                                        value={status}
-                                        onChange={(e) => setStatus(e.target.value)}
-                                        className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                                    >
-                                        <option value="pending">Pendiente</option>
-                                        <option value="approved">Aprobado</option>
-                                        <option value="rejected">Rechazado</option>
-                                    </select>
-                                </div>
-                                {role === 'client' && (
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-slate-400 mb-2">Empresa</label>
-                                        <input
-                                            type="text"
-                                            value={company}
-                                            onChange={(e) => setCompany(e.target.value)}
-                                            className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="h-full min-h-[400px]">
-                            <ClientVenueManager 
-                                clientId={user.id} 
-                                clientName={user.name} 
-                                embedded={true}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors font-medium"
-                    >
-                        Cancelar
-                    </button>
-                    {activeTab === 'profile' && (
-                        <button
-                            type="submit"
-                            form="edit-user-form"
-                            disabled={loading}
-                            className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
-                        >
-                            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Guardar Cambios
-                        </button>
-                    )}
-                    {activeTab === 'venues' && (
-                         <button
-                            onClick={() => setActiveTab('profile')}
-                            className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors font-medium"
-                         >
-                             Volver al Perfil
-                         </button>
-                    )}
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 shadow-2xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+          <div>
+            <h3 className="text-xl text-white font-bold">Editar Usuario</h3>
+            <p className="text-slate-400 text-sm mt-1">{user.email}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
         </div>
-    );
+
+        {/* Tabs (only for clients) */}
+        {role === 'client' && (
+          <div className="flex border-b border-slate-800 px-6">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'profile'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              Perfil
+            </button>
+            <button
+              onClick={() => setActiveTab('venues')}
+              className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'venues'
+                ? 'border-amber-500 text-amber-400'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              Asignar Venues
+            </button>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {activeTab === 'profile' ? (
+            <form id="edit-user-form" onSubmit={handleSave} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Nombre</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Email (Solo lectura)</label>
+                  <input
+                    type="text"
+                    value={user.email}
+                    disabled
+                    className="w-full bg-slate-900/50 border border-slate-800 text-slate-500 px-4 py-2.5 rounded-lg cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Rol</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  >
+                    <option value="inspector">Inspector</option>
+                    <option value="client">Cliente</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Estado</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                  >
+                    <option value="pending">Pendiente</option>
+                    <option value="approved">Aprobado</option>
+                    <option value="rejected">Rechazado</option>
+                  </select>
+                </div>
+                {role === 'client' && (
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Empresa</label>
+                    <input
+                      type="text"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    />
+                  </div>
+                )}
+              </div>
+            </form>
+          ) : (
+            <div className="h-full min-h-[400px]">
+              <ClientVenueManager
+                clientId={user.id}
+                clientName={user.name}
+                embedded={true}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors font-medium"
+          >
+            Cancelar
+          </button>
+          {activeTab === 'profile' && (
+            <button
+              type="submit"
+              form="edit-user-form"
+              disabled={loading}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              Guardar Cambios
+            </button>
+          )}
+          {activeTab === 'venues' && (
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors font-medium"
+            >
+              Volver al Perfil
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function NewUserModal({ session, onClose, onSuccess }: any) {
+function NewUserModal({ session: _session, onClose, onSuccess }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
