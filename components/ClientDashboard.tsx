@@ -8,9 +8,10 @@ import { VenueTrainingAnalytics } from './VenueTrainingAnalytics';
 interface ClientDashboardProps {
   session: any;
   isDemo?: boolean;
+  isAdmin?: boolean;
 }
 
-export function ClientDashboard({ session, isDemo = false }: ClientDashboardProps) {
+export function ClientDashboard({ session, isDemo = false, isAdmin = false }: ClientDashboardProps) {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showProductMetrics, _setShowProductMetrics] = useState(true);
 
@@ -33,7 +34,7 @@ export function ClientDashboard({ session, isDemo = false }: ClientDashboardProp
       <div className="px-4 md:px-6 lg:px-8 space-y-6">
         {/* Product Metrics Section */}
         {!isDemo && showProductMetrics && (
-          <ProductMetrics />
+          <ProductMetrics isAdmin={isAdmin} />
         )}
 
         {/* Training Analytics Section */}

@@ -26,8 +26,7 @@ interface Product {
 interface ClientProduct {
   id: string;
   producto_id: string;
-  visible_dashboard: boolean;
-  notas: string | null;
+  usuario_id: string;
   btl_productos: Product;
 }
 
@@ -95,9 +94,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
         .select(`
           id,
           producto_id,
-          prioridad,
-          visible_dashboard,
-          notas,
+          usuario_id,
           btl_productos!inner (
             id,
             nombre,
@@ -106,8 +103,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
             presentacion
           )
         `)
-        .eq('usuario_id', selectedClient.id)
-        .order('created_at', { ascending: false });
+        .eq('usuario_id', selectedClient.id);
 
       if (error) throw error;
       setClientProducts((data as any) || []);
@@ -125,8 +121,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
     try {
       const insertData = selectedProductsToAdd.map((productId) => ({
         usuario_id: selectedClient.id,
-        producto_id: productId,
-        visible_dashboard: true
+        producto_id: productId
       }));
 
       const { error } = await supabase
@@ -320,21 +315,6 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                             </button>
                           </div>
 
-                          {/* Controls */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                            <div>
-                              <label className="block text-xs text-slate-400 mb-1">Dashboard</label>
-                              <button
-                                onClick={() => handleUpdateProduct(cp.id, { visible_dashboard: !cp.visible_dashboard })}
-                                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${cp.visible_dashboard
-                                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500/30'
-                                  : 'bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-700'
-                                  }`}
-                              >
-                                {cp.visible_dashboard ? 'Visible' : 'Oculto'}
-                              </button>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>

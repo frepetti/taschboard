@@ -25,7 +25,11 @@ interface Product {
   marca: string;
 }
 
-export function ProductMetrics() {
+interface ProductMetricsProps {
+  isAdmin?: boolean;
+}
+
+export function ProductMetrics({ isAdmin = false }: ProductMetricsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [metric, setMetric] = useState<ProductMetric | null>(null);
@@ -46,36 +50,51 @@ export function ProductMetrics() {
     try {
       setLoading(true);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (isAdmin) {
+        // Admin: load ALL active products
+        const { data: productsData, error } = await supabase
+          .from('btl_productos')
+          .select('id, nombre, marca')
+          .eq('activo', true)
+          .order('marca', { ascending: true });
 
-      const { data: btlUser } = await supabase
-        .from('btl_usuarios')
-        .select('id')
-        .eq('auth_user_id', user.id)
-        .single();
+        if (error) throw error;
 
-      if (!btlUser) return;
+        if (productsData && productsData.length > 0) {
+          setProducts(productsData as any);
+          setSelectedProductId((productsData[0] as any).id);
+        }
+      } else {
+        // Client: load only assigned products
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-      // Fetch all products assigned to the client
-      const { data: productsData, error } = await supabase
-        .from('btl_productos')
-        .select(`
-          id,
-          nombre,
-          marca,
-          btl_cliente_productos!inner(visible_dashboard, orden)
-        `)
-        .eq('btl_cliente_productos.usuario_id', (btlUser as any).id)
-        .eq('activo', true)
-        .order('marca', { ascending: true });
+        const { data: btlUser } = await supabase
+          .from('btl_usuarios')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single();
 
-      if (error) throw error;
+        if (!btlUser) return;
 
-      if (productsData && productsData.length > 0) {
-        setProducts(productsData as any);
-        // Auto-select the first product
-        setSelectedProductId((productsData[0] as any).id);
+        const { data: productsData, error } = await supabase
+          .from('btl_productos')
+          .select(`
+            id,
+            nombre,
+            marca,
+            btl_cliente_productos!inner(visible_dashboard, orden)
+          `)
+          .eq('btl_cliente_productos.usuario_id', (btlUser as any).id)
+          .eq('activo', true)
+          .order('marca', { ascending: true });
+
+        if (error) throw error;
+
+        if (productsData && productsData.length > 0) {
+          setProducts(productsData as any);
+          setSelectedProductId((productsData[0] as any).id);
+        }
       }
     } catch (error) {
       console.error('Error loading products:', error);

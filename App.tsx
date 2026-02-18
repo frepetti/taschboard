@@ -874,7 +874,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
       case 'client':
         return (
           <Suspense fallback={<LoadingScreen message="Cargando vista cliente..." />}>
-            <ClientDashboard session={session} isDemo={false} />
+            <ClientDashboard session={session} isDemo={false} isAdmin={true} />
           </Suspense>
         );
       default:
