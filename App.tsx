@@ -801,15 +801,58 @@ function ClientApp() {
 function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null }) {
   const { session, loading, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'admin' | 'inspector' | 'client'>('admin');
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
 
+  // Fetch role from btl_usuarios table (source of truth)
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setIsAdmin(null);
+      return;
+    }
+    setRoleLoading(true);
+    supabase
+      .from('btl_usuarios')
+      .select('rol, estado_aprobacion')
+      .eq('auth_user_id', session.user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          console.warn('⚠️ Could not fetch user role from btl_usuarios:', error?.message);
+          setIsAdmin(false);
+        } else {
+          const adminOk = data.rol === 'admin' && data.estado_aprobacion === 'approved';
+          console.log('🔑 Role check from DB:', data.rol, data.estado_aprobacion, '→ isAdmin:', adminOk);
+          setIsAdmin(adminOk);
+        }
+        setRoleLoading(false);
+      });
+  }, [session?.user?.id]);
+
+  // Show auth loading screen only while Supabase session is being fetched
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Cargando sesión..." />;
   }
 
-  // Check if user has admin role
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
+  // No session → show login immediately, no need to check role
+  if (!session) {
+    return (
+      <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
+        <AdminAuth onAuthSuccess={() => {
+          console.log('✅ Admin login successful, reloading page...');
+          window.location.reload();
+        }} />
+      </Suspense>
+    );
+  }
 
-  if (!session || !isAdmin) {
+  // Session exists but role not yet fetched → show loading
+  if (roleLoading || isAdmin === null) {
+    return <LoadingScreen message="Verificando permisos..." />;
+  }
+
+  // Session exists but user is not admin → show login
+  if (!isAdmin) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
         <AdminAuth onAuthSuccess={() => {
@@ -891,8 +934,8 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               <button
                 onClick={() => setCurrentView('admin')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'admin'
-                    ? 'bg-purple-600 text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  ? 'bg-purple-600 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
                 <span className="text-base">⚙️</span>
@@ -901,8 +944,8 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               <button
                 onClick={() => setCurrentView('inspector')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'inspector'
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
                 <span className="text-base">📋</span>
@@ -911,8 +954,8 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               <button
                 onClick={() => setCurrentView('client')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'client'
-                    ? 'bg-amber-600 text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  ? 'bg-amber-600 text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
                 <span className="text-base">📊</span>
