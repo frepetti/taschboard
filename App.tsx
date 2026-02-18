@@ -10,21 +10,21 @@ import { Toaster } from 'sonner';
 // ULTRA-AGGRESSIVE EXTENSION BLOCKING
 // ============================================
 // This must run IMMEDIATELY before any other code
-(function() {
+(function () {
   'use strict';
-  
+
   // 1. Block ethereum provider BEFORE MetaMask can inject it
   const blockProviderProperty = (prop) => {
     try {
       // Check if property already exists
       const descriptor = Object.getOwnPropertyDescriptor(window, prop);
-      
+
       // If it already exists and is not configurable, skip it
       if (descriptor && descriptor.configurable === false) {
         console.log(`⚠️ Property ${prop} already locked, cannot override`);
         return;
       }
-      
+
       let blockedValue = undefined;
       Object.defineProperty(window, prop, {
         get() {
@@ -56,7 +56,7 @@ import { Toaster } from 'sonner';
 
   // 2. Intercept and block MetaMask's connection attempts
   const originalDispatchEvent = EventTarget.prototype.dispatchEvent;
-  EventTarget.prototype.dispatchEvent = function(event) {
+  EventTarget.prototype.dispatchEvent = function (event) {
     // Block MetaMask events
     if (event.type && (
       event.type.includes('metamask') ||
@@ -71,7 +71,7 @@ import { Toaster } from 'sonner';
 
   // 3. Block addEventListener for MetaMask events
   const originalAddEventListener = EventTarget.prototype.addEventListener;
-  EventTarget.prototype.addEventListener = function(type, listener, options) {
+  EventTarget.prototype.addEventListener = function (type, listener, options) {
     if (type && (
       type.includes('metamask') ||
       type.includes('ethereum') ||
@@ -86,7 +86,7 @@ import { Toaster } from 'sonner';
 
   // 4. Override fetch to block MetaMask API calls
   const originalFetch = window.fetch;
-  window.fetch = function(...args) {
+  window.fetch = function (...args) {
     const url = args[0];
     if (typeof url === 'string' && (
       url.includes('metamask') ||
@@ -109,9 +109,9 @@ import { Toaster } from 'sonner';
       connect: () => {
         console.log('🚫 Blocked chrome.runtime.connect');
         return {
-          postMessage: () => {},
-          disconnect: () => {},
-          onMessage: { addListener: () => {} }
+          postMessage: () => { },
+          disconnect: () => { },
+          onMessage: { addListener: () => { } }
         };
       },
       onMessage: {
@@ -141,7 +141,7 @@ if (typeof window !== 'undefined') {
   // 1. Suppress all extension-related errors
   const originalConsoleError = console.error;
   const originalConsoleWarn = console.warn;
-  
+
   console.error = (...args: any[]) => {
     const errorString = args.join(' ').toLowerCase();
     const extensionKeywords = [
@@ -161,13 +161,13 @@ if (typeof window !== 'undefined') {
       'provider',
       'injected'
     ];
-    
+
     // Suppress if error contains extension-related keywords
     if (extensionKeywords.some(keyword => errorString.includes(keyword))) {
       // Completely silent - don't even log
       return;
     }
-    
+
     originalConsoleError.apply(console, args);
   };
 
@@ -181,11 +181,11 @@ if (typeof window !== 'undefined') {
       'web3',
       'ethereum'
     ];
-    
+
     if (extensionKeywords.some(keyword => warnString.includes(keyword))) {
       return;
     }
-    
+
     originalConsoleWarn.apply(console, args);
   };
 
@@ -194,14 +194,14 @@ if (typeof window !== 'undefined') {
     try {
       // First, try to get the current descriptor
       const descriptor = Object.getOwnPropertyDescriptor(window, prop);
-      
+
       // If property already exists and is not configurable, we can't override it
       // Just log and move on
       if (descriptor && descriptor.configurable === false) {
         console.log(`⚠️ Property ${prop} already defined as non-configurable, skipping`);
         return;
       }
-      
+
       // Try to delete first if it exists
       if (prop in window) {
         try {
@@ -210,7 +210,7 @@ if (typeof window !== 'undefined') {
           // Can't delete, try to override
         }
       }
-      
+
       // Now define our blocking property
       Object.defineProperty(window, prop, {
         get() {
@@ -303,14 +303,14 @@ if (typeof window !== 'undefined') {
       console.log('🚫 Blocked extension message:', event.origin);
       return;
     }
-    
+
     // Also block if message data contains MetaMask-related content
     if (event.data && typeof event.data === 'object') {
       const dataStr = JSON.stringify(event.data).toLowerCase();
-      if (dataStr.includes('metamask') || 
-          dataStr.includes('ethereum') || 
-          dataStr.includes('wallet_') ||
-          dataStr.includes('eth_')) {
+      if (dataStr.includes('metamask') ||
+        dataStr.includes('ethereum') ||
+        dataStr.includes('wallet_') ||
+        dataStr.includes('eth_')) {
         event.stopImmediatePropagation();
         console.log('🚫 Blocked MetaMask message');
         return;
@@ -321,7 +321,7 @@ if (typeof window !== 'undefined') {
   // 5. Prevent extension content scripts from accessing our app data
   try {
     const descriptor = Object.getOwnPropertyDescriptor(window, 'postMessage');
-    
+
     // Only override if it's configurable
     if (descriptor && descriptor.configurable === false) {
       console.log('⚠️ postMessage already locked, cannot override');
@@ -332,14 +332,14 @@ if (typeof window !== 'undefined') {
             // Block MetaMask-related messages
             if (args[0] && typeof args[0] === 'object') {
               const msgStr = JSON.stringify(args[0]).toLowerCase();
-              if (msgStr.includes('metamask') || 
-                  msgStr.includes('ethereum') ||
-                  msgStr.includes('wallet_')) {
+              if (msgStr.includes('metamask') ||
+                msgStr.includes('ethereum') ||
+                msgStr.includes('wallet_')) {
                 console.log('🚫 Blocked MetaMask postMessage');
                 return;
               }
             }
-            
+
             // Only allow postMessage from same origin
             if (args[1] && args[1] !== window.location.origin && args[1] !== '*') {
               console.log('🚫 Blocked cross-origin postMessage');
@@ -390,7 +390,7 @@ if (typeof window !== 'undefined') {
   // 8. Prevent MetaMask detection completely
   Object.defineProperty(window, 'isMetaMask', {
     get() { return false; },
-    set() {},
+    set() { },
     configurable: false
   });
 
@@ -464,21 +464,21 @@ function EmailConfirmationHandler() {
 
         if (data.session) {
           setStatus('success');
-          
+
           if (type === 'recovery') {
-             // Set recovery lock to prevent dashboard access
-             sessionStorage.setItem('recovery_pending', 'true');
-             
-             setMessage('¡Identidad verificada! Redirigiendo para cambiar contraseña...');
-             setTimeout(() => {
-                // Force reload to apply the router lock
-                window.location.href = '/?mode=update_password';
-             }, 1500);
-             return;
+            // Set recovery lock to prevent dashboard access
+            sessionStorage.setItem('recovery_pending', 'true');
+
+            setMessage('¡Identidad verificada! Redirigiendo para cambiar contraseña...');
+            setTimeout(() => {
+              // Force reload to apply the router lock
+              window.location.href = '/?mode=update_password';
+            }, 1500);
+            return;
           }
-          
+
           setMessage('¡Email confirmado exitosamente! Redirigiendo...');
-          
+
           // Redirect based on user role
           const role = data.session.user.user_metadata?.role;
           setTimeout(() => {
@@ -512,7 +512,7 @@ function EmailConfirmationHandler() {
             <p className="text-slate-400">{message}</p>
           </>
         )}
-        
+
         {status === 'success' && (
           <>
             <div className="w-16 h-16 rounded-xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
@@ -522,7 +522,7 @@ function EmailConfirmationHandler() {
             <p className="text-slate-400">{message}</p>
           </>
         )}
-        
+
         {status === 'error' && (
           <>
             <div className="w-16 h-16 rounded-xl bg-red-500/20 flex items-center justify-center mx-auto mb-6">
@@ -634,7 +634,7 @@ function LandingPage() {
         {/* Footer */}
         <div className="text-center mt-12 text-slate-500 text-sm">
           <p>© 2026 Brand Monitor. Trade Marketing Intelligence Platform.</p>
-          
+
           {/* Hidden Admin Link */}
           <button
             onClick={() => window.location.href = '/?mode=admin'}
@@ -664,7 +664,7 @@ function InspectorAppContent() {
   if (!session || (!isInspector && !isAdmin)) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
-        <InspectorAuth onAuthSuccess={() => {}} />
+        <InspectorAuth onAuthSuccess={() => { }} />
       </Suspense>
     );
   }
@@ -738,7 +738,7 @@ function ClientAppContent() {
   if (!session || (!isClient && !isAdmin)) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
-        <ClientAuth onAuthSuccess={() => {}} />
+        <ClientAuth onAuthSuccess={() => { }} />
       </Suspense>
     );
   }
@@ -812,7 +812,10 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
   if (!session || !isAdmin) {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando autenticación..." />}>
-        <AdminAuth onAuthSuccess={() => {}} />
+        <AdminAuth onAuthSuccess={() => {
+          console.log('✅ Admin login successful, reloading page...');
+          window.location.reload();
+        }} />
       </Suspense>
     );
   }
@@ -867,10 +870,10 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2 shrink-0">
               <LanguageSwitcher />
-              
+
               {/* Logout Button */}
               <button
                 onClick={handleSignOut}
@@ -881,39 +884,36 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               </button>
             </div>
           </div>
-          
+
           {/* View Selector Buttons Row */}
           <div className="flex items-center justify-center sm:justify-start">
             <div className="inline-flex items-center gap-1 sm:gap-2 bg-slate-800/50 border border-slate-700/50 rounded-lg p-1">
               <button
                 onClick={() => setCurrentView('admin')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  currentView === 'admin'
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'admin'
                     ? 'bg-purple-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                }`}
+                  }`}
               >
                 <span className="text-base">⚙️</span>
                 <span className="hidden sm:inline">Admin</span>
               </button>
               <button
                 onClick={() => setCurrentView('inspector')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  currentView === 'inspector'
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'inspector'
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                }`}
+                  }`}
               >
                 <span className="text-base">📋</span>
                 <span className="hidden sm:inline">Inspector</span>
               </button>
               <button
                 onClick={() => setCurrentView('client')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  currentView === 'client'
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'client'
                     ? 'bg-amber-600 text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                }`}
+                  }`}
               >
                 <span className="text-base">📊</span>
                 <span className="hidden sm:inline">Cliente</span>
@@ -948,13 +948,13 @@ function DemoApp() {
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-amber-600 to-amber-500 py-2 px-4 text-center">
         <p className="text-white text-sm font-medium">
-          ✨ Modo Demostración - Todos los datos son de ejemplo • 
+          ✨ Modo Demostración - Todos los datos son de ejemplo •
           <button onClick={() => window.location.href = '/'} className="underline ml-2 hover:text-amber-100">
             Crear cuenta para usar datos reales
           </button>
         </p>
       </div>
-      
+
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800/50">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -994,7 +994,7 @@ export default function App() {
     // 1. Check query param
     const params = new URLSearchParams(window.location.search);
     const modeParam = params.get('mode');
-    
+
     // 2. Check path for ticket URL: /admin/tickets/:id
     const path = window.location.pathname;
     const ticketMatch = path.match(/^\/admin\/tickets\/([a-zA-Z0-9-]+)$/);
@@ -1011,10 +1011,10 @@ export default function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <Toaster 
-          theme="dark" 
-          position="top-right" 
-          richColors 
+        <Toaster
+          theme="dark"
+          position="top-right"
+          richColors
           closeButton
           toastOptions={{
             style: {
@@ -1034,7 +1034,7 @@ export default function App() {
 // Internal router that uses the context
 function AppRouter({ mode, ticketId }: { mode: string, ticketId: string | null }) {
   // Route based on mode
-  
+
   // 0. Security: Enforce Password Reset if in recovery mode
   // This prevents the user from accessing the dashboard even if they are technically authenticated via the magic link
   if (typeof window !== 'undefined' && (sessionStorage.getItem('recovery_pending') === 'true' || sessionStorage.getItem('auth_reset_mode') === 'true')) {
@@ -1060,7 +1060,7 @@ function AppRouter({ mode, ticketId }: { mode: string, ticketId: string | null }
   if (mode === 'admin') {
     return <AdminAppContent initialTicketId={ticketId} />;
   }
-  
+
   if (mode === 'update_password') {
     return (
       <Suspense fallback={<LoadingScreen message="Cargando..." />}>

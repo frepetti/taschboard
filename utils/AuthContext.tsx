@@ -11,7 +11,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
-  signOut: async () => {},
+  signOut: async () => { },
 });
 
 // Variable global para rastrear si ya hay un listener activo
@@ -24,7 +24,7 @@ declare global {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Ref to track session state across closures/events without dependencies
   // This prevents "Session Expired" loops when already on the login screen
   const isSessionActiveRef = useRef(false);
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     window.__auth_listener_active__ = true;
-    
+
     console.log('🔐 AuthProvider: Initializing (SINGLE LISTENER)');
 
     // Get initial session
@@ -58,24 +58,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes - ONLY ONE LISTENER FOR THE ENTIRE APP
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state changed:', event, session ? `User: ${session.user.email}` : 'No session');
-      
+
       // Handle token refresh
       if (event === 'TOKEN_REFRESHED') {
         console.log('✅ Token refreshed successfully');
       }
-      
+
       // Handle session expiry or sign out
       if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         console.log('👋 User signed out or session expired');
         handleSessionExpired(session, false); // Don't show toast for voluntary logout
       }
-      
+
       // Handle token expired
       if (event === 'TOKEN_EXPIRED') {
         console.log('⏰ Token expired, redirecting to login...');
         handleSessionExpired(session, true);
       }
-      
+
       setSession(session);
     });
 
@@ -97,15 +97,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Only check if we haven't just processed an event
         console.log('👀 Window visible, checking session...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
+
         if (error || !currentSession) {
           // IMPORTANT: Only trigger expiration if we thought we were logged in.
           // This prevents infinite reload loops on the login page.
           if (isSessionActiveRef.current) {
-             console.log('❌ Session invalid on resume, logging out...');
-             handleSessionExpired(null, true);
+            console.log('❌ Session invalid on resume, logging out...');
+            handleSessionExpired(null, true);
           } else {
-             console.log('ℹ️ No session found, but user was already logged out. No action needed.');
+            console.log('ℹ️ No session found, but user was already logged out. No action needed.');
           }
         } else {
           // Verify if token is close to expiry (within 5 mins)
@@ -118,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.log('❌ Refresh failed on resume:', refreshError.message);
               // Only expire if we were logged in
               if (isSessionActiveRef.current) {
-                  handleSessionExpired(currentSession, true);
+                handleSessionExpired(currentSession, true);
               }
             }
           }
@@ -143,19 +143,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSessionExpired = (expiredSession: Session | null, showToast: boolean = true) => {
     // Clear session state
     setSession(null);
-    
+
     // Clear any stored data
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // Determine which login page to redirect to based on user role
     const role = expiredSession?.user?.user_metadata?.role;
     const currentParams = new URLSearchParams(window.location.search);
     const currentMode = currentParams.get('mode');
-    
+
     // If we can determine the role from session or current URL mode, redirect there
     let redirectPath = '/';
-    
+
     if (role === 'inspector' || currentMode === 'inspector') {
       redirectPath = '/?mode=inspector';
     } else if (role === 'client' || currentMode === 'client') {
@@ -163,25 +163,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else if (role === 'admin' || currentMode === 'admin') {
       redirectPath = '/?mode=admin';
     }
-    
+
     // SMART REDIRECT: Don't reload if we are already at the target
     const currentUrl = new URL(window.location.href);
     const targetUrl = new URL(redirectPath, window.location.origin);
-    
+
     const isSamePath = currentUrl.pathname === targetUrl.pathname;
     const isSameMode = currentUrl.searchParams.get('mode') === targetUrl.searchParams.get('mode');
-    
+
     if (isSamePath && isSameMode) {
-        console.log('ℹ️ Already on the correct login/entry page. Skipping reload.');
-        return; 
+      console.log('ℹ️ Already on the correct login/entry page. Skipping reload.');
+      return;
     }
 
     if (showToast) {
-        // Show notification to user
-        const showExpirationNotice = () => {
-          // Create a temporary toast notification
-          const toast = document.createElement('div');
-          toast.innerHTML = `
+      // Show notification to user
+      const showExpirationNotice = () => {
+        // Create a temporary toast notification
+        const toast = document.createElement('div');
+        toast.innerHTML = `
             <div style="
               position: fixed;
               top: 20px;
@@ -207,10 +207,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           `;
-          
-          // Add animation
-          const style = document.createElement('style');
-          style.textContent = `
+
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
             @keyframes slideDown {
               from {
                 opacity: 0;
@@ -222,20 +222,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           `;
-          document.head.appendChild(style);
-          document.body.appendChild(toast);
-          
-          // Remove after 3 seconds
-          setTimeout(() => {
-            toast.remove();
-            style.remove();
-          }, 3000);
-        };
-        showExpirationNotice();
+        document.head.appendChild(style);
+        document.body.appendChild(toast);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+          toast.remove();
+          style.remove();
+        }, 3000);
+      };
+      showExpirationNotice();
     }
-    
+
     console.log('🔄 Redirecting to login page:', redirectPath);
-    
+
     // Redirect after showing the notice
     setTimeout(() => {
       window.location.href = redirectPath;

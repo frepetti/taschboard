@@ -1,7 +1,8 @@
 -- ==============================================================================
 -- MASTER SCHEMA: BTL DASHBOARD SAAS (Complete Database Reconstruction)
 -- ==============================================================================
--- Fecha: 2026-02-15
+-- Fecha: 2026-02-17
+-- Versión: 2.0 (Fixed RLS Policies & Schema Issues)
 -- Descripción: Script maestro para generar toda la estructura de base de datos.
 --              Incluye tablas, relaciones, políticas RLS, triggers y funciones.
 --              Ejecutar este script en el SQL Editor de Supabase.
@@ -32,7 +33,7 @@ DROP TABLE IF EXISTS btl_usuarios CASCADE;
 -- ==============================================================================
 CREATE TABLE btl_usuarios (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  auth_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
   nombre TEXT NOT NULL,
   rol TEXT NOT NULL CHECK (rol IN ('inspector', 'client', 'admin')),
@@ -42,7 +43,7 @@ CREATE TABLE btl_usuarios (
   
   -- Sistema de Aprobación
   estado_aprobacion TEXT DEFAULT 'pending' CHECK (estado_aprobacion IN ('pending', 'approved', 'rejected')),
-  aprobado_por UUID REFERENCES btl_usuarios(id), -- Self-reference is fine here as it's nullable initially
+  aprobado_por UUID REFERENCES btl_usuarios(id),
   fecha_aprobacion TIMESTAMPTZ,
   nota_rechazo TEXT,
   
@@ -137,7 +138,7 @@ CREATE TABLE btl_capacitaciones (
   material_urls TEXT[],
   certificado_emitido BOOLEAN DEFAULT FALSE,
   temas TEXT[],
-  productos_relacionados UUID[], -- IDs visuales
+  productos_relacionados UUID[],
   costo_total DECIMAL(10,2),
   estado VARCHAR(50) DEFAULT 'programada',
   asistencia_esperada INTEGER,
@@ -182,8 +183,8 @@ CREATE TABLE btl_reportes (
   asignado_a UUID REFERENCES btl_usuarios(id),
   
   -- Clasificación
-  categoria VARCHAR(50) DEFAULT 'general', -- general, capacitacion, accion_btl, material_pop
-  tipo TEXT NOT NULL CHECK (tipo IN ('soporte', 'incidencia', 'mejora', 'consulta', 'Solicitud')), -- 'Solicitud' added for compatibility
+  categoria VARCHAR(50) DEFAULT 'general',
+  tipo TEXT NOT NULL CHECK (tipo IN ('soporte', 'incidencia', 'mejora', 'consulta', 'Solicitud')),
   subcategoria VARCHAR(100),
   prioridad TEXT DEFAULT 'media' CHECK (prioridad IN ('baja', 'media', 'alta', 'critica')),
   estado TEXT DEFAULT 'abierto' CHECK (estado IN ('abierto', 'en_progreso', 'resuelto', 'cerrado')),
@@ -197,7 +198,7 @@ CREATE TABLE btl_reportes (
   
   -- Referencias Contextuales
   punto_venta_id UUID REFERENCES btl_puntos_venta(id),
-  inspeccion_id UUID REFERENCES btl_inspecciones(id), -- Changed from visita_id
+  inspeccion_id UUID REFERENCES btl_inspecciones(id),
   capacitacion_id UUID REFERENCES btl_capacitaciones(id),
   
   -- Datos Específicos (Acciones BTL / POP)
@@ -344,7 +345,7 @@ CREATE TRIGGER trigger_auto_approve_admin
   FOR EACH ROW
   EXECUTE FUNCTION auto_approve_admin();
 
--- 11. ROW LEVEL SECURITY (RLS)
+-- 11. ROW LEVEL SECURITY (RLS) - FIXED VERSION
 -- ==============================================================================
 -- Habilitar RLS en todo
 ALTER TABLE btl_usuarios ENABLE ROW LEVEL SECURITY;
@@ -360,67 +361,258 @@ ALTER TABLE btl_cliente_productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_inspeccion_productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_capacitacion_asistentes ENABLE ROW LEVEL SECURITY;
 
--- POLÍTICAS GENERALES
+-- ==============================================================================
+-- POLÍTICAS RLS - FIXED TO AVOID INFINITE RECURSION
+-- ==============================================================================
 
--- Usuarios: Ver propio perfil o ser Admin
-CREATE POLICY users_read_own ON btl_usuarios FOR SELECT USING (
-  auth.uid() = auth_user_id OR EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin')
-);
-CREATE POLICY users_update_own ON btl_usuarios FOR UPDATE USING (
-  auth.uid() = auth_user_id OR EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin')
-);
--- Nota: La inserción inicial la hace el trigger o service role, pero permitimos insert a authenticated para el flujo de signup si no se usa trigger
-CREATE POLICY users_insert_self ON btl_usuarios FOR INSERT WITH CHECK (auth.uid() = auth_user_id);
+-- Helper function to check if current user is admin (cached, no recursion)
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM btl_usuarios 
+    WHERE auth_user_id = auth.uid() 
+    AND rol = 'admin'
+    AND estado_aprobacion = 'approved'
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
--- Regiones: Todos ven, Admins editan
-CREATE POLICY regiones_read_all ON btl_regiones FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY regiones_admin_all ON btl_regiones FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
+-- Helper function to get current user's btl_usuarios.id
+CREATE OR REPLACE FUNCTION current_user_id()
+RETURNS UUID AS $$
+BEGIN
+  RETURN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid() LIMIT 1);
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
--- Productos: Todos ven, Admins editan
-CREATE POLICY productos_read_all ON btl_productos FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY productos_admin_all ON btl_productos FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
+-- ==============================================================================
+-- USUARIOS: Simple policies without recursion
+-- ==============================================================================
+CREATE POLICY "users_can_read_own_data" ON btl_usuarios
+  FOR SELECT
+  USING (auth.uid() = auth_user_id);
 
--- Venues: Admins ven todo, Clientes ven asignados, Inspectores ven todo (para trabajar)
-CREATE POLICY venues_admin_all ON btl_puntos_venta FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
-CREATE POLICY venues_inspector_read ON btl_puntos_venta FOR SELECT USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'inspector'));
-CREATE POLICY venues_client_read ON btl_puntos_venta FOR SELECT USING (
-  EXISTS (SELECT 1 FROM btl_clientes_venues cv 
-          JOIN btl_usuarios u ON u.id = cv.cliente_id 
-          WHERE u.auth_user_id = auth.uid() AND cv.venue_id = btl_puntos_venta.id)
-);
+CREATE POLICY "admins_can_read_all_users" ON btl_usuarios
+  FOR SELECT
+  USING (is_admin());
 
--- Inspecciones: Admins todo, Clientes ven todas (global dashboard) o filtrado (UI), Inspectores crean/ven
--- Inspecciones: Admins todo, Clientes ven (global dashboard), Inspectores solo propias
-CREATE POLICY inspecciones_admin_all ON btl_inspecciones FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
+CREATE POLICY "users_can_update_own_data" ON btl_usuarios
+  FOR UPDATE
+  USING (auth.uid() = auth_user_id);
 
--- Clientes: Ven todas si son para dashboard global, o restringir si es necesario. 
--- Asumiendo que clientes deben ver todo el panorama:
-CREATE POLICY inspecciones_read_client ON btl_inspecciones FOR SELECT USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'client'));
+CREATE POLICY "admins_can_update_all_users" ON btl_usuarios
+  FOR UPDATE
+  USING (is_admin());
 
--- Inspectores: Solo ven las suyas y crean las suyas
-CREATE POLICY inspecciones_read_own ON btl_inspecciones FOR SELECT USING (usuario_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
-CREATE POLICY inspecciones_create_inspector ON btl_inspecciones FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'inspector') AND
-  usuario_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid())
-);
-CREATE POLICY inspecciones_update_own ON btl_inspecciones FOR UPDATE USING (usuario_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
+CREATE POLICY "users_can_insert_own_data" ON btl_usuarios
+  FOR INSERT
+  WITH CHECK (auth.uid() = auth_user_id);
 
--- Reportes (Tickets): Admins todo, Usuarios ven/crean propios
-CREATE POLICY reportes_admin_all ON btl_reportes FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
-CREATE POLICY reportes_read_own ON btl_reportes FOR SELECT USING (creado_por IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
-CREATE POLICY reportes_create_own ON btl_reportes FOR INSERT WITH CHECK (creado_por IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
+CREATE POLICY "admins_can_delete_users" ON btl_usuarios
+  FOR DELETE
+  USING (is_admin());
 
--- Comentarios Tickets:
-CREATE POLICY comentarios_admin_all ON btl_ticket_comentarios FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
-CREATE POLICY comentarios_read ON btl_ticket_comentarios FOR SELECT USING (
-   usuario_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()) OR
-   (es_interno = FALSE AND EXISTS (SELECT 1 FROM btl_reportes WHERE id = ticket_id AND creado_por IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid())))
-);
-CREATE POLICY comentarios_create ON btl_ticket_comentarios FOR INSERT WITH CHECK (usuario_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
+-- ==============================================================================
+-- REGIONES: Todos ven, Admins editan
+-- ==============================================================================
+CREATE POLICY "regiones_read_all" ON btl_regiones 
+  FOR SELECT 
+  USING (auth.role() = 'authenticated');
 
--- Clientes Venues (Asignación):
-CREATE POLICY clientes_venues_admin_all ON btl_clientes_venues FOR ALL USING (EXISTS (SELECT 1 FROM btl_usuarios WHERE auth_user_id = auth.uid() AND rol = 'admin'));
-CREATE POLICY clientes_venues_read_own ON btl_clientes_venues FOR SELECT USING (cliente_id IN (SELECT id FROM btl_usuarios WHERE auth_user_id = auth.uid()));
+CREATE POLICY "regiones_admin_all" ON btl_regiones 
+  FOR ALL 
+  USING (is_admin());
+
+-- ==============================================================================
+-- PRODUCTOS: Todos ven, Admins editan
+-- ==============================================================================
+CREATE POLICY "productos_read_all" ON btl_productos 
+  FOR SELECT 
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "productos_admin_all" ON btl_productos 
+  FOR ALL 
+  USING (is_admin());
+
+-- ==============================================================================
+-- PUNTOS DE VENTA: Admins todo, Inspectores leen todo, Clientes ven asignados
+-- ==============================================================================
+CREATE POLICY "venues_admin_all" ON btl_puntos_venta 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "venues_inspector_read" ON btl_puntos_venta 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_usuarios 
+      WHERE auth_user_id = auth.uid() 
+      AND rol = 'inspector'
+    )
+  );
+
+CREATE POLICY "venues_client_read_assigned" ON btl_puntos_venta 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_clientes_venues cv
+      WHERE cv.venue_id = btl_puntos_venta.id
+      AND cv.cliente_id = current_user_id()
+    )
+  );
+
+-- ==============================================================================
+-- INSPECCIONES: Admins todo, Clientes ven todas, Inspectores solo propias
+-- ==============================================================================
+CREATE POLICY "inspecciones_admin_all" ON btl_inspecciones 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "inspecciones_client_read_all" ON btl_inspecciones 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_usuarios 
+      WHERE auth_user_id = auth.uid() 
+      AND rol = 'client'
+    )
+  );
+
+CREATE POLICY "inspecciones_inspector_read_own" ON btl_inspecciones 
+  FOR SELECT 
+  USING (usuario_id = current_user_id());
+
+CREATE POLICY "inspecciones_inspector_create" ON btl_inspecciones 
+  FOR INSERT 
+  WITH CHECK (
+    usuario_id = current_user_id() AND
+    EXISTS (
+      SELECT 1 FROM btl_usuarios 
+      WHERE auth_user_id = auth.uid() 
+      AND rol = 'inspector'
+    )
+  );
+
+CREATE POLICY "inspecciones_inspector_update_own" ON btl_inspecciones 
+  FOR UPDATE 
+  USING (usuario_id = current_user_id());
+
+-- ==============================================================================
+-- REPORTES (TICKETS): Admins todo, Usuarios ven/crean propios
+-- ==============================================================================
+CREATE POLICY "reportes_admin_all" ON btl_reportes 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "reportes_read_own" ON btl_reportes 
+  FOR SELECT 
+  USING (creado_por = current_user_id());
+
+CREATE POLICY "reportes_create_own" ON btl_reportes 
+  FOR INSERT 
+  WITH CHECK (creado_por = current_user_id());
+
+CREATE POLICY "reportes_update_own" ON btl_reportes 
+  FOR UPDATE 
+  USING (creado_por = current_user_id());
+
+-- ==============================================================================
+-- COMENTARIOS TICKETS
+-- ==============================================================================
+CREATE POLICY "comentarios_admin_all" ON btl_ticket_comentarios 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "comentarios_read_related" ON btl_ticket_comentarios 
+  FOR SELECT 
+  USING (
+    usuario_id = current_user_id() OR
+    (es_interno = FALSE AND EXISTS (
+      SELECT 1 FROM btl_reportes 
+      WHERE id = ticket_id 
+      AND creado_por = current_user_id()
+    ))
+  );
+
+CREATE POLICY "comentarios_create" ON btl_ticket_comentarios 
+  FOR INSERT 
+  WITH CHECK (usuario_id = current_user_id());
+
+-- ==============================================================================
+-- CLIENTES VENUES (Asignación)
+-- ==============================================================================
+CREATE POLICY "clientes_venues_admin_all" ON btl_clientes_venues 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "clientes_venues_read_own" ON btl_clientes_venues 
+  FOR SELECT 
+  USING (cliente_id = current_user_id());
+
+-- ==============================================================================
+-- CLIENTE PRODUCTOS (Preferencias)
+-- ==============================================================================
+CREATE POLICY "cliente_productos_admin_all" ON btl_cliente_productos 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "cliente_productos_read_own" ON btl_cliente_productos 
+  FOR SELECT 
+  USING (usuario_id = current_user_id());
+
+CREATE POLICY "cliente_productos_manage_own" ON btl_cliente_productos 
+  FOR ALL 
+  USING (usuario_id = current_user_id());
+
+-- ==============================================================================
+-- INSPECCION PRODUCTOS (Detalle)
+-- ==============================================================================
+CREATE POLICY "inspeccion_productos_admin_all" ON btl_inspeccion_productos 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "inspeccion_productos_read" ON btl_inspeccion_productos 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_inspecciones 
+      WHERE id = inspeccion_id 
+      AND (usuario_id = current_user_id() OR is_admin())
+    )
+  );
+
+CREATE POLICY "inspeccion_productos_inspector_manage" ON btl_inspeccion_productos 
+  FOR ALL 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_inspecciones 
+      WHERE id = inspeccion_id 
+      AND usuario_id = current_user_id()
+    )
+  );
+
+-- ==============================================================================
+-- CAPACITACIONES
+-- ==============================================================================
+CREATE POLICY "capacitaciones_read_all" ON btl_capacitaciones 
+  FOR SELECT 
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "capacitaciones_admin_all" ON btl_capacitaciones 
+  FOR ALL 
+  USING (is_admin());
+
+-- ==============================================================================
+-- CAPACITACION ASISTENTES
+-- ==============================================================================
+CREATE POLICY "capacitacion_asistentes_read_own" ON btl_capacitacion_asistentes 
+  FOR SELECT 
+  USING (usuario_id = current_user_id() OR is_admin());
+
+CREATE POLICY "capacitacion_asistentes_admin_all" ON btl_capacitacion_asistentes 
+  FOR ALL 
+  USING (is_admin());
 
 -- 12. DATA SEEDING (BÁSICO)
 -- ==============================================================================
@@ -444,4 +636,4 @@ INSERT INTO btl_regiones (nombre, descripcion) VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 -- 13. FIN
-SELECT 'Base de datos generada exitosamente. Siguiente paso: Crear usuarios en Authentication.' as status;
+SELECT 'Base de datos generada exitosamente con RLS policies corregidas.' as status;
