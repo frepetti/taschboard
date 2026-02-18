@@ -810,19 +810,28 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
       setIsAdmin(null);
       return;
     }
+    console.log('🔍 AdminAppContent: Fetching role for auth_user_id:', session.user.id);
     setRoleLoading(true);
     supabase
       .from('btl_usuarios')
-      .select('rol, estado_aprobacion')
+      .select('rol, estado_aprobacion, email, auth_user_id')
       .eq('auth_user_id', session.user.id)
       .single()
       .then(({ data, error }) => {
-        if (error || !data) {
-          console.warn('⚠️ Could not fetch user role from btl_usuarios:', error?.message);
+        console.log('📊 btl_usuarios query result:', { data, error });
+        if (error) {
+          console.error('❌ Role query error - code:', error.code, 'message:', error.message, 'details:', error.details);
+          // If PGRST116 = no rows found, user not in btl_usuarios
+          if (error.code === 'PGRST116') {
+            console.error('❌ No row found in btl_usuarios for this auth_user_id. Run fix_admin_user.sql in Supabase.');
+          }
+          setIsAdmin(false);
+        } else if (!data) {
+          console.error('❌ No data returned from btl_usuarios');
           setIsAdmin(false);
         } else {
           const adminOk = data.rol === 'admin' && data.estado_aprobacion === 'approved';
-          console.log('🔑 Role check from DB:', data.rol, data.estado_aprobacion, '→ isAdmin:', adminOk);
+          console.log('🔑 Role check from DB:', { rol: data.rol, estado: data.estado_aprobacion, email: data.email, adminOk });
           setIsAdmin(adminOk);
         }
         setRoleLoading(false);
