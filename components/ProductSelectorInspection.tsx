@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase/client';
 
 interface ProductSelectorProps {
   venue: any;
+  clientId?: string; // New prop
   onBack: () => void;
   onProductSelect: (product: any) => void;
 }
@@ -19,7 +20,7 @@ interface Product {
   color_primario: string | null;
 }
 
-export function ProductSelectorInspection({ venue, onBack, onProductSelect }: ProductSelectorProps) {
+export function ProductSelectorInspection({ venue, clientId, onBack, onProductSelect }: ProductSelectorProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,18 +29,52 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [clientId]); // Reload if client changes
 
   const loadProducts = async () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔍 Loading products from btl_productos...');
-      const { data, error: loadError } = await supabase
-        .from('btl_productos')
-        .select('*')
-        .eq('activo', true)
-        .order('orden_visualizacion', { ascending: true });
+      console.log('🔍 Loading products...', clientId ? `for client ${clientId}` : 'all');
+
+      let data: any[] = [];
+      let loadError: any = null;
+
+      if (clientId) {
+        // Load products for specific client
+        const { data: clientProducts, error } = await supabase
+          .from('btl_cliente_productos')
+          .select(`
+            producto_id,
+            btl_productos (
+              *
+            )
+          `)
+          .eq('usuario_id', clientId)
+          .eq('visible_dashboard', true); // Optional: respect visibility
+
+        if (error) {
+          loadError = error;
+        } else if (clientProducts) {
+          // Map response to flat product array
+          data = clientProducts
+            .map((item: any) => item.btl_productos)
+            .filter((p: any) => p && p.activo);
+
+          // Sort manually since we can't easily sort by joined column in one go without complex syntax
+          data.sort((a, b) => (a.orden_visualizacion || 0) - (b.orden_visualizacion || 0));
+        }
+      } else {
+        // Load all active products (fallback/default)
+        const { data: allProducts, error } = await supabase
+          .from('btl_productos')
+          .select('*')
+          .eq('activo', true)
+          .order('orden_visualizacion', { ascending: true });
+
+        data = allProducts || [];
+        loadError = error;
+      }
 
       if (loadError) {
         console.error('❌ Error loading products:', loadError);
@@ -50,7 +85,7 @@ export function ProductSelectorInspection({ venue, onBack, onProductSelect }: Pr
       setProducts(data || []);
 
       if (!data || data.length === 0) {
-        setError('No hay productos disponibles en el sistema. Por favor contacta al administrador para que cargue productos.');
+        setError('No hay productos disponibles para este cliente/selección.');
       }
     } catch (err: any) {
       console.error('❌ Error loading products:', err);

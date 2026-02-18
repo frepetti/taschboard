@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from 'react';
 import { InspectorHeader } from './InspectorHeader';
 import { VenueSelectionForm } from './VenueSelectionForm';
+import { ClientSelectionForm } from './ClientSelectionForm';
 import { ProductSelectorInspection } from './ProductSelectorInspection';
 import { InspectionForm } from './InspectionForm';
 import { InspectionHistory } from './InspectionHistory';
 import { DebugPanel } from './DebugPanel';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getInspections, createInspection } from '../utils/api-direct'; // ✅ Usar API directa
+import { getInspections, createInspection, getUserRole } from '../utils/api-direct'; // ✅ Usar API directa
 import { supabase } from '../utils/supabase/client';
 
 interface InspectorDashboardProps {
@@ -17,17 +19,25 @@ interface InspectorDashboardProps {
 export function InspectorDashboard({ session }: InspectorDashboardProps) {
   const [currentView, setCurrentView] = useState<'new' | 'history'>('new');
   const [selectedVenue, setSelectedVenue] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [inspections, setInspections] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // const accessToken = session.access_token;
 
   // Load inspections on mount
   useEffect(() => {
     loadInspections();
+    loadUserRole();
   }, []);
+
+  const loadUserRole = async () => {
+    const role = await getUserRole();
+    setUserRole(role);
+  };
 
   const loadInspections = async () => {
     setLoading(true);
@@ -55,14 +65,24 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
     setSelectedVenue(venue);
   };
 
+  const handleClientSelect = (client: any) => {
+    setSelectedClient(client);
+  };
+
   const handleProductSelect = (product: any) => {
     setSelectedProduct(product);
   };
 
-  const handleBackToSelection = () => {
+  const handleBackToVenue = () => {
     setSelectedVenue(null);
+    setSelectedClient(null);
     setSelectedProduct(null);
-  };
+  }
+
+  const handleBackToClient = () => {
+    setSelectedClient(null);
+    setSelectedProduct(null);
+  }
 
   const handleBackToProductSelection = () => {
     setSelectedProduct(null);
@@ -70,13 +90,15 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
   const handleSubmitInspection = async (data: any) => {
     try {
-      console.log('📝 [Inspector Dashboard] Submitting inspection via Direct API...');
-      console.log('📦 Selected Product:', selectedProduct);
+      if (!selectedVenue || !selectedProduct) return;
+
+      console.log('📤 Submitting inspection...', data);
 
       // Crear objeto de inspección (Modelo 1:1)
       const inspectionData = {
-        punto_venta_id: selectedVenue.id,
+        venue_id: selectedVenue.id,
         producto_id: selectedProduct.id,
+        inspector_id: session.user.id, // This is auth user id, but API directs maps to btl_user
         fecha_inspeccion: new Date().toISOString(),
 
         // Datos del Producto
@@ -91,8 +113,11 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
         // Otros datos
         temperatura_refrigeracion: data.temperature || null,
-        observaciones: data.notes || '',
+        observaciones: `${data.notes || ''}${data.recommendedActions ? `\n\n[RECOMENDACIONES]\n${data.recommendedActions}` : ''} `.trim(),
         fotos_urls: data.photos || [],
+
+        // Full Details for History
+        detalles: data,
 
         // Default / Placeholder columns introduced in migration
         precio_venta: 0,
@@ -111,6 +136,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
       await loadInspections();
 
       setSelectedVenue(null);
+      setSelectedClient(null);
       setSelectedProduct(null);
     } catch (error: any) {
       console.error('❌ [Inspector Dashboard] Error submitting inspection:', error);
@@ -147,10 +173,16 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
           <>
             {!selectedVenue ? (
               <VenueSelectionForm onVenueSelect={handleVenueSelect} />
+            ) : !selectedClient ? (
+              <ClientSelectionForm
+                onClientSelect={handleClientSelect}
+                onBack={handleBackToVenue}
+              />
             ) : !selectedProduct ? (
               <ProductSelectorInspection
                 venue={selectedVenue}
-                onBack={handleBackToSelection}
+                clientId={selectedClient.id}
+                onBack={handleBackToClient}
                 onProductSelect={handleProductSelect}
               />
             ) : (
@@ -167,6 +199,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
             inspections={inspections}
             onRefresh={loadInspections}
             onBack={() => setCurrentView('new')}
+            userRole={userRole}
           />
         )}
       </main>

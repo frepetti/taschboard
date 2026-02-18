@@ -1,16 +1,44 @@
-import { Clock, MapPin, RefreshCw, CheckCircle, XCircle, ArrowLeft, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Clock, MapPin, RefreshCw, CheckCircle, XCircle, ArrowLeft, Eye, Trash2 } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
+import { deleteInspection } from '../utils/api-direct';
+import { toast } from 'sonner';
 
 interface InspectionHistoryProps {
   inspections: any[];
-  onRefresh?: () => void;
+  onRefresh?: () => void; // Made optional to match existing code usage if any
   onBack?: () => void;
+  userRole?: string | null;
 }
 
-export function InspectionHistory({ inspections, onRefresh, onBack }: InspectionHistoryProps) {
+export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: InspectionHistoryProps) {
   const [selectedInspection, setSelectedInspection] = useState<any>(null);
   const [venueNames, setVenueNames] = useState<Record<string, string>>({});
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedInspection || isDeleting) return;
+
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta inspección? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await deleteInspection(selectedInspection.id);
+      toast.success('Inspección eliminada');
+      setSelectedInspection(null);
+      if (onRefresh) onRefresh();
+    } catch (error: any) {
+      console.error('Error deleting inspection:', error);
+      toast.error('Error al eliminar la inspección', {
+        description: error.message
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Cargar los nombres de los puntos de venta
   useEffect(() => {
@@ -18,7 +46,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
       if (!inspections || inspections.length === 0) return;
 
       const venueIds = [...new Set(inspections.map(i => i.punto_venta_id).filter(Boolean))];
-      
+
       if (venueIds.length === 0) return;
 
       const { data, error } = await supabase
@@ -98,7 +126,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
           {safeInspections.map((inspection, index) => {
             // Calcular ID secuencial (el más reciente es #1)
             const sequentialId = safeInspections.length - index;
-            
+
             return (
               <div
                 key={inspection.id}
@@ -121,11 +149,10 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-lg ${
-                      inspection.tiene_producto
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    }`}>
+                    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-lg ${inspection.tiene_producto
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      }`}>
                       {inspection.tiene_producto ? (
                         <>
                           <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -175,11 +202,11 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
 
       {/* Inspection Detail Modal */}
       {selectedInspection && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedInspection(null)}
         >
-          <div 
+          <div
             className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -192,12 +219,24 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
                   </h2>
                   <p className="text-sm text-slate-400 mt-1">{venueNames[selectedInspection.punto_venta_id] || 'Punto de Venta'}</p>
                 </div>
-                <button 
-                  onClick={() => setSelectedInspection(null)}
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  <XCircle className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {(userRole === 'admin' || userRole === 'superadmin') && (
+                    <button
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                      title="Eliminar Inspección"
+                    >
+                      {isDeleting ? <span className="animate-spin">⌛</span> : <Trash2 className="w-5 h-5" />}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedInspection(null)}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    <XCircle className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -215,11 +254,10 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
               {/* Estado del Producto */}
               <div>
                 <h3 className="text-sm text-slate-400 mb-3">Estado del Producto</h3>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${
-                  selectedInspection.tiene_producto
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${selectedInspection.tiene_producto
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}>
                   {selectedInspection.tiene_producto ? (
                     <>
                       <CheckCircle className="w-5 h-5" />
@@ -264,23 +302,123 @@ export function InspectionHistory({ inspections, onRefresh, onBack }: Inspection
                   <h3 className="text-sm text-slate-400 mb-2">Material POP Detalle</h3>
                   <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
                     <p className="text-slate-300">
-                      {typeof selectedInspection.material_pop_detalle === 'string' 
-                        ? selectedInspection.material_pop_detalle 
+                      {typeof selectedInspection.material_pop_detalle === 'string'
+                        ? selectedInspection.material_pop_detalle
                         : JSON.stringify(selectedInspection.material_pop_detalle)}
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Observations */}
-              {selectedInspection.observaciones && (
-                <div>
-                  <h3 className="text-sm text-slate-400 mb-2">Observaciones</h3>
+              {/* Extended Details (from JSONB) */}
+              {selectedInspection.detalles && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Visibilidad y Menú */}
                   <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                    <p className="text-slate-300 italic">&ldquo;{selectedInspection.observaciones}&rdquo;</p>
+                    <h3 className="text-sm text-amber-500 font-semibold mb-3">Visibilidad y Menú</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Posición en Menú:</span>
+                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.menuPosition || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Visibilidad Activación:</span>
+                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.activationVisibility || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Perfect Serve */}
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
+                    <h3 className="text-sm text-amber-500 font-semibold mb-3">Perfect Serve</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Cristalería:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.glassware ? 'Correcta' : 'Incorrecta'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Hielo:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.ice ? 'Correcto' : 'Incorrecto'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Garnish:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.garnish ? 'Correcto' : 'Incorrecto'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Ritual:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.ritual ? 'Correcto' : 'Incorrecto'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Personal */}
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
+                    <h3 className="text-sm text-amber-500 font-semibold mb-3">Personal</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Conocimiento (1-10):</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.staffKnowledge || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Recomendación:</span>
+                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.brandAdvocacy || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Bartenders Cert.:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.certifiedBartenders || 0} / {selectedInspection.detalles.totalBartenders || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Competencia */}
+                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
+                    <h3 className="text-sm text-amber-500 font-semibold mb-3">Competencia</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Competidor Principal:</span>
+                        <span className="text-slate-200">{selectedInspection.detalles.mainCompetitor || 'Ninguno'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Visibilidad Comp.:</span>
+                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.competitorVisibility || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Precio vs Comp.:</span>
+                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.priceComparison || 'N/A'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
+
+              {/* Observations & Recommendations */}
+              {(() => {
+                const [observaciones, recomendaciones] = (selectedInspection.observaciones || '').split('[RECOMENDACIONES]');
+                const cleanObservaciones = observaciones?.trim();
+                const cleanRecomendaciones = recomendaciones?.trim();
+
+                return (
+                  <div className="space-y-6">
+                    {cleanObservaciones && (
+                      <div>
+                        <h3 className="text-sm text-slate-400 mb-2">Observaciones</h3>
+                        <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
+                          <p className="text-slate-300 italic whitespace-pre-wrap">&ldquo;{cleanObservaciones}&rdquo;</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {cleanRecomendaciones && (
+                      <div>
+                        <h3 className="text-sm text-amber-400 mb-2">Recomendaciones</h3>
+                        <div className="bg-amber-900/10 rounded-lg p-4 border border-amber-500/20">
+                          <p className="text-slate-300 whitespace-pre-wrap">{cleanRecomendaciones}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Photos */}
               {selectedInspection.fotos_urls && selectedInspection.fotos_urls.length > 0 && (

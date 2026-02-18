@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, Camera, Check, X, Plus, Minus, Package } from 'lucide-react';
+import { ArrowLeft, Camera, Check, X, Plus, Minus, Package, Loader2 } from 'lucide-react';
+import { uploadInspectionPhoto } from '../utils/api-direct';
+import { toast } from 'sonner';
 
 interface InspectionFormProps {
   venue: any;
@@ -10,75 +12,92 @@ interface InspectionFormProps {
 
 export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionFormProps) {
   const [activeSection, setActiveSection] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     // Brand Presence
     brandOnMenu: true,
     numberOfCocktails: 3,
     backBarVisibility: 'prominent',
     shelfPosition: 'top',
-    
+
     // Perfect Serve
     properGlassware: true,
     iceQuality: true,
     correctGarnish: true,
     premiumTonic: true,
     serveRitual: true,
-    
+
     // Materials & Signage
     backBarSignage: 'good',
     menuInserts: 'present',
     coasters: 'present',
     tableCards: 'missing',
     outdoorSignage: 'not-applicable',
-    
+
     // Staff & Training
     staffKnowledge: 8,
     certifiedBartenders: 2,
     totalBartenders: 4,
     brandAdvocacy: 'high',
-    
+
     // Competition
     mainCompetitor: 'Tanqueray',
     competitorVisibility: 'medium',
     priceComparison: 'premium',
-    
+
     // Sales & Rotation
     estimatedMonthlyRotation: 120,
     stockLevel: 'adequate',
     outOfStock: false,
-    
+
     // Opportunities
     trainingNeeded: true,
     materialRefresh: true,
     activationPotential: 'high',
-    
+
     // Photos
     photos: [] as string[],
-    
+
     // Notes
     notes: '',
     recommendedActions: ''
   });
 
   const sections = [
-    { id: 0, title: 'Brand Presence', icon: '🏷️' },
+    { id: 0, title: 'Presencia de Marca', icon: '🏷️' },
     { id: 1, title: 'Perfect Serve', icon: '🍸' },
-    { id: 2, title: 'Materials & Signage', icon: '📋' },
-    { id: 3, title: 'Staff & Training', icon: '👥' },
-    { id: 4, title: 'Competition', icon: '⚔️' },
-    { id: 5, title: 'Sales Data', icon: '📊' },
-    { id: 6, title: 'Photos & Notes', icon: '📸' },
+    { id: 2, title: 'Materiales y Señalización', icon: '📋' },
+    { id: 3, title: 'Personal y Capacitación', icon: '👥' },
+    { id: 4, title: 'Competencia', icon: '⚔️' },
+    { id: 5, title: 'Datos de Venta', icon: '📊' },
+    { id: 6, title: 'Fotos y Notas', icon: '📸' },
   ];
 
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setIsUploading(true);
       const files = Array.from(e.target.files);
-      const photoUrls = files.map(file => URL.createObjectURL(file));
-      updateField('photos', [...formData.photos, ...photoUrls]);
+      const newUrls: string[] = [];
+
+      try {
+        // Upload sequentially to avoid overwhelming
+        for (const file of files) {
+          const url = await uploadInspectionPhoto(file);
+          newUrls.push(url);
+        }
+
+        updateField('photos', [...formData.photos, ...newUrls]);
+        toast.success(`${newUrls.length} foto(s) subida(s) correctamente`);
+      } catch (error) {
+        console.error('Error uploading photos:', error);
+        toast.error('Error al subir las fotos');
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -118,24 +137,24 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Cambiar Producto</span>
         </button>
-        
+
         {/* Venue Info */}
         <h2 className="text-xl text-white font-semibold mb-1">{venue.name}</h2>
         <p className="text-sm text-slate-400 mb-3">{venue.address}</p>
-        
+
         {/* Product Badge */}
         <div className="flex items-center gap-3 p-3 bg-slate-900/50 border border-slate-700/50 rounded-lg">
-          <div 
+          <div
             className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{
-              backgroundColor: product.color_primario 
-                ? `${product.color_primario}20` 
+              backgroundColor: product.color_primario
+                ? `${product.color_primario}20`
                 : 'rgba(100, 116, 139, 0.2)'
             }}
           >
             {product.logo_url ? (
-              <img 
-                src={product.logo_url} 
+              <img
+                src={product.logo_url}
                 alt={product.marca}
                 className="w-8 h-8 object-contain"
               />
@@ -160,11 +179,10 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-3 py-3 sm:py-2 rounded-lg text-sm font-medium transition-all ${
-                activeSection === section.id
-                  ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
-              }`}
+              className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 px-3 py-3 sm:py-2 rounded-lg text-sm font-medium transition-all ${activeSection === section.id
+                ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
+                }`}
             >
               <span className="text-lg sm:text-base">{section.icon}</span>
               <span className="text-xs sm:text-sm text-center sm:text-left leading-tight">{section.title}</span>
@@ -178,28 +196,26 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 0: Brand Presence */}
         {activeSection === 0 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Brand Presence</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Presencia de Marca</h3>
+
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Brand on Menu</label>
+              <label className="block text-sm text-slate-300 mb-2">Marca en Menú</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => updateField('brandOnMenu', true)}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                    formData.brandOnMenu
-                      ? 'bg-green-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400'
-                  }`}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${formData.brandOnMenu
+                    ? 'bg-green-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400'
+                    }`}
                 >
-                  Yes
+                  Sí
                 </button>
                 <button
                   onClick={() => updateField('brandOnMenu', false)}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                    !formData.brandOnMenu
-                      ? 'bg-red-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400'
-                  }`}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${!formData.brandOnMenu
+                    ? 'bg-red-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400'
+                    }`}
                 >
                   No
                 </button>
@@ -207,7 +223,7 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Number of Cocktails Featuring Brand</label>
+              <label className="block text-sm text-slate-300 mb-2">Cantidad de Cocteles con la Marca</label>
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => updateField('numberOfCocktails', Math.max(0, formData.numberOfCocktails - 1))}
@@ -228,30 +244,30 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Back Bar Visibility</label>
+              <label className="block text-sm text-slate-300 mb-2">Visibilidad en Barra</label>
               <select
                 value={formData.backBarVisibility}
                 onChange={(e) => updateField('backBarVisibility', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="prominent">Prominent</option>
+                <option value="prominent">Destacado</option>
                 <option value="visible">Visible</option>
-                <option value="hidden">Hidden</option>
-                <option value="not-present">Not Present</option>
+                <option value="hidden">Oculto</option>
+                <option value="not-present">No Presente</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Shelf Position</label>
+              <label className="block text-sm text-slate-300 mb-2">Posición en Estante</label>
               <select
                 value={formData.shelfPosition}
                 onChange={(e) => updateField('shelfPosition', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="top">Top Shelf</option>
-                <option value="middle">Middle Shelf</option>
-                <option value="bottom">Bottom Shelf</option>
-                <option value="not-present">Not Present</option>
+                <option value="top">Superior</option>
+                <option value="middle">Medio</option>
+                <option value="bottom">Inferior</option>
+                <option value="not-present">No Presente</option>
               </select>
             </div>
           </div>
@@ -260,14 +276,14 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 1: Perfect Serve */}
         {activeSection === 1 && (
           <div className="space-y-4">
-            <h3 className="text-lg text-white font-semibold mb-4">Perfect Serve Checklist</h3>
-            
+            <h3 className="text-lg text-white font-semibold mb-4">Checklist Perfect Serve</h3>
+
             {[
-              { key: 'properGlassware', label: 'Proper Glassware (Copa/Balloon)' },
-              { key: 'iceQuality', label: 'Ice Quality & Size' },
-              { key: 'correctGarnish', label: 'Correct Garnish (Cucumber)' },
-              { key: 'premiumTonic', label: 'Premium Tonic Pairing' },
-              { key: 'serveRitual', label: 'Serve Ritual Execution' },
+              { key: 'properGlassware', label: 'Cristalería Correcta (Copa/Balón)' },
+              { key: 'iceQuality', label: 'Calidad y Tamaño del Hielo' },
+              { key: 'correctGarnish', label: 'Garnish Correcto (Pepino)' },
+              { key: 'premiumTonic', label: 'Tónica Premium' },
+              { key: 'serveRitual', label: 'Ejecución del Ritual de Servicio' },
             ].map((item) => (
               <div
                 key={item.key}
@@ -276,11 +292,10 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
                 <span className="text-slate-300">{item.label}</span>
                 <button
                   onClick={() => updateField(item.key, !formData[item.key as keyof typeof formData])}
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
-                    formData[item.key as keyof typeof formData]
-                      ? 'bg-green-600 text-white'
-                      : 'bg-slate-700/50 text-slate-500'
-                  }`}
+                  className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${formData[item.key as keyof typeof formData]
+                    ? 'bg-green-600 text-white'
+                    : 'bg-slate-700/50 text-slate-500'
+                    }`}
                 >
                   {formData[item.key as keyof typeof formData] ? (
                     <Check className="w-6 h-6" />
@@ -296,27 +311,28 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 2: Materials & Signage */}
         {activeSection === 2 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Materials & Signage</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Materiales y Señalización</h3>
+
             {[
-              { key: 'backBarSignage', label: 'Back Bar Signage' },
-              { key: 'menuInserts', label: 'Menu Inserts' },
-              { key: 'coasters', label: 'Coasters' },
+              { key: 'backBarSignage', label: 'Señalización en Barra' },
+              { key: 'menuInserts', label: 'Insertos en Menú' },
+              { key: 'coasters', label: 'Posavasos' },
               { key: 'tableCards', label: 'Table Cards' },
-              { key: 'outdoorSignage', label: 'Outdoor Signage' },
+              { key: 'outdoorSignage', label: 'Señalización Exterior' }
             ].map((item) => (
               <div key={item.key}>
                 <label className="block text-sm text-slate-300 mb-2">{item.label}</label>
                 <select
                   value={formData[item.key as keyof typeof formData] as string}
                   onChange={(e) => updateField(item.key, e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
                 >
-                  <option value="good">Good Condition</option>
-                  <option value="present">Present</option>
-                  <option value="worn">Worn/Needs Refresh</option>
-                  <option value="missing">Missing</option>
-                  <option value="not-applicable">Not Applicable</option>
+                  <option value="good">Buena</option>
+                  <option value="average">Promedio</option>
+                  <option value="poor">Mala</option>
+                  <option value="present">Presente</option>
+                  <option value="missing">Faltante</option>
+                  <option value="not-applicable">No Aplica</option>
                 </select>
               </div>
             ))}
@@ -326,61 +342,75 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 3: Staff & Training */}
         {activeSection === 3 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Staff & Training</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Personal y Capacitación</h3>
+
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Staff Knowledge (1-10)</label>
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={formData.staffKnowledge}
-                  onChange={(e) => updateField('staffKnowledge', parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                />
-                <div className="w-12 text-center">
-                  <span className="text-2xl text-amber-400 font-bold">{formData.staffKnowledge}</span>
-                </div>
-              </div>
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>Poor</span>
-                <span>Excellent</span>
+              <label className="block text-sm text-slate-300 mb-2">Nivel de Conocimiento (1-10)</label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={formData.staffKnowledge}
+                onChange={(e) => updateField('staffKnowledge', parseInt(e.target.value))}
+                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <span>Bajo</span>
+                <span>{formData.staffKnowledge}</span>
+                <span>Alto</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Certified Bartenders</label>
-                <input
-                  type="number"
-                  value={formData.certifiedBartenders}
-                  onChange={(e) => updateField('certifiedBartenders', parseInt(e.target.value))}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                />
+                <label className="block text-sm text-slate-300 mb-2">Bartenders Certificados</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateField('certifiedBartenders', Math.max(0, formData.certifiedBartenders - 1))}
+                    className="w-8 h-8 rounded bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <span className="flex-1 text-center font-bold text-white">{formData.certifiedBartenders}</span>
+                  <button
+                    onClick={() => updateField('certifiedBartenders', formData.certifiedBartenders + 1)}
+                    className="w-8 h-8 rounded bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Total Bartenders</label>
-                <input
-                  type="number"
-                  value={formData.totalBartenders}
-                  onChange={(e) => updateField('totalBartenders', parseInt(e.target.value))}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                />
+                <label className="block text-sm text-slate-300 mb-2">Total de Bartenders</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => updateField('totalBartenders', Math.max(0, formData.totalBartenders - 1))}
+                    className="w-8 h-8 rounded bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </button>
+                  <span className="flex-1 text-center font-bold text-white">{formData.totalBartenders}</span>
+                  <button
+                    onClick={() => updateField('totalBartenders', formData.totalBartenders + 1)}
+                    className="w-8 h-8 rounded bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Brand Advocacy Level</label>
+              <label className="block text-sm text-slate-300 mb-2">Recomendación de Marca</label>
               <select
                 value={formData.brandAdvocacy}
                 onChange={(e) => updateField('brandAdvocacy', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="high">High - Actively Recommends</option>
-                <option value="medium">Medium - Neutral</option>
-                <option value="low">Low - Prefers Competitors</option>
-                <option value="none">None - No Knowledge</option>
+                <option value="high">Alta</option>
+                <option value="medium">Media</option>
+                <option value="low">Baja</option>
+                <option value="none">Ninguna</option>
               </select>
             </div>
           </div>
@@ -389,42 +419,41 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 4: Competition */}
         {activeSection === 4 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Competition Analysis</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Competencia</h3>
+
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Main Competitor</label>
+              <label className="block text-sm text-slate-300 mb-2">Competidor Principal</label>
               <input
                 type="text"
                 value={formData.mainCompetitor}
                 onChange={(e) => updateField('mainCompetitor', e.target.value)}
-                placeholder="e.g., Tanqueray, Bombay Sapphire"
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Competitor Visibility</label>
+              <label className="block text-sm text-slate-300 mb-2">Visibilidad del Competidor</label>
               <select
                 value={formData.competitorVisibility}
                 onChange={(e) => updateField('competitorVisibility', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="high">High - More Prominent</option>
-                <option value="medium">Medium - Equal</option>
-                <option value="low">Low - Less Prominent</option>
+                <option value="high">Alta</option>
+                <option value="medium">Media</option>
+                <option value="low">Baja</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Price Comparison</label>
+              <label className="block text-sm text-slate-300 mb-2">Comparación de Precio</label>
               <select
                 value={formData.priceComparison}
                 onChange={(e) => updateField('priceComparison', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="premium">Premium (+$2-3)</option>
-                <option value="equal">Equal Pricing</option>
-                <option value="lower">Lower (-$2-3)</option>
+                <option value="premium">Premium (+Alto)</option>
+                <option value="equal">Par (=)</option>
+                <option value="lower">Económico (-Bajo)</option>
               </select>
             </div>
           </div>
@@ -433,10 +462,10 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 5: Sales Data */}
         {activeSection === 5 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Sales & Inventory Data</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Ventas y Rotación</h3>
+
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Estimated Monthly Rotation (bottles)</label>
+              <label className="block text-sm text-slate-300 mb-2">Rotación Mensual Est. (Botellas)</label>
               <input
                 type="number"
                 value={formData.estimatedMonthlyRotation}
@@ -446,47 +475,46 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Current Stock Level</label>
+              <label className="block text-sm text-slate-300 mb-2">Nivel de Stock</label>
               <select
                 value={formData.stockLevel}
                 onChange={(e) => updateField('stockLevel', e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
               >
-                <option value="overstocked">Overstocked</option>
-                <option value="adequate">Adequate</option>
-                <option value="low">Low</option>
-                <option value="out-of-stock">Out of Stock</option>
+                <option value="adequate">Adecuado</option>
+                <option value="low">Bajo</option>
+                <option value="critical">Crítico</option>
+                <option value="out-of-stock">Sin Stock</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Out of Stock in Last 30 Days?</label>
+              <label className="block text-sm text-slate-300 mb-2">¿Sin Stock en los últimos 30 días?</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => updateField('outOfStock', true)}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                    formData.outOfStock
-                      ? 'bg-red-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400'
-                  }`}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${formData.outOfStock
+                    ? 'bg-red-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400'
+                    }`}
                 >
-                  Yes
+                  Sí
                 </button>
                 <button
                   onClick={() => updateField('outOfStock', false)}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                    !formData.outOfStock
-                      ? 'bg-green-600 text-white'
-                      : 'bg-slate-800/50 text-slate-400'
-                  }`}
+                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${!formData.outOfStock
+                    ? 'bg-green-600 text-white'
+                    : 'bg-slate-800/50 text-slate-400'
+                    }`}
                 >
                   No
                 </button>
               </div>
             </div>
 
-            <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-4">
-              <h4 className="text-amber-400 font-semibold mb-2">Opportunity Assessment</h4>
+            <div className="pt-4 border-t border-slate-700/50">
+              <h4 className="text-md text-white font-medium mb-3">Oportunidades</h4>
+
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -495,8 +523,9 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
                     onChange={(e) => updateField('trainingNeeded', e.target.checked)}
                     className="w-5 h-5 rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500"
                   />
-                  <span className="text-slate-300">Training Needed</span>
+                  <span className="text-slate-300">Necesita Capacitación</span>
                 </label>
+
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -504,19 +533,19 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
                     onChange={(e) => updateField('materialRefresh', e.target.checked)}
                     className="w-5 h-5 rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-500"
                   />
-                  <span className="text-slate-300">Material Refresh Needed</span>
+                  <span className="text-slate-300">Necesita Renovar Materiales</span>
                 </label>
               </div>
               <div className="mt-4">
-                <label className="block text-sm text-slate-300 mb-2">Activation Potential</label>
+                <label className="block text-sm text-slate-300 mb-2">Potencial de Activación</label>
                 <select
                   value={formData.activationPotential}
                   onChange={(e) => updateField('activationPotential', e.target.value)}
                   className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                 >
-                  <option value="high">High - Prime Target</option>
-                  <option value="medium">Medium - Good Opportunity</option>
-                  <option value="low">Low - Limited Potential</option>
+                  <option value="high">Alto - Objetivo Principal</option>
+                  <option value="medium">Medio - Buena Oportunidad</option>
+                  <option value="low">Bajo - Potencial Limitado</option>
                 </select>
               </div>
             </div>
@@ -526,11 +555,19 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
         {/* Section 6: Photos & Notes */}
         {activeSection === 6 && (
           <div className="space-y-6">
-            <h3 className="text-lg text-white font-semibold">Photos & Notes</h3>
-            
+            <h3 className="text-lg text-white font-semibold">Fotos y Notas</h3>
+
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Upload Photos</label>
-              <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:border-slate-600 transition-colors">
+              <label className="block text-sm text-slate-300 mb-2">Subir Fotos</label>
+              <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:border-slate-600 transition-colors relative">
+                {isUploading && (
+                  <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                      <span className="text-sm text-slate-300">Subiendo...</span>
+                    </div>
+                  </div>
+                )}
                 <input
                   type="file"
                   multiple
@@ -538,26 +575,27 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
                   onChange={handlePhotoUpload}
                   className="hidden"
                   id="photo-upload"
+                  disabled={isUploading}
                 />
-                <label htmlFor="photo-upload" className="cursor-pointer">
+                <label htmlFor="photo-upload" className={`cursor-pointer ${isUploading ? 'opacity-50' : ''}`}>
                   <Camera className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-                  <p className="text-slate-400 mb-1">Click to upload photos</p>
-                  <p className="text-xs text-slate-500">Back bar, signage, materials, perfect serve</p>
+                  <p className="text-slate-400 mb-1">Clic para subir fotos</p>
+                  <p className="text-xs text-slate-500">Barra, señalización, materiales, perfect serve</p>
                 </label>
               </div>
 
               {formData.photos.length > 0 && (
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   {formData.photos.map((photo, i) => (
-                    <div key={i} className="relative">
+                    <div key={i} className="relative group">
                       <img
                         src={photo}
-                        alt={`Photo ${i + 1}`}
+                        alt={`Foto ${i + 1}`}
                         className="w-full h-24 object-cover rounded-lg border border-slate-700"
                       />
                       <button
                         onClick={() => updateField('photos', formData.photos.filter((_, idx) => idx !== i))}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center"
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <X className="w-4 h-4 text-white" />
                       </button>
@@ -568,28 +606,29 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">General Notes</label>
+              <label className="block text-sm text-slate-300 mb-2">Notas Generales</label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => updateField('notes', e.target.value)}
                 rows={4}
-                placeholder="General observations, staff interactions, venue atmosphere..."
+                placeholder="Observaciones generales, interacción con personal, atmósfera..."
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Recommended Actions</label>
+              <label className="block text-sm text-slate-300 mb-2">Recomendaciones</label>
               <textarea
                 value={formData.recommendedActions}
                 onChange={(e) => updateField('recommendedActions', e.target.value)}
                 rows={4}
-                placeholder="Specific actions to improve brand presence, training recommendations, activation ideas..."
+                placeholder="Acciones específicas para mejorar presencia, capacitación, activaciones..."
                 className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none"
               />
             </div>
           </div>
         )}
+
       </div>
 
       {/* Navigation Buttons */}

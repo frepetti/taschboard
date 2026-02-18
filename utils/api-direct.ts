@@ -102,6 +102,7 @@ export interface Inspection {
   competencia: string[];
   observaciones: string;
   fotos_urls: string[];
+  detalles?: any; // Full questionnaire data
   created_at: string;
 }
 
@@ -135,10 +136,16 @@ export async function getInspections(): Promise<Inspection[]> {
 
     // Obtener inspecciones del usuario
     const data = await executeWithRetry(async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('btl_inspecciones')
-        .select('*')
-        .eq('usuario_id', btlUser.id) // ✅ Usar ID de btl_usuarios
+        .select('*');
+
+      // Si NO es admin, filtrar por usuario
+      if (btlUser.rol !== 'admin' && btlUser.rol !== 'superadmin') {
+        query = query.eq('usuario_id', btlUser.id);
+      }
+
+      const { data, error } = await query
         .order('fecha_inspeccion', { ascending: false });
 
       return { data: data as any, error };
@@ -240,6 +247,96 @@ export async function createInspection(inspectionData: Omit<Inspection, 'id' | '
   }
 }
 
+/**
+ * Eliminar una inspección (Solo Admin)
+ */
+export async function deleteInspection(inspectionId: string) {
+  console.log('📡 [API Direct] Deleting inspection:', inspectionId);
+
+  try {
+    const user = await verifyAuthOrThrow();
+
+    // Verificar rol de admin
+    const btlUser = await executeWithRetry(async () => {
+      const { data, error } = await supabase
+        .from('btl_usuarios')
+        .select('rol')
+        .eq('auth_user_id', user.id)
+        .single();
+      return { data, error };
+    });
+
+    if (!btlUser || (btlUser.rol !== 'admin' && btlUser.rol !== 'superadmin')) {
+      throw new Error('No tienes permisos para eliminar inspecciones.');
+    }
+
+    await executeWithRetry(async () => {
+      const { error } = await supabase
+        .from('btl_inspecciones')
+        .delete()
+        .eq('id', inspectionId);
+      return { data: null, error };
+    });
+
+    console.log('✅ [API Direct] Inspection deleted');
+  } catch (error: any) {
+    console.error('❌ [API Direct] Error deleting inspection:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener rol del usuario actual
+ */
+export async function getUserRole(): Promise<string | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('btl_usuarios')
+      .select('rol')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (error) return null;
+    return data?.rol || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Subir foto de inspección
+ */
+export async function uploadInspectionPhoto(file: File): Promise<string> {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `inspections/${fileName}`;
+
+    console.log('📤 [API Direct] Uploading photo:', filePath);
+
+    const { error: uploadError } = await supabase.storage
+      .from('inspection-photos')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('inspection-photos')
+      .getPublicUrl(filePath);
+
+    console.log('✅ [API Direct] Photo uploaded:', data.publicUrl);
+    return data.publicUrl;
+  } catch (error: any) {
+    console.error('❌ [API Direct] Error uploading photo:', error);
+    throw error;
+  }
+}
+
 // ============================================
 // PUNTOS DE VENTA (VENUES)
 // ============================================
@@ -275,6 +372,32 @@ export async function getVenues(): Promise<Venue[]> {
     });
 
     console.log(`✅ [API Direct] Loaded ${data?.length || 0} venues`);
+
+    return data || [];
+  } catch (error: any) {
+    console.error('❌ [API Direct] Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener todos los clientes (usuarios con rol 'client')
+ */
+export async function getClients(): Promise<any[]> {
+  console.log('📡 [API Direct] Fetching clients...');
+
+  try {
+    const data = await executeWithRetry(async () => {
+      const { data, error } = await supabase
+        .from('btl_usuarios')
+        .select('*')
+        .eq('rol', 'client')
+        .order('nombre');
+
+      return { data: data as any, error };
+    });
+
+    console.log(`✅ [API Direct] Loaded ${data?.length || 0} clients`);
 
     return data || [];
   } catch (error: any) {

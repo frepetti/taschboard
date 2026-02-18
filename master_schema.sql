@@ -178,6 +178,7 @@ CREATE TABLE btl_inspecciones (
   temperatura_refrigeracion NUMERIC(5,2),
   observaciones TEXT,
   fotos_urls TEXT[],
+  detalles JSONB,
   
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
