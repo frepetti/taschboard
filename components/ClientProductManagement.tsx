@@ -27,6 +27,8 @@ interface ClientProduct {
   id: string;
   producto_id: string;
   usuario_id: string;
+  visible_dashboard: boolean | null;
+  orden: number | null;
   btl_productos: Product;
 }
 
@@ -95,6 +97,8 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
           id,
           producto_id,
           usuario_id,
+          visible_dashboard,
+          orden,
           btl_productos!inner (
             id,
             nombre,
@@ -103,7 +107,8 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
             presentacion
           )
         `)
-        .eq('usuario_id', selectedClient.id);
+        .eq('usuario_id', selectedClient.id)
+        .order('orden', { ascending: true });
 
       if (error) throw error;
       setClientProducts((data as any) || []);
@@ -121,7 +126,8 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
     try {
       const insertData = selectedProductsToAdd.map((productId) => ({
         usuario_id: selectedClient.id,
-        producto_id: productId
+        producto_id: productId,
+        visible_dashboard: true
       }));
 
       const { error } = await supabase

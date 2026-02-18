@@ -120,8 +120,8 @@ export function TicketModal({ session: _session, onClose }: TicketModalProps) {
               .from('btl_cliente_productos')
               .select(`
                 producto_id,
-                activo,
-                prioridad,
+                visible_dashboard,
+                orden,
                 btl_productos!inner (
                   id,
                   nombre,
@@ -130,9 +130,8 @@ export function TicketModal({ session: _session, onClose }: TicketModalProps) {
                 )
               `)
               .eq('usuario_id', btlUser.id)
-              .eq('activo', true)
               .eq('visible_dashboard', true)
-              .order('prioridad', { ascending: false });
+              .order('orden', { ascending: true });
 
             if (clienteProductos) {
               const productosFormateados = clienteProductos.map((cp: any) => ({
