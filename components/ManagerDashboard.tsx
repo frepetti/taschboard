@@ -189,20 +189,36 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
 
       setActivations(allActivations);
 
-      // Calcular KPIs basados en datos reales
-      const totalVenues = new Set(inspectionsData?.map((i: any) => i.punto_venta_id)).size;
-      const avgCompliance = inspectionsData?.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / (inspectionsData?.length || 1);
-      const totalActivations = inspectionsData?.filter((i: any) => i.activacion_ejecutada).length || 0;
+      // Calcular KPIs basados en datos reales con comparación de períodos
+      const now = new Date();
+      let startDate = new Date();
+      if (dateFilter === '7d') startDate.setDate(now.getDate() - 7);
+      else if (dateFilter === '30d') startDate.setDate(now.getDate() - 30);
+      else if (dateFilter === '90d') startDate.setDate(now.getDate() - 90);
+      else startDate = new Date(0); // All time
+
+      const previousStartDate = new Date(startDate);
+      if (dateFilter === '7d') previousStartDate.setDate(startDate.getDate() - 7);
+      else if (dateFilter === '30d') previousStartDate.setDate(startDate.getDate() - 30);
+      else if (dateFilter === '90d') previousStartDate.setDate(startDate.getDate() - 90);
+
+      const currentInspections = (inspectionsData || []) as any[];
+
+      const totalVenues = new Set(currentInspections.map((i: any) => i.punto_venta_id)).size;
+      const avgCompliance = currentInspections.length > 0
+        ? Math.round(currentInspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / currentInspections.length)
+        : 0;
+      const totalActivations = currentInspections.filter((i: any) => i.activacion_ejecutada).length;
 
       setKpis({
         visitedVenues: totalVenues,
-        visitedVenuesTrend: 12.5,
+        visitedVenuesTrend: 0, // Trends require historical data query - setting to 0 for now to avoid fake data
         compliance: avgCompliance,
-        complianceTrend: 5.2,
+        complianceTrend: 0,
         activations: totalActivations,
-        activationsTrend: -3.4,
-        roi: 234.5,
-        roiTrend: 18.7,
+        activationsTrend: 0,
+        roi: 0, // ROI requires sales data we don't have
+        roiTrend: 0,
       });
 
     } catch (error) {
@@ -317,24 +333,27 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
               icon={<Users className="w-6 h-6" />}
               trend={{
                 value: kpis.activationsTrend,
-                label: `${Math.abs(kpis.activationsTrend)}% vs período anterior`,
+                label: kpis.activationsTrend !== 0 ? `${Math.abs(kpis.activationsTrend)}% vs período anterior` : 'Sin datos anteriores',
                 color: getTrendColor(kpis.activationsTrend),
                 icon: getTrendIcon(kpis.activationsTrend),
               }}
               color="purple"
             />
-            <KPICard
-              title="ROI Activaciones"
-              value={`${kpis.roi.toFixed(0)}%`}
-              icon={<DollarSign className="w-6 h-6" />}
-              trend={{
-                value: kpis.roiTrend,
-                label: `${Math.abs(kpis.roiTrend)}% vs período anterior`,
-                color: getTrendColor(kpis.roiTrend),
-                icon: getTrendIcon(kpis.roiTrend),
-              }}
-              color="amber"
-            />
+            {/* ROI Card - Only show in Demo Mode or if we have real ROI data (which we don't yet) */}
+            {isDemo && (
+              <KPICard
+                title="ROI Activaciones"
+                value={`${kpis.roi}%`}
+                icon={<DollarSign className="w-6 h-6" />}
+                trend={{
+                  value: kpis.roiTrend,
+                  label: `${Math.abs(kpis.roiTrend)}% vs período anterior`,
+                  color: getTrendColor(kpis.roiTrend),
+                  icon: getTrendIcon(kpis.roiTrend),
+                }}
+                color="amber"
+              />
+            )}
           </div>
         )}
 
