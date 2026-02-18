@@ -70,7 +70,7 @@ const DEMO_DATA = {
   ]
 };
 
-export function ManagerDashboard({ session, readOnly = false, isDemo = false }: ManagerDashboardProps) {
+export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDashboardProps) {
   const [inspections, setInspections] = useState<any[]>([]);
   const [kpis, setKpis] = useState<any>(null);
   const [activations, setActivations] = useState<any[]>([]);
@@ -102,7 +102,7 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
         .from('btl_regiones')
         .select('id, nombre')
         .order('nombre');
-      
+
       if (data) {
         setRegions(data);
       }
@@ -124,14 +124,14 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
       if (regionFilter !== 'all') {
         inspectionsQuery = inspectionsQuery.eq('btl_puntos_venta.region_id', regionFilter);
       }
-      
+
       const date = new Date();
       if (dateFilter === '7d') date.setDate(date.getDate() - 7);
       else if (dateFilter === '30d') date.setDate(date.getDate() - 30);
       else if (dateFilter === '90d') date.setDate(date.getDate() - 90);
-      
+
       if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no está en el state inicial
-         inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
+        inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
       }
 
       const { data: inspectionsData, error: inspectionsError } = await inspectionsQuery;
@@ -150,11 +150,11 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
       if (regionFilter !== 'all') {
         ticketsQuery = ticketsQuery.eq('btl_puntos_venta.region_id', regionFilter);
       }
-      
+
       // Para tickets futuros, tal vez queramos ver más allá del filtro de fecha pasado, 
       // pero por coherencia podríamos aplicar algo similar o simplemente traer los próximos.
       // Aquí traeremos todos los futuros relevantes.
-      
+
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) console.error("Error loading tickets:", ticketsError); // No bloqueante
 
@@ -186,7 +186,7 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
       // Para el timeline, suele ser útil ver lo próximo primero, o lo más reciente ejecutado.
       // Vamos a ordenar cronológicamente descendente (lo más nuevo arriba)
       const allActivations = [...pastActivations, ...futureActivations].sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
-      
+
       setActivations(allActivations);
 
       // Calcular KPIs basados en datos reales
@@ -207,11 +207,7 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      if (inspections.length === 0) {
-        setKpis(DEMO_DATA.kpis);
-        setInspections(DEMO_DATA.inspections);
-        setActivations(DEMO_DATA.activations);
-      }
+      // Leave state empty — don't fall back to demo data in real mode
     } finally {
       setLoading(false);
     }
@@ -243,7 +239,7 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <div className={`max-w-[1600px] mx-auto py-6 space-y-6 ${readOnly ? '' : 'px-4 sm:px-8'}`}>
-        
+
         {/* Filters Section */}
         <div className="flex flex-wrap gap-3">
           <FilterChip
@@ -261,16 +257,16 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
             active={dateFilter === '90d'}
             onClick={() => setDateFilter('90d')}
           />
-          
+
           <div className="border-l border-slate-700 mx-2"></div>
-          
+
           {/* Dynamic Region Filters */}
           <FilterChip
             label="Todas las regiones"
             active={regionFilter === 'all'}
             onClick={() => setRegionFilter('all')}
           />
-          
+
           {regions.map((region) => (
             <FilterChip
               key={region.id}
@@ -279,12 +275,12 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
               onClick={() => setRegionFilter(region.id)}
             />
           ))}
-          
+
           {/* Fallback if no regions loaded and no filters active */}
           {regions.length === 0 && (
-             <span className="text-xs text-slate-500 flex items-center px-2">
-               Cargando regiones...
-             </span>
+            <span className="text-xs text-slate-500 flex items-center px-2">
+              Cargando regiones...
+            </span>
           )}
         </div>
 
@@ -345,12 +341,12 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
         {/* Charts Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <PerformanceChart inspections={inspections} />
-          <CompetitionChart inspections={inspections} />
+          <CompetitionChart inspections={inspections} isDemo={isDemo} />
         </div>
 
         {/* Map Section */}
-        <OpportunityMap 
-          inspections={inspections} 
+        <OpportunityMap
+          inspections={inspections}
           onVenueSelect={(venue) => {
             console.log('🗺️ Map selected venue:', venue);
             // Ensure ID is number to match VenueDetail expectation
@@ -362,12 +358,12 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
         />
 
         {/* Opportunity Breakdown */}
-        <OpportunityBreakdown inspections={inspections} />
+        <OpportunityBreakdown inspections={inspections} isDemo={isDemo} />
 
         {/* Venue Table */}
-        <VenueTable 
-          inspections={inspections} 
-          readOnly={readOnly} 
+        <VenueTable
+          inspections={inspections}
+          readOnly={readOnly}
           onVenueClick={(venue) => setSelectedVenue(venue)}
         />
 
@@ -380,9 +376,9 @@ export function ManagerDashboard({ session, readOnly = false, isDemo = false }: 
       {selectedVenue && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50">
           <div className="h-full overflow-y-auto">
-            <VenueDetail 
-              venue={selectedVenue} 
-              onBack={() => setSelectedVenue(null)} 
+            <VenueDetail
+              venue={selectedVenue}
+              onBack={() => setSelectedVenue(null)}
             />
           </div>
         </div>

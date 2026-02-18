@@ -161,29 +161,27 @@ Deno.serve(async (req) => {
       if (error || !user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
       if (!(await verifyAdmin(user))) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: corsHeaders });
 
-      const targetId = path.split('/')[3];
+      const targetId = path.split('/')[3]; // This is auth_user_id (UUID from auth.users)
 
-      // targetId here is likely the btl_usuarios ID. We need the auth_user_id to delete from Auth.
-      const { data: targetUser } = await supabaseAdmin.from('btl_usuarios').select('auth_user_id').eq('id', targetId).single();
+      // Look up by auth_user_id (the UUID sent from the frontend)
+      const { data: targetUser } = await supabaseAdmin.from('btl_usuarios').select('id, auth_user_id').eq('auth_user_id', targetId).single();
 
       if (!targetUser) {
         return new Response(JSON.stringify({ error: 'User not found' }), { status: 404, headers: corsHeaders });
       }
 
-      // Clean up related data (Cascading manually if needed)
-      // Note: ON DELETE CASCADE in schema handles most, but let's be safe for non-cascading FKs if any
-      await supabaseAdmin.from('btl_reportes').update({ creado_por: null }).eq('creado_por', targetId);
+      // Clean up related data using the internal btl_usuarios.id
+      await supabaseAdmin.from('btl_reportes').update({ creado_por: null }).eq('creado_por', targetUser.id);
 
-      // Delete from DB first
-      const { error: dbError } = await supabaseAdmin.from('btl_usuarios').delete().eq('id', targetId);
+      // Delete from DB using internal id
+      const { error: dbError } = await supabaseAdmin.from('btl_usuarios').delete().eq('id', targetUser.id);
       if (dbError) return new Response(JSON.stringify({ success: false, error: dbError.message }), { status: 500, headers: corsHeaders });
 
-      // Delete from Auth
+      // Delete from Auth using auth_user_id
       if (targetUser.auth_user_id) {
         const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(targetUser.auth_user_id);
         if (authDeleteError && !authDeleteError.message?.includes('not found')) {
           console.error('Auth delete error:', authDeleteError);
-          // We return success even if auth delete fails slightly, as DB is clean
         }
       }
 

@@ -102,7 +102,83 @@ Score Perfect Serve = (Score Presencia * 0.4) + (Score Visibilidad * 0.3) + (Sco
 
 ---
 
-## 4. Notas Técnicas
+## 4. Gráficos del Dashboard de Cliente
+
+### 4.1 Gráfico de Rendimiento de Marca (`PerformanceChart`)
+
+Muestra la evolución mensual de métricas clave a lo largo del tiempo. Los datos se agregan por mes calendario a partir de las inspecciones registradas.
+
+**Métricas disponibles:**
+
+| Métrica | Cálculo |
+|---|---|
+| Índice de Ejecución | Promedio de `compliance_score` de todas las inspecciones del mes |
+| Visibilidad (Presencia) | `(Inspecciones con tiene_producto = true / Total del mes) × 100` |
+| Material POP | `(Inspecciones con tiene_material_pop = true / Total del mes) × 100` |
+| Visitas | Conteo total de inspecciones del mes |
+
+- **Fuente de Datos:** Columnas `fecha_inspeccion`, `compliance_score`, `tiene_producto`, `tiene_material_pop` de `btl_inspecciones`.
+- **Período:** Últimos 7 meses con datos registrados.
+- **Comparativa:** Se muestra la variación porcentual respecto al mes anterior.
+
+---
+
+### 4.2 Gráfico de Competencia (`CompetitionChart`)
+
+Muestra la frecuencia de aparición de competidores en las inspecciones. Tiene dos modos según los datos disponibles:
+
+**Modo 1 — Competidores nombrados** *(prioritario)*
+
+Si las inspecciones contienen el nombre del competidor principal (`competidor_principal` / `competitor_presence` / `main_competitor`), se muestra un ranking de los 7 competidores más frecuentes.
+
+```
+Frecuencia = Conteo de inspecciones donde el campo competidor = nombre_marca
+Orden: Descendente por frecuencia
+```
+
+**Modo 2 — Nivel de presencia** *(fallback)*
+
+Si no hay nombres de competidores, se agrupa por nivel de visibilidad (`presencia_competencia`):
+- `Alta` / `high`
+- `Media` / `medium`
+- `Baja` / `low`
+
+**Estado vacío:** Si ninguna inspección tiene datos de competencia, se muestra un mensaje indicando que los inspectores deben completar la sección de competencia en el formulario.
+
+- **Fuente de Datos:** Campos `competidor_principal`, `competitor_presence`, `presencia_competencia` de `btl_inspecciones`.
+
+---
+
+### 4.3 Análisis de Oportunidades (`OpportunityBreakdown`)
+
+Calcula un **puntaje de oportunidad ponderado (0–10)** a partir de métricas reales de inspección.
+
+**Componentes y ponderación:**
+
+| Componente | Campo en DB | Peso |
+|---|---|---|
+| Presencia de Marca | `tiene_producto = true` | 35% |
+| Material POP | `tiene_material_pop = true` | 25% |
+| Stock Disponible | `stock_estimado > 0` | 25% |
+| Activaciones | `activacion_ejecutada = true` | 15% |
+
+**Fórmula del puntaje:**
+```
+Puntaje = ((% Presencia × 0.35) + (% Material × 0.25) + (% Stock × 0.25) + (% Activaciones × 0.15)) / 10
+```
+
+Cada porcentaje se calcula como:
+```
+% Componente = (Inspecciones donde campo = true / Total Inspecciones) × 100
+```
+
+- **Rango:** 0.0 – 10.0 puntos.
+- **Fuente de Datos:** Columnas `tiene_producto`, `tiene_material_pop`, `stock_estimado`, `activacion_ejecutada` de `btl_inspecciones`.
+- **Estado vacío:** Si no hay inspecciones, se muestra un mensaje informativo.
+
+---
+
+## 5. Notas Técnicas
 
 *   **Periodos de Tiempo:** Todas las métricas permiten filtrado por rangos de fechas (Hoy, Esta Semana, Este Mes, Personalizado).
 *   **Segmentación:** Los datos pueden desglosarse por:
@@ -110,3 +186,4 @@ Score Perfect Serve = (Score Presencia * 0.4) + (Score Visibilidad * 0.3) + (Sco
     *   Canal (On-Premise vs Off-Premise)
     *   Categoría de Producto
     *   Inspector Asignado
+*   **Modo Demo:** Al acceder con `/?mode=demo`, todos los gráficos muestran datos de ejemplo predefinidos en lugar de datos reales de la base de datos.

@@ -1,14 +1,11 @@
 import { FilterChip } from "./FilterChip";
 import {
-  MapPin,
-  ZoomIn,
-  ZoomOut,
-  AlertCircle,
   Layers,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import * as L from "leaflet";
 import { useLanguage } from '../utils/LanguageContext';
+import { supabase } from '../utils/supabase/client';
 
 interface OpportunityMapProps {
   inspections?: any[];
@@ -197,7 +194,6 @@ const DEMO_VENUES: ImportedVenue[] = [
 ];
 
 export function OpportunityMap({
-  inspections = [],
   filter: externalFilter,
   onFilterChange: externalOnFilterChange,
   onVenueSelect,
@@ -233,51 +229,67 @@ export function OpportunityMap({
   const onFilterChange =
     externalOnFilterChange || setInternalFilter;
 
-  // Load imported venues from localStorage or use demo data
+  // Load venues from Supabase DB
   useEffect(() => {
-    const venuesData = localStorage.getItem("imported_venues");
-    if (venuesData) {
+    const loadVenues = async () => {
       try {
-        const parsed = JSON.parse(venuesData);
-        if (parsed.length > 0) {
-          setImportedVenues(parsed);
-          console.log(
-            "📍 Loaded venues for map:",
-            parsed.length,
-          );
-          return;
+        const { data, error } = await supabase
+          .from('btl_puntos_venta')
+          .select('id, nombre, direccion, zona, canal, ciudad, latitud, longitud')
+          .order('nombre');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const mapped: ImportedVenue[] = data.map((v: any) => ({
+            id: String(v.id),
+            name: v.nombre,
+            address: v.direccion || '',
+            zone: v.zona || '',
+            channel: v.canal || '',
+            city: v.ciudad || '',
+            lat: v.latitud || null,
+            lng: v.longitud || null,
+            imported: true,
+            importedAt: '',
+          }));
+          setImportedVenues(mapped);
+          console.log('📍 Loaded', mapped.length, 'venues from DB for map');
+        } else {
+          // No venues in DB yet — show demo data as placeholder
+          console.log('📍 No venues in DB, using demo venues for map');
+          setImportedVenues(DEMO_VENUES);
         }
       } catch (err) {
-        console.error("Error loading venues:", err);
+        console.error('Error loading venues from DB:', err);
+        setImportedVenues(DEMO_VENUES);
       }
-    }
+    };
 
-    console.log("📍 Using demo venues for map");
-    setImportedVenues(DEMO_VENUES);
+    loadVenues();
   }, []);
 
   // Genera coordenadas reales basadas en la zona si faltan
   const getCoordinatesFromZone = (
     zone: string,
-    index: number,
   ): [number, number] => {
     const zoneCoordinates: { [key: string]: [number, number] } =
-      {
-        palermo: [-34.5889, -58.4305],
-        recoleta: [-34.5883, -58.3963],
-        belgrano: [-34.5625, -58.4602],
-        "puerto madero": [-34.6128, -58.3615],
-        "san telmo": [-34.6215, -58.3732],
-        microcentro: [-34.6037, -58.3816],
-        retiro: [-34.5937, -58.3768],
-        caballito: [-34.6186, -58.4457],
-        "villa crespo": [-34.5954, -58.4498],
-        almagro: [-34.6098, -58.4223],
-        nuñez: [-34.5457, -58.4651],
-        colegiales: [-34.5746, -58.4485],
-        boca: [-34.6353, -58.3648],
-        centro: [-34.6037, -58.3816],
-      };
+    {
+      palermo: [-34.5889, -58.4305],
+      recoleta: [-34.5883, -58.3963],
+      belgrano: [-34.5625, -58.4602],
+      "puerto madero": [-34.6128, -58.3615],
+      "san telmo": [-34.6215, -58.3732],
+      microcentro: [-34.6037, -58.3816],
+      retiro: [-34.5937, -58.3768],
+      caballito: [-34.6186, -58.4457],
+      "villa crespo": [-34.5954, -58.4498],
+      almagro: [-34.6098, -58.4223],
+      nuñez: [-34.5457, -58.4651],
+      colegiales: [-34.5746, -58.4485],
+      boca: [-34.6353, -58.3648],
+      centro: [-34.6037, -58.3816],
+    };
 
     const zoneLower = zone.toLowerCase();
     let baseCoords: [number, number] = BA_CENTER;
@@ -331,7 +343,6 @@ export function OpportunityMap({
       if (!lat || !lng) {
         const coords = getCoordinatesFromZone(
           venue.zone,
-          index,
         );
         lat = coords[0];
         lng = coords[1];
@@ -361,7 +372,7 @@ export function OpportunityMap({
     { id: "activated", label: t('map.activated'), color: "amber" },
   ];
 
-  const createCustomIcon = (type: string, score: number) => {
+  const createCustomIcon = (type: string) => {
     let colorClass = "bg-slate-500";
 
     switch (type) {
@@ -532,7 +543,7 @@ export function OpportunityMap({
     // Add new markers
     filteredLocations.forEach((loc) => {
       const marker = L.marker([loc.lat, loc.lng], {
-        icon: createCustomIcon(loc.type, loc.score),
+        icon: createCustomIcon(loc.type),
       });
 
       marker.bindPopup(createPopupContent(loc), {
