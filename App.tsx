@@ -1,4 +1,7 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
+
+// Declare chrome global for extension blocking code
+declare const chrome: { runtime: any } | undefined;
 import { supabase } from './utils/supabase/client';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { LanguageProvider } from './utils/LanguageContext';
@@ -14,7 +17,7 @@ import { Toaster } from 'sonner';
   'use strict';
 
   // 1. Block ethereum provider BEFORE MetaMask can inject it
-  const blockProviderProperty = (prop) => {
+  const blockProviderProperty = (prop: string) => {
     try {
       // Check if property already exists
       const descriptor = Object.getOwnPropertyDescriptor(window, prop);
@@ -39,7 +42,7 @@ import { Toaster } from 'sonner';
         enumerable: false
       });
     } catch (e) {
-      console.log(`⚠️ Could not block ${prop}:`, e.message);
+      console.log(`⚠️ Could not block ${prop}:`, (e as Error).message);
     }
   };
 
@@ -817,7 +820,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
       .select('rol, estado_aprobacion, email, auth_user_id')
       .eq('auth_user_id', session.user.id)
       .single()
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string; email: string; auth_user_id: string } | null; error: any }) => {
         console.log('📊 btl_usuarios query result:', { data, error });
         if (error) {
           console.error('❌ Role query error - code:', error.code, 'message:', error.message, 'details:', error.details);

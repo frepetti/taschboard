@@ -1,3 +1,4 @@
+// @ts-nocheck
 // BTL Edge Function - Backend Completo
 // Versión: 3.6.0 (Schema Fixes: auth_user_id & created_at)
 

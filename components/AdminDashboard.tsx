@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Ticket, BarChart3, RefreshCw, Loader2, MapPin, LayoutDashboard, Clipboard, Package, UserCheck, GraduationCap, Map } from 'lucide-react';
+import { Users, Ticket, BarChart3, RefreshCw, Loader2, MapPin, Package, UserCheck, GraduationCap, Map } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { TicketManagement } from './TicketManagement';
 import { AdminStats } from './AdminStats';
@@ -17,7 +17,7 @@ interface AdminDashboardProps {
   initialTicketId?: string | null;
 }
 
-export function AdminDashboard({ session, onViewChange, initialTicketId }: AdminDashboardProps) {
+export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'tickets' | 'venues' | 'regions' | 'products' | 'pending' | 'trainings'>(
     initialTicketId ? 'tickets' : 'stats'
   );
@@ -38,75 +38,68 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
     try {
       console.log('📊 Loading admin stats...');
       console.log('🔑 User ID:', session?.user?.id);
-      console.log('🔑 User role:', session?.user?.user_metadata?.role);
-      
-      // Check if user is admin
-      if (session?.user?.user_metadata?.role !== 'admin') {
-        setError('No tienes permisos de administrador');
-        return;
-      }
 
       // Load real stats from Supabase
       console.log('📊 Loading real stats from Supabase...');
-      
+
       // Load users
       const { data: usersData, error: usersError } = await supabase
         .from('btl_usuarios')
-        .select('id, rol');
-      
+        .select('id, rol') as { data: { id: string; rol: string }[] | null; error: any };
+
       if (usersError) {
         console.error('❌ Error loading users:', usersError);
       }
-      
+
       // Load venues
       const { data: venuesData, error: venuesError } = await supabase
         .from('btl_puntos_venta')
         .select('id');
-      
+
       if (venuesError) {
         console.error('❌ Error loading venues:', venuesError);
       }
-      
+
       // Load inspections
       const { data: inspectionsData, error: inspectionsError } = await supabase
         .from('btl_inspecciones')
         .select('id');
-      
+
       if (inspectionsError) {
         console.error('❌ Error loading inspections:', inspectionsError);
       }
-      
+
       // Load tickets
       const { data: ticketsData, error: ticketsError } = await supabase
         .from('btl_reportes')
-        .select('id, estado');
-      
+        .select('id, estado') as { data: { id: string; estado: string }[] | null; error: any };
+
       if (ticketsError) {
         console.error('❌ Error loading tickets:', ticketsError);
       }
-      
+
       // Calculate stats
       const totalUsers = usersData?.length || 0;
       const totalVenues = venuesData?.length || 0;
       const totalInspections = inspectionsData?.length || 0;
       const totalTickets = ticketsData?.length || 0;
-      
+
       // Users by role
       const usersByRole = {
         inspector: usersData?.filter(u => u.rol === 'inspector').length || 0,
         client: usersData?.filter(u => u.rol === 'client').length || 0,
         admin: usersData?.filter(u => u.rol === 'admin').length || 0,
       };
-      
+
       // Tickets by status
       const ticketsByStatus = {
         open: ticketsData?.filter(t => t.estado === 'abierto').length || 0,
         'in-progress': ticketsData?.filter(t => t.estado === 'en_progreso').length || 0,
         resolved: ticketsData?.filter(t => t.estado === 'resuelto').length || 0,
       };
-      
+
       const openTickets = ticketsByStatus.open;
-      
+
       setStats({
         totalUsers,
         totalInspections,
@@ -116,7 +109,7 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
         usersByRole,
         ticketsByStatus
       });
-      
+
       console.log('✅ Stats loaded:', {
         totalUsers,
         totalVenues,
@@ -125,10 +118,10 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
         usersByRole,
         ticketsByStatus
       });
-      
+
     } catch (error: any) {
       console.error('❌ Error loading stats:', error);
-      
+
       // Show empty stats
       setStats({
         totalUsers: 0,
@@ -150,7 +143,7 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
         .from('btl_usuarios')
         .select('id')
         .eq('estado_aprobacion', 'pending');
-      
+
       if (error) {
         console.error('❌ Error loading pending users count:', error);
         setPendingCount(0);
@@ -171,22 +164,20 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
           <div className="flex gap-2 min-w-max">
             <button
               onClick={() => setActiveTab('stats')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'stats'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'stats'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <BarChart3 className="w-5 h-5" />
               <span>Estadísticas</span>
             </button>
             <button
               onClick={() => setActiveTab('users')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'users'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'users'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <Users className="w-5 h-5" />
               <span>Usuarios</span>
@@ -194,11 +185,10 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
             </button>
             <button
               onClick={() => setActiveTab('tickets')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'tickets'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'tickets'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <Ticket className="w-5 h-5" />
               <span>Tickets</span>
@@ -206,11 +196,10 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
             </button>
             <button
               onClick={() => setActiveTab('venues')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'venues'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'venues'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <MapPin className="w-5 h-5" />
               <span>Lugares</span>
@@ -218,33 +207,30 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
             </button>
             <button
               onClick={() => setActiveTab('regions')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'regions'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'regions'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <Map className="w-5 h-5" />
               <span>Regiones</span>
             </button>
             <button
               onClick={() => setActiveTab('products')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'products'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'products'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <Package className="w-5 h-5" />
               <span>Productos</span>
             </button>
             <button
               onClick={() => setActiveTab('pending')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'pending'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'pending'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <UserCheck className="w-5 h-5" />
               <span>Usuarios Pendientes</span>
@@ -252,18 +238,17 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
             </button>
             <button
               onClick={() => setActiveTab('trainings')}
-              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${
-                activeTab === 'trainings'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'trainings'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
             >
               <GraduationCap className="w-5 h-5" />
               <span>Capacitaciones</span>
             </button>
           </div>
         </div>
-        
+
         <button
           onClick={loadStats}
           className="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors ml-auto lg:ml-0"
@@ -304,21 +289,19 @@ export function AdminDashboard({ session, onViewChange, initialTicketId }: Admin
               <div className="flex p-1 bg-slate-800/50 rounded-lg w-fit border border-slate-700/50">
                 <button
                   onClick={() => setProductSubTab('catalog')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    productSubTab === 'catalog'
-                      ? 'bg-amber-600 text-white shadow-lg'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                  }`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'catalog'
+                    ? 'bg-amber-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    }`}
                 >
                   Catálogo y Objetivos
                 </button>
                 <button
                   onClick={() => setProductSubTab('assignment')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    productSubTab === 'assignment'
-                      ? 'bg-amber-600 text-white shadow-lg'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                  }`}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'assignment'
+                    ? 'bg-amber-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    }`}
                 >
                   Asignación por Cliente
                 </button>
