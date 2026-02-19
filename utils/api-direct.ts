@@ -416,12 +416,24 @@ export async function getClients(): Promise<any[]> {
   console.log('📡 [API Direct] Fetching clients...');
 
   try {
+    // Debug: Check who is making the request
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('👤 [API Direct - getClients] Current Auth User:', user?.id, user?.email);
+
     const data = await executeWithRetry(async () => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('btl_usuarios')
         .select('*')
-        .in('rol', ['client', 'cliente']) // Support both role names
+        .in('rol', ['client', 'cliente'])
         .order('nombre');
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('❌ [API Direct - getClients] Supabase Error:', error);
+      } else {
+        console.log('📦 [API Direct - getClients] Raw Data:', data);
+      }
 
       return { data: data as any, error };
     });
