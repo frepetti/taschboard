@@ -749,25 +749,38 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
       <div className="flex gap-3 sticky bottom-4">
         {activeSection > 0 && (
           <button
-            onClick={() => setActiveSection(activeSection - 1)}
-            className="flex-1 bg-slate-700/50 hover:bg-slate-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+            onClick={() => setActiveSection(prev => prev - 1)}
+            className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-medium"
           >
-            Previous
+            Anterior
           </button>
         )}
+
         {activeSection < sections.length - 1 ? (
           <button
-            onClick={() => setActiveSection(activeSection + 1)}
-            className="flex-1 bg-amber-600 hover:bg-amber-500 text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+            onClick={() => setActiveSection(prev => prev + 1)}
+            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors font-medium ml-auto"
           >
-            Next Section
+            Siguiente
           </button>
         ) : (
           <button
             onClick={handleSubmit}
-            className="flex-1 bg-green-600 hover:bg-green-500 text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+            className={`px-8 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors font-bold shadow-lg shadow-green-600/20 ml-auto flex items-center gap-2 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            disabled={isUploading}
           >
-            Submit Inspection
+            {isUploading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Subiendo fotos...
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5" />
+                Enviar Inspección
+              </>
+            )}
           </button>
         )}
       </div>

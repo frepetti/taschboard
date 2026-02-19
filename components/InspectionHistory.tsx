@@ -124,6 +124,20 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
     );
   }
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterProduct, setFilterProduct] = useState('');
+
+  // Get unique products for filter
+  const uniqueProducts = Array.from(new Set(safeInspections.map(i => i.btl_productos?.nombre).filter(Boolean)));
+
+  const filteredInspections = safeInspections.filter(inspection => {
+    const venueName = venueNames[inspection.punto_venta_id]?.toLowerCase() || '';
+    const productName = inspection.btl_productos?.nombre || '';
+    const matchesSearch = venueName.includes(searchTerm.toLowerCase());
+    const matchesProduct = filterProduct ? productName === filterProduct : true;
+    return matchesSearch && matchesProduct;
+  });
+
 
   return (
     <>
@@ -280,7 +294,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl sm:text-2xl text-white font-bold">
-                      Inspección #{safeInspections.length - safeInspections.findIndex(i => i.id === selectedInspection.id)}
+                      {selectedInspection.btl_productos?.nombre} <span className="text-slate-500">#</span>{safeInspections.length - safeInspections.findIndex(i => i.id === selectedInspection.id)}
                     </h2>
                     <p className="text-sm text-slate-400 mt-1">{venueNames[selectedInspection.punto_venta_id] || 'Punto de Venta'}</p>
                   </div>
