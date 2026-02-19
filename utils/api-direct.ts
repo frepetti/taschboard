@@ -138,7 +138,7 @@ export async function getInspections(): Promise<Inspection[]> {
     const data = await executeWithRetry(async () => {
       let query = supabase
         .from('btl_inspecciones')
-        .select('*');
+        .select('*, btl_puntos_venta(*), btl_productos(*)');
 
       // Si NO es admin, filtrar por usuario
       if (btlUser.rol !== 'admin' && btlUser.rol !== 'superadmin') {
@@ -381,7 +381,36 @@ export async function getVenues(): Promise<Venue[]> {
 }
 
 /**
- * Obtener todos los clientes (usuarios con rol 'client')
+ * Actualizar una inspección existente
+ */
+export async function updateInspection(id: string, inspectionData: any) {
+  console.log('📝 [API Direct] Updating inspection:', id);
+
+  try {
+    await verifyAuthOrThrow();
+
+    // Remover campos que no deben actualizarse o son de lectura (joins)
+    const { btl_puntos_venta, btl_productos, id: _id, created_at, ...updateData } = inspectionData;
+
+    const { data, error } = await supabase
+      .from('btl_inspecciones')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    console.log('✅ [API Direct] Inspection updated:', id);
+    return data;
+  } catch (error: any) {
+    console.error('❌ [API Direct] Error updating inspection:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener todos los clientes (usuarios con rol 'client' o 'cliente')
  */
 export async function getClients(): Promise<any[]> {
   console.log('📡 [API Direct] Fetching clients...');
@@ -391,7 +420,7 @@ export async function getClients(): Promise<any[]> {
       const { data, error } = await supabase
         .from('btl_usuarios')
         .select('*')
-        .eq('rol', 'client')
+        .in('rol', ['client', 'cliente']) // Support both role names
         .order('nombre');
 
       return { data: data as any, error };
