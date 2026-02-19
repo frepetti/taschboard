@@ -114,7 +114,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
       const inspectionData = {
         punto_venta_id: selectedVenue.id,
         producto_id: selectedProduct.id,
-        inspector_id: session.user.id,
+        usuario_id: session.user.id,
         fecha_inspeccion: new Date().toISOString(),
 
         // Datos del Producto

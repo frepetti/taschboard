@@ -94,7 +94,7 @@ async function executeWithRetry<T>(
 export interface Inspection {
   id: string;
   venue_id: string;
-  inspector_id: string;
+  usuario_id: string;
   fecha_inspeccion: string;
   presencia_marca: boolean;
   productos_disponibles: string[];
@@ -163,7 +163,7 @@ export async function getInspections(): Promise<Inspection[]> {
 /**
  * Crear una nueva inspección
  */
-export async function createInspection(inspectionData: Omit<Inspection, 'id' | 'created_at' | 'inspector_id'>) {
+export async function createInspection(inspectionData: Omit<Inspection, 'id' | 'created_at' | 'usuario_id'>) {
   console.log('📡 [API Direct] Creating inspection...');
 
   try {
