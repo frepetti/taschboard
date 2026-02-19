@@ -60,7 +60,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
       const { data, error } = await supabase
         .from('btl_usuarios')
         .select('id, nombre, email, empresa')
-        .eq('rol', 'client')
+        .in('rol', ['client', 'cliente']) // Support both role names
         .order('nombre');
 
       if (error) throw error;
