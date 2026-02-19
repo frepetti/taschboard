@@ -54,42 +54,42 @@ export const translations = {
       request: 'Solicitud',
       details: 'Detalles del Ticket',
       change_status: 'Cambiar Estado',
-      
+
       // Categorías
       cat_general: 'General',
       cat_training: 'Capacitación',
       cat_btl: 'Acción BTL',
       cat_pop: 'Material POP',
-      
+
       // Prioridades
       prio_low: 'Baja',
       prio_medium: 'Media',
       prio_high: 'Alta',
       prio_urgent: 'Urgente',
       prio_critical: 'Crítica',
-      
+
       // Estados
       status_open: 'Abierto',
       status_progress: 'En Progreso',
       status_resolved: 'Resuelto',
       status_closed: 'Cerrado',
-      
+
       // Botones / Labels
       btn_create: 'Crear Ticket',
       btn_sending: 'Enviando...',
       success_create_title: 'Ticket Creado',
       success_create_msg: 'Tu solicitud ha sido enviada correctamente.',
-      
+
       // Formulario
       select_cat: 'Selecciona una categoría',
       ph_subject: 'Describe brevemente el asunto',
       ph_desc: 'Detalla tu solicitud...',
-      
+
       // Campos específicos
       training_req: 'Capacitación Solicitada',
       participants: 'Participantes Estimados',
       topics: 'Temas de Interés',
-      
+
       activation_type: 'Tipo de Activación',
       activation_date: 'Fecha Solicitada',
       venue: 'Punto de Venta',
@@ -97,7 +97,7 @@ export const translations = {
       products: 'Productos Involucrados',
       budget: 'Presupuesto Estimado',
       impact: 'Impacto Esperado',
-      
+
       materials: 'Materiales Solicitados',
       add_material: 'Agregar Material'
     },
@@ -152,6 +152,43 @@ export const translations = {
       opportunity: 'Oportunidad',
       risk: 'Riesgo',
       activated: 'Activado'
+    },
+    venue_detail: {
+      back_to_dashboard: 'Volver al Dashboard',
+      global_score: 'Puntaje Global',
+      out_of_100: 'de 100',
+      create_btl: 'Crear Acción BTL',
+      gallery: 'Galería del Venue',
+      no_photos: 'No hay fotos disponibles',
+      perfect_serve: 'Checklist Perfect Serve',
+      compliance_score: 'Cumplimiento',
+      no_inspection: 'Sin datos de inspección reciente',
+      key_metrics: 'Métricas Clave',
+      brand_presence: 'Presencia de Marca',
+      share_of_menu: 'Share of Menu',
+      avg_rotation: 'Rotación Promedio',
+      revenue_impact: 'Impacto en Ingresos',
+      qualitative_notes: 'Notas Cualitativas',
+      qualitative_placeholder: 'La sección de notas cualitativas se generará automáticamente en futuras versiones basada en el análisis de observaciones.',
+      recommended_actions: 'Acciones Recomendadas',
+      coming_soon: 'Próximamente',
+      yes: 'Sí',
+      no: 'No',
+      bottles_month: 'botellas/mes',
+      // Checklist items
+      staff_knowledge: 'Conocimiento del Staff',
+      certified_bartenders: 'Bartenders Certificados',
+      pop_visible: 'Material POP Visible',
+      adequate_stock: 'Stock Adecuado',
+      shelf_position: 'Posición en Back Bar',
+      // Recommendations
+      rec_tasting: 'Evento de Degustación',
+      rec_tasting_desc: 'Organizar degustación exclusiva para clientes VIP. Aumento esperado: +25%',
+      rec_training: 'Capacitación de Bartenders',
+      rec_training_desc: 'Capacitar a 2 bartenders adicionales en protocolo Perfect Serve. Mantener consistencia.',
+      rec_social: 'Alianza en Redes Sociales',
+      rec_social_desc: 'Co-crear contenido de cócteles de autor para Instagram. Aprovechar los 85K seguidores del lugar.',
+      investment: 'Inversión'
     }
   },
   en: {
@@ -209,42 +246,42 @@ export const translations = {
       request: 'Request',
       details: 'Ticket Details',
       change_status: 'Change Status',
-      
+
       // Categories
       cat_general: 'General',
       cat_training: 'Training',
       cat_btl: 'BTL Action',
       cat_pop: 'POP Material',
-      
+
       // Priorities
       prio_low: 'Low',
       prio_medium: 'Medium',
       prio_high: 'High',
       prio_urgent: 'Urgent',
       prio_critical: 'Critical',
-      
+
       // Statuses
       status_open: 'Open',
       status_progress: 'In Progress',
       status_resolved: 'Resolved',
       status_closed: 'Closed',
-      
+
       // Buttons / Labels
       btn_create: 'Create Ticket',
       btn_sending: 'Sending...',
       success_create_title: 'Ticket Created',
       success_create_msg: 'Your request has been sent successfully.',
-      
+
       // Formulario
       select_cat: 'Select a category',
       ph_subject: 'Briefly describe the subject',
       ph_desc: 'Detail your request...',
-      
+
       // Specific fields
       training_req: 'Requested Training',
       participants: 'Estimated Participants',
       topics: 'Topics of Interest',
-      
+
       activation_type: 'Activation Type',
       activation_date: 'Requested Date',
       venue: 'Point of Sale',
@@ -252,7 +289,7 @@ export const translations = {
       products: 'Involved Products',
       budget: 'Estimated Budget',
       impact: 'Expected Impact',
-      
+
       materials: 'Requested Materials',
       add_material: 'Add Material'
     },
@@ -307,6 +344,43 @@ export const translations = {
       opportunity: 'Opportunity',
       risk: 'Risk',
       activated: 'Activated'
+    },
+    venue_detail: {
+      back_to_dashboard: 'Back to Dashboard',
+      global_score: 'Global Score',
+      out_of_100: 'out of 100',
+      create_btl: 'Create BTL Action',
+      gallery: 'Venue Gallery',
+      no_photos: 'No photos available',
+      perfect_serve: 'Perfect Serve Checklist',
+      compliance_score: 'Compliance Score',
+      no_inspection: 'No recent inspection data',
+      key_metrics: 'Key Metrics',
+      brand_presence: 'Brand Presence',
+      share_of_menu: 'Share of Menu',
+      avg_rotation: 'Avg. Rotation',
+      revenue_impact: 'Revenue Impact',
+      qualitative_notes: 'Qualitative Notes',
+      qualitative_placeholder: 'The qualitative notes section will be automatically generated in future versions based on observation analysis.',
+      recommended_actions: 'Recommended Actions',
+      coming_soon: 'Coming Soon',
+      yes: 'Yes',
+      no: 'No',
+      bottles_month: 'bottles/month',
+      // Checklist items
+      staff_knowledge: 'Staff Knowledge',
+      certified_bartenders: 'Certified Bartenders',
+      pop_visible: 'POP Material Visible',
+      adequate_stock: 'Adequate Stock',
+      shelf_position: 'Back Bar Position',
+      // Recommendations
+      rec_tasting: 'Premium Tasting Event',
+      rec_tasting_desc: 'Host exclusive tasting for VIP guests. Expected lift: +25%',
+      rec_training: 'Bartender Certification',
+      rec_training_desc: 'Train 2 additional bartenders on Perfect Serve protocol. Maintain consistency.',
+      rec_social: 'Social Media Partnership',
+      rec_social_desc: 'Co-create signature cocktail content for Instagram. Leverage venue\'s 85K followers.',
+      investment: 'Investment'
     }
   }
 };

@@ -2,188 +2,111 @@
 
 ## Introducción
 
-Este documento detalla cómo se calculan los Key Performance Indicators (KPIs) en el dashboard. Todos los cálculos se basan en datos en tiempo real provenientes de la tabla `btl_inspecciones` y sus tablas relacionadas.
+Este documento detalla cómo se calculan los Key Performance Indicators (KPIs) y puntajes en el dashboard. La fuente de verdad para estos cálculos se encuentra en los archivos `utils/scoreCalculations.ts` y `utils/scoreConfig.ts`.
 
 ---
 
-## 1. Métricas de Ejecución en Punto de Venta (PDV)
+## 1. Puntaje Global (Global Score / Perfect Serve)
 
-### 1.1 Porcentaje de Presencia (% Presencia)
+El **Puntaje Global** es el indicador principal de la calidad de ejecución en el punto de venta. Se calcula automáticamente en cada inspección y se promedia a nivel de venue.
 
-Mide la disponibilidad física del producto en el punto de venta al momento de la inspección.
+**Fórmula Maestra:**
+```javascript
+Global Score = (Visibilidad × 0.4) + (Material POP × 0.3) + (Stock × 0.2) + (Conocimiento × 0.1)
+```
+
+### Desglose de Componentes
+
+#### A. Visibilidad (40%) (`calculateVisibilityScore`)
+Evalúa qué tan destacado está el producto en la barra. Se compone de dos sub-factores:
+
+1.  **Visibilidad en Back Bar (60 puntos max):**
+    *   `Destacado / Prominent`: 60 pts
+    *   `Visible`: 40 pts
+    *   `Oculto / Hidden`: 10 pts
+    *   *(Si no está presente, 0 pts)*
+
+2.  **Posición en Estante (40 puntos max):**
+    *   `Superior / Top`: 40 pts
+    *   `Medio / Middle`: 20 pts
+    *   `Inferior / Bottom`: 5 pts
+
+#### B. Material POP (30%) (`calculatePOPScore`)
+Evalúa la presencia de material promocional.
+*   **Base:** 50 puntos si hay *algún* material (`tiene_material_pop` = true).
+*   **Cantidad:** +10 puntos por cada tipo de material adicional registrado en `pos_materials`.
+*   **Tope:** Máximo 100 puntos.
+*   *Nota: Si no hay material ni presencia base, el puntaje es 0.*
+
+#### C. Stock (20%) (`calculateStockScore`)
+Basado en el nivel cualitativo reportado por el inspector.
+*   `Adecuado / Adequate`: 100 pts
+*   `Bajo / Low`: 50 pts
+*   `Crítico / Agotado / Out`: 0 pts
+
+#### D. Conocimiento & Advocacy (10%) (`calculateKnowledgeScore`)
+Evalúa la capacitación y predisposición del staff.
+*   **Conocimiento del Staff (40% de este componente):** Nivel 1-10 escalado a 10-100.
+*   **Capacitación (40%):** % de bartenders certificados sobre el total de bartenders.
+*   **Brand Advocacy (20%):**
+    *   `Alta / High`: 100 pts
+    *   `Media / Medium`: 50 pts
+    *   `Baja / Low`: 0 pts
+
+---
+
+## 2. Segmentación de Puntos de Venta (Venue Status)
+
+Los puntos de venta se clasifican automáticamente en tres categorías según su **Puntaje Global Promedio**, calculado al momento de generar el mapa o listados.
+
+| Estado | Definición | Umbral de Puntaje (`scoreConfig.ts`) | Color |
+|---|---|---|---|
+| **Estratégico** | Ejecución excelente, modelo a seguir. | **>= 85 pts** | 🟢 Verde |
+| **Oportunidad** | Ejecución promedio con potencial de mejora. | **>= 60 pts y < 85 pts** | 🟡 Ámbar |
+| **Riesgo** | Ejecución deficiente, requiere atención inmediata. | **< 60 pts** | 🔴 Rojo |
+
+*Nota: Alternativamente, si el venue tiene asignado un segmento (`Gold`, `Silver`, `Bronze`) en la base de datos, este puede prevalecer para la categorización inicial.*
+
+---
+
+## 3. Análisis de Oportunidades (Opportunity Score)
+
+Este puntaje (0-10) prioriza qué venues tienen mayor potencial de crecimiento basado en brechas de ejecución. Se visualiza en el gráfico de "Análisis de Oportunidades" (`OpportunityBreakdown.tsx`).
 
 **Fórmula:**
 ```
-% Presencia = (Total Productos Encontrados / Total Productos Objetivo) * 100
+Opportunity Score = ( (% Presencia × 0.35) + (% POP × 0.25) + (% Stock × 0.25) + (% Activaciones × 0.15) ) / 10
 ```
 
-*   **Fuente de Datos:** Tabla `btl_inspeccion_productos`.
-*   **Filtro:** Solo considera inspecciones realizadas en el periodo seleccionado.
-*   **Nivel de Agregación:** Puede calcularse por PDV, por Región, por Cliente o Global.
-
-### 1.2 Porcentaje de Stock (% Stock)
-
-Indica el nivel de inventario disponible en el punto de venta.
-
-**Cálculo:**
-Se asigna un valor numérico a cada nivel cualitativo de stock reportado por el inspector:
-*   `Alto`: 100%
-*   `Medio`: 66%
-*   `Bajo`: 33%
-*   `Agotado`: 0%
-
-**Fórmula:**
-```
-% Stock Promedio = Promedio(Valor Numérico de Stock) de todas las inspecciones en el periodo
-```
-
-*   **Fuente de Datos:** Columna `stock_nivel` en `btl_inspeccion_productos`.
-
-### 1.3 Cumplimiento de Material POP (% POP)
-
-Mide la implementación correcta de material promocional (Point of Purchase) según los estándares de la marca.
-
-**Fórmula:**
-```
-% POP = (Inspecciones con Material POP "Sí" / Total Inspecciones) * 100
-```
-O, si se evalúa por producto:
-```
-% POP Producto = (Productos con Material POP "Sí" / Total Productos Inspeccionados) * 100
-```
-
-*   **Fuente de Datos:** Columna `tiene_material_pop` en `btl_inspeccion_productos`.
+Se calcula sobre el **total de inspecciones** del periodo seleccionado:
+1.  **% Presencia (35%):** Porcentaje de inspecciones donde `tiene_producto = true`.
+2.  **% POP (25%):** Porcentaje de inspecciones donde `tiene_material_pop = true`.
+3.  **% Stock (25%):** Porcentaje de inspecciones donde `stock_estimado > 0`.
+4.  **% Activaciones (15%):** Porcentaje de inspecciones donde `activacion_ejecutada = true`.
 
 ---
 
-## 2. Métricas de Cobertura y Eficiencia
+## 4. KPIs del Dashboard (Manager View)
 
-### 2.1 Cobertura de Visitas
+Estas métricas aparecen en las tarjetas superiores del dashboard (`KPICard`) en `ManagerDashboard.tsx`.
 
-Porcentaje de puntos de venta visitados respecto al total del universo asignado.
+### 4.1 Cobertura de Venues
+*   **Definición:** Cantidad de puntos de venta únicos visitados en el periodo seleccionado.
+*   **Cálculo:** `Count(Distinct punto_venta_id)` en las inspecciones filtradas.
 
-**Fórmula:**
-```
-Cobertura = (PDVs Visitados Únicos / Total PDVs Activos) * 100
-```
+### 4.2 Cumplimiento (Compliance)
+*   **Definición:** Calidad promedio de ejecución en todas las visitas.
+*   **Cálculo:** Promedio simple del campo `compliance_score` (que corresponde al Global Score calculado al momento de la inspección) de todas las inspecciones del periodo.
 
-*   **Fuente de Datos:** Tablas `btl_inspecciones` (conteo distinto de `punto_venta_id`) y `btl_puntos_venta` (total activos).
-
-### 2.2 Efectividad de Visita
-
-Mide si la visita fue exitosa (se pudo realizar la inspección completa).
-
-**Fórmula:**
-```
-Efectividad = (Inspecciones Exitosas / Total Visitas Realizadas) * 100
-```
-
-*   **Nota:** Una visita se considera "Exitosa" si se completaron todos los campos obligatorios del formulario (implícito en el diseño de la base de datos, ya que `btl_inspecciones` requiere datos mínimos).
+### 4.3 Activaciones
+*   **Definición:** Total de acciones BTL ejecutadas.
+*   **Cálculo:** Sumatoria de inspecciones donde `activacion_ejecutada = true`.
 
 ---
 
-## 3. Score Perfect Serve
+## 5. Glosario de Campos de Base de Datos
 
-Índice compuesto que evalúa la calidad de la ejecución en el punto de venta.
-
-**Componentes (Ponderación sugerida):**
-*   Presencia: 40%
-*   Visibilidad (POP): 30%
-*   Stock: 20%
-*   Precio Correcto (si aplica): 10%
-
-**Fórmula:**
-```
-Score Perfect Serve = (Score Presencia * 0.4) + (Score Visibilidad * 0.3) + (Score Stock * 0.2) + (Score Precio * 0.1)
-```
-
-*   **Rango:** 0 - 100 puntos.
-*   **Fuente de Datos:** Agregación de métricas individuales calculadas anteriormente.
-
----
-
-## 4. Gráficos del Dashboard de Cliente
-
-### 4.1 Gráfico de Rendimiento de Marca (`PerformanceChart`)
-
-Muestra la evolución mensual de métricas clave a lo largo del tiempo. Los datos se agregan por mes calendario a partir de las inspecciones registradas.
-
-**Métricas disponibles:**
-
-| Métrica | Cálculo |
-|---|---|
-| Índice de Ejecución | Promedio de `compliance_score` de todas las inspecciones del mes |
-| Visibilidad (Presencia) | `(Inspecciones con tiene_producto = true / Total del mes) × 100` |
-| Material POP | `(Inspecciones con tiene_material_pop = true / Total del mes) × 100` |
-| Visitas | Conteo total de inspecciones del mes |
-
-- **Fuente de Datos:** Columnas `fecha_inspeccion`, `compliance_score`, `tiene_producto`, `tiene_material_pop` de `btl_inspecciones`.
-- **Período:** Últimos 7 meses con datos registrados.
-- **Comparativa:** Se muestra la variación porcentual respecto al mes anterior.
-
----
-
-### 4.2 Gráfico de Competencia (`CompetitionChart`)
-
-Muestra la frecuencia de aparición de competidores en las inspecciones. Tiene dos modos según los datos disponibles:
-
-**Modo 1 — Competidores nombrados** *(prioritario)*
-
-Si las inspecciones contienen el nombre del competidor principal (`competidor_principal` / `competitor_presence` / `main_competitor`), se muestra un ranking de los 7 competidores más frecuentes.
-
-```
-Frecuencia = Conteo de inspecciones donde el campo competidor = nombre_marca
-Orden: Descendente por frecuencia
-```
-
-**Modo 2 — Nivel de presencia** *(fallback)*
-
-Si no hay nombres de competidores, se agrupa por nivel de visibilidad (`presencia_competencia`):
-- `Alta` / `high`
-- `Media` / `medium`
-- `Baja` / `low`
-
-**Estado vacío:** Si ninguna inspección tiene datos de competencia, se muestra un mensaje indicando que los inspectores deben completar la sección de competencia en el formulario.
-
-- **Fuente de Datos:** Campos `competidor_principal`, `competitor_presence`, `presencia_competencia` de `btl_inspecciones`.
-
----
-
-### 4.3 Análisis de Oportunidades (`OpportunityBreakdown`)
-
-Calcula un **puntaje de oportunidad ponderado (0–10)** a partir de métricas reales de inspección.
-
-**Componentes y ponderación:**
-
-| Componente | Campo en DB | Peso |
-|---|---|---|
-| Presencia de Marca | `tiene_producto = true` | 35% |
-| Material POP | `tiene_material_pop = true` | 25% |
-| Stock Disponible | `stock_estimado > 0` | 25% |
-| Activaciones | `activacion_ejecutada = true` | 15% |
-
-**Fórmula del puntaje:**
-```
-Puntaje = ((% Presencia × 0.35) + (% Material × 0.25) + (% Stock × 0.25) + (% Activaciones × 0.15)) / 10
-```
-
-Cada porcentaje se calcula como:
-```
-% Componente = (Inspecciones donde campo = true / Total Inspecciones) × 100
-```
-
-- **Rango:** 0.0 – 10.0 puntos.
-- **Fuente de Datos:** Columnas `tiene_producto`, `tiene_material_pop`, `stock_estimado`, `activacion_ejecutada` de `btl_inspecciones`.
-- **Estado vacío:** Si no hay inspecciones, se muestra un mensaje informativo.
-
----
-
-## 5. Notas Técnicas
-
-*   **Periodos de Tiempo:** Todas las métricas permiten filtrado por rangos de fechas (Hoy, Esta Semana, Este Mes, Personalizado).
-*   **Segmentación:** Los datos pueden desglosarse por:
-    *   Región / Ciudad
-    *   Canal (On-Premise vs Off-Premise)
-    *   Categoría de Producto
-    *   Inspector Asignado
-*   **Modo Demo:** Al acceder con `/?mode=demo`, todos los gráficos muestran datos de ejemplo predefinidos en lugar de datos reales de la base de datos.
+*   `btl_inspecciones`:
+    *   `detalles`: Campo JSONB que guarda el desglose granular (respuestas de checklist, valores crudos de visibilidad, etc.).
+    *   `global_score` / `compliance_score`: El puntaje final calculado (0-100) guardado en la inspección para consultas rápidas.
+    *   `tiene_producto`: Booleano, indica presencia básica.

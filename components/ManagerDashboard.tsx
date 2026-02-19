@@ -396,8 +396,12 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50">
           <div className="h-full overflow-y-auto">
             <VenueDetail
-              venue={selectedVenue}
-              onBack={() => setSelectedVenue(null)}
+              venueId={selectedVenue.id}
+              onBack={() => {
+                setSelectedVenue(null);
+                // Refresh data when returning from detail
+                loadDashboardData();
+              }}
             />
           </div>
         </div>

@@ -633,5 +633,20 @@ INSERT INTO btl_regiones (nombre, descripcion) VALUES
 ('Norte', 'Zona Norte'), ('Centro', 'Zona Centro y Capital'), ('Sur', 'Zona Sur') 
 ON CONFLICT (nombre) DO NOTHING;
 
--- 13. FIN
+-- 13. STORAGE BUCKETS
+-- ==============================================================================
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('inspection-photos', 'inspection-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policies for inspection-photos
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'inspection-photos');
+CREATE POLICY "Auth Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'inspection-photos' AND auth.role() = 'authenticated');
+CREATE POLICY "Auth Update" ON storage.objects FOR UPDATE USING (bucket_id = 'inspection-photos' AND auth.role() = 'authenticated');
+
+-- 14. COMPLIANCE SCORE (Legacy/Compatibility)
+-- ==============================================================================
+ALTER TABLE btl_inspecciones ADD COLUMN IF NOT EXISTS compliance_score NUMERIC DEFAULT 0;
+
+-- 15. FIN
 SELECT 'Base de datos generada exitosamente con RLS policies corregidas.' as status;
