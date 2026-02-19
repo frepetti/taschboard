@@ -170,17 +170,15 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-700/50">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-700/50">
                   <div className="text-center">
                     <div className="text-[10px] sm:text-xs text-slate-400 mb-1">Stock</div>
-                    <div className="text-sm sm:text-lg text-white font-semibold">
-                      {inspection.stock_estimado || 'N/A'}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-[10px] sm:text-xs text-slate-400 mb-1">Temp.</div>
-                    <div className="text-sm sm:text-lg text-white font-semibold">
-                      {inspection.temperatura_refrigeracion ? `${inspection.temperatura_refrigeracion}°C` : 'N/A'}
+                    <div className="text-sm sm:text-lg text-white font-semibold capitalize">
+                      {inspection.detalles?.stockLevel === 'adequate' ? 'Adecuado' :
+                        inspection.detalles?.stockLevel === 'low' ? 'Bajo' :
+                          inspection.detalles?.stockLevel === 'critical' ? 'Crítico' :
+                            inspection.detalles?.stockLevel === 'out-of-stock' ? 'Sin Stock' :
+                              inspection.stock_estimado || 'N/A'}
                     </div>
                   </div>
                   <div className="text-center">
@@ -273,15 +271,15 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                  <div className="text-xs text-slate-400 mb-1">Stock Estimado</div>
-                  <div className="text-2xl text-white font-bold">{selectedInspection.stock_estimado || 'N/A'}</div>
-                </div>
-                <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                  <div className="text-xs text-slate-400 mb-1">Temperatura</div>
-                  <div className="text-2xl text-white font-bold">
-                    {selectedInspection.temperatura_refrigeracion ? `${selectedInspection.temperatura_refrigeracion}°C` : 'N/A'}
+                  <div className="text-xs text-slate-400 mb-1">Stock</div>
+                  <div className="text-2xl text-white font-bold capitalize">
+                    {selectedInspection.detalles?.stockLevel === 'adequate' ? 'Adecuado' :
+                      selectedInspection.detalles?.stockLevel === 'low' ? 'Bajo' :
+                        selectedInspection.detalles?.stockLevel === 'critical' ? 'Crítico' :
+                          selectedInspection.detalles?.stockLevel === 'out-of-stock' ? 'Sin Stock' :
+                            selectedInspection.stock_estimado || 'N/A'}
                   </div>
                 </div>
                 <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
@@ -313,21 +311,6 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
               {/* Extended Details (from JSONB) */}
               {selectedInspection.detalles && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Visibilidad y Menú */}
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                    <h3 className="text-sm text-amber-500 font-semibold mb-3">Visibilidad y Menú</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Posición en Menú:</span>
-                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.menuPosition || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Visibilidad Activación:</span>
-                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.activationVisibility || 'N/A'}</span>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Perfect Serve */}
                   <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
                     <h3 className="text-sm text-amber-500 font-semibold mb-3">Perfect Serve</h3>
@@ -390,7 +373,12 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Recomendación:</span>
-                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.brandAdvocacy || 'N/A'}</span>
+                        <span className="text-slate-200 capitalize">
+                          {selectedInspection.detalles.brandAdvocacy === 'high' ? 'Alta' :
+                            selectedInspection.detalles.brandAdvocacy === 'medium' ? 'Media' :
+                              selectedInspection.detalles.brandAdvocacy === 'low' ? 'Baja' :
+                                selectedInspection.detalles.brandAdvocacy || 'N/A'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Bartenders Cert.:</span>
@@ -409,11 +397,21 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Visibilidad Comp.:</span>
-                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.competitorVisibility || 'N/A'}</span>
+                        <span className="text-slate-200 capitalize">
+                          {selectedInspection.detalles.competitorVisibility === 'high' ? 'Alta' :
+                            selectedInspection.detalles.competitorVisibility === 'medium' ? 'Media' :
+                              selectedInspection.detalles.competitorVisibility === 'low' ? 'Baja' :
+                                selectedInspection.detalles.competitorVisibility || 'N/A'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Precio vs Comp.:</span>
-                        <span className="text-slate-200 capitalize">{selectedInspection.detalles.priceComparison || 'N/A'}</span>
+                        <span className="text-slate-200 capitalize">
+                          {selectedInspection.detalles.priceComparison === 'premium' ? 'Más Alto' :
+                            selectedInspection.detalles.priceComparison === 'equal' ? 'Igual' :
+                              selectedInspection.detalles.priceComparison === 'lower' ? 'Más Bajo' :
+                                selectedInspection.detalles.priceComparison || 'N/A'}
+                        </span>
                       </div>
                     </div>
                   </div>

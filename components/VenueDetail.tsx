@@ -78,7 +78,8 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
         ciudad: venueData.ciudad,
         tipo: venueData.tipo,
         contacto_telefono: venueData.contacto_telefono,
-        global_score: venueData.global_score || 0,
+        // Prioritize the score from the actual inspection to ensure it matches the history/map
+        global_score: (inspection as any)?.compliance_score ?? venueData.global_score ?? 0,
         channel: venueData.segmento || 'Estándar', // Mapping 'segmento' as channel proxy
         brandPresence: inspectionError ? 0 : (inspection?.tiene_producto ? 100 : 0) // Simple proxy
       };
@@ -100,14 +101,45 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
         // Construct the checklist based on available data proxies
         // Since we don't have specific "Glassware" booleans, we map other quality indicators
         const checklist = [
-          { item: t('venue_detail.staff_knowledge'), status: d.staffKnowledge === 'expert' || d.staffKnowledge === 'good' },
-          { item: t('venue_detail.certified_bartenders'), status: d.certifiedBartenders === 'yes' },
+          { item: t('venue_detail.staff_knowledge'), status: d.staffKnowledge === 'expert' || d.staffKnowledge === 'good' || d.staffKnowledge >= 7 },
+          { item: t('venue_detail.certified_bartenders'), status: d.certifiedBartenders === 'yes' || (d.certifiedBartenders > 0) },
           { item: t('venue_detail.pop_visible'), status: d.backBarSignage !== 'missing' },
           { item: t('venue_detail.adequate_stock'), status: d.stockLevel !== 'critical' && d.stockLevel !== 'out_of_stock' },
-          { item: t('venue_detail.shelf_position'), status: d.shelfPosition === 'eye_level' || d.shelfPosition === 'top_shelf' }
+          { item: t('venue_detail.shelf_position'), status: d.shelfPosition === 'eye_level' || d.shelfPosition === 'top_shelf' || d.shelfPosition === 'top' }
         ];
 
         setPerfectServeChecklist(checklist);
+
+        // --- Calculate Actual Perfect Serve Score (Strictly Ritual Questions) ---
+        let psScore = 0;
+        let psTotal = 0;
+
+        if (d.perfectServeAnswers) {
+          // Dynamic questions
+          const answerKeys = Object.keys(d.perfectServeAnswers);
+          if (answerKeys.length > 0) {
+            psTotal = answerKeys.length;
+            psScore = answerKeys.filter(k => d.perfectServeAnswers[k]).length;
+          }
+        } else {
+          // Legacy fields fallback
+          const psFields = [
+            d.properGlassware || d.glassware, // Cristalería
+            d.iceQuality || d.ice,           // Hielo
+            d.correctGarnish || d.garnish,   // Garnish
+            d.premiumTonic || d.tonic,       // Tónica
+            d.serveRitual || d.ritual        // Ritual
+          ];
+          // Filter out undefined/nulls to avoid skewing score if data missing? 
+          // Assuming 5 standard questions for legacy
+          psTotal = 5;
+          psScore = psFields.filter(Boolean).length;
+        }
+
+        const calculatedPsPerc = psTotal > 0 ? Math.round((psScore / psTotal) * 100) : 0;
+        (newVenue as any).actualPerfectServe = calculatedPsPerc;
+        (newVenue as any).observations = (inspection.observaciones || '').split('[RECOMENDACIONES]')[0].trim();
+
 
         // Calculate Score %
         const passedItems = checklist.filter(c => c.status).length;
@@ -233,9 +265,9 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
               )}
             </div>
 
-            {/* Perfect Serve Checklist */}
+            {/* Perfect Serve Checklist -> Global Score Breakdown */}
             <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('venue_detail.perfect_serve')}</h3>
+              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Desglose de Puntaje Global</h3>
               <div className="space-y-2 sm:space-y-3">
                 {perfectServeChecklist.length > 0 ? (
                   perfectServeChecklist.map((item, i) => (
@@ -258,7 +290,7 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
               </div>
               <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-slate-400">{t('venue_detail.compliance_score')}</span>
+                  <span className="text-xs sm:text-sm text-slate-400">Cumplimiento Global</span>
                   <span className={`text-xl sm:text-2xl font-bold ${perfectServeScore >= 80 ? 'text-green-400' :
                     perfectServeScore >= 50 ? 'text-amber-400' : 'text-red-400'
                     }`}>{perfectServeScore}%</span>
@@ -276,20 +308,31 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                   <div className="text-xs text-slate-400 mb-1">{t('venue_detail.brand_presence')}</div>
                   <div className="text-xl font-bold text-white">{venue.brandPresence ? t('venue_detail.yes') : t('venue_detail.no')}</div>
                 </div>
-                {/* Placeholder/Hidden for missing metrics: Share of Menu, Revenue, Rotation */}
-                <div className="bg-slate-800/30 p-3 rounded-lg opacity-50">
-                  <div className="text-xs text-slate-400 mb-1">{t('venue_detail.share_of_menu')}</div>
-                  <div className="text-sm italic text-slate-500">{t('venue_detail.coming_soon')}</div>
+
+                {/* Real Perfect Serve Score (Questions Only) */}
+                <div className="bg-slate-800/30 p-3 rounded-lg">
+                  <div className="text-xs text-slate-400 mb-1">Perfect Serve</div>
+                  <div className={`text-xl font-bold ${(venue as any).actualPerfectServe >= 80 ? 'text-green-400' : (venue as any).actualPerfectServe >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
+                    {(venue as any).actualPerfectServe !== undefined ? `${(venue as any).actualPerfectServe}%` : 'N/A'}
+                  </div>
                 </div>
+
+                {/* Share of Menu - Only show if available */}
+                {venue.shareOfMenu !== undefined && (
+                  <div className="bg-slate-800/30 p-3 rounded-lg">
+                    <div className="text-xs text-slate-400 mb-1">{t('venue_detail.share_of_menu')}</div>
+                    <div className="text-xl font-bold text-slate-200">{venue.shareOfMenu}%</div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Qualitative Notes - Static/Placeholder for now as unstructured text is hard to parse dynamically without AI analysis of 'observaciones' */}
+            {/* Qualitative Notes - Real Observation Data */}
             <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
               <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('venue_detail.qualitative_notes')}</h3>
               <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/30">
-                <p className="text-sm text-slate-300 italic">
-                  "{t('venue_detail.qualitative_placeholder')}"
+                <p className="text-sm text-slate-300 italic whitespace-pre-wrap">
+                  {(venue as any).observations ? `"${(venue as any).observations}"` : t('venue_detail.qualitative_placeholder')}
                 </p>
               </div>
             </div>

@@ -281,14 +281,24 @@ export function OpportunityMap({
   };
 
   const createPopupContent = (loc: any) => {
-    const typeColor =
-      loc.type === "strategic"
-        ? "text-green-300 bg-green-500/20 border-green-500/30"
-        : loc.type === "opportunity"
-          ? "text-blue-300 bg-blue-500/20 border-blue-500/30"
-          : loc.type === "risk"
-            ? "text-red-300 bg-red-500/20 border-red-500/30"
-            : "text-amber-300 bg-amber-500/20 border-amber-500/30";
+    const validId = loc.id && loc.id !== 'NaN' ? loc.id : '';
+    const btnDisabled = !validId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-600 hover:border-slate-500 cursor-pointer venue-detail-btn';
+
+    let typeColor = "border-slate-500 text-slate-400";
+    switch (loc.type) {
+      case "strategic":
+        typeColor = "border-green-500 text-green-400";
+        break;
+      case "opportunity":
+        typeColor = "border-blue-500 text-blue-400";
+        break;
+      case "risk":
+        typeColor = "border-red-500 text-red-400";
+        break;
+      case "activated":
+        typeColor = "border-amber-500 text-amber-400";
+        break;
+    }
 
     return `
       <div class="p-1 min-w-[200px] font-sans">
@@ -311,8 +321,9 @@ export function OpportunityMap({
           </p>
         </div>
         <button 
-          class="w-full mt-3 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded border border-slate-600 hover:border-slate-500 transition-colors flex items-center justify-center gap-2 venue-detail-btn cursor-pointer"
-          data-venue-id="${loc.id}"
+          class="w-full mt-3 px-3 py-2 bg-slate-700 text-white text-xs font-semibold rounded border border-slate-600 transition-colors flex items-center justify-center gap-2 ${btnDisabled}"
+          data-venue-id="${validId}"
+          ${!validId ? 'disabled' : ''}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           Ver Detalle de Venue

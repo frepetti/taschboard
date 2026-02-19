@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
+import { useAuth } from '../utils/AuthContext';
 import { KPICard } from './KPICard';
 import { PerformanceChart } from './PerformanceChart';
 import { OpportunityMap } from './OpportunityMap';
@@ -111,6 +112,35 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
     }
   };
 
+  // Admin View Logic
+  const { dbRole } = useAuth();
+  const [allVenues, setAllVenues] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (dbRole === 'admin') {
+      loadAllVenues();
+    }
+  }, [dbRole, regionFilter]); // Reload if region changes
+
+  const loadAllVenues = async () => {
+    try {
+      let query = supabase
+        .from('btl_puntos_venta')
+        .select('*')
+        .order('nombre');
+
+      if (regionFilter !== 'all') {
+        query = query.eq('region_id', regionFilter);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setAllVenues(data || []);
+    } catch (err) {
+      console.error('Error loading all venues for admin:', err);
+    }
+  };
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {
@@ -219,6 +249,7 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
         activationsTrend: 0,
         roi: 0, // ROI requires sales data we don't have
         roiTrend: 0,
+        totalRegisteredVenues: allVenues.length // Add this KPI maybe?
       });
 
     } catch (error) {

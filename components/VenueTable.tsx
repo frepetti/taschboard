@@ -4,14 +4,31 @@ import { useLanguage } from '../utils/LanguageContext';
 interface VenueTableProps {
   onVenueClick?: (venue: any) => void;
   inspections?: any[];
+  allVenues?: any[]; // For admin view
   readOnly?: boolean;
 }
 
-export function VenueTable({ onVenueClick, inspections = [], readOnly = false }: VenueTableProps) {
+export function VenueTable({ onVenueClick, inspections = [], allVenues = [], readOnly = false }: VenueTableProps) {
   const { language } = useLanguage();
 
-  // Derive venue rows from real inspection data
+  // Derive venue rows from real inspection data OR full venue list
   const venueMap = new Map<string, any>();
+
+  // 1. Seed with all venues if provided (Admin Mode)
+  if (allVenues.length > 0) {
+    for (const v of allVenues) {
+      const key = String(v.id);
+      venueMap.set(key, {
+        id: v.id,
+        name: v.nombre,
+        channel: v.segmento || v.tipo || '—', // Map common fields
+        inspections: [],
+        global_score: v.global_score // Keep ref to global score if needed fallback
+      });
+    }
+  }
+
+  // 2. Merge/Add in inspection data
   for (const insp of inspections) {
     const venue = insp.btl_puntos_venta;
     if (!venue) continue;
@@ -29,12 +46,20 @@ export function VenueTable({ onVenueClick, inspections = [], readOnly = false }:
 
   const venues = Array.from(venueMap.values()).map((v) => {
     const count = v.inspections.length;
-    const avgCompliance = count > 0
-      ? Math.round(v.inspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / count)
-      : 0;
+    let avgCompliance = 0;
+
+    if (count > 0) {
+      avgCompliance = Math.round(v.inspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / count);
+    } else {
+      // Fallback to global score if no inspections in this period (Admin View)
+      avgCompliance = v.global_score || 0;
+    }
+
     const hasProduct = v.inspections.some((i: any) => i.tiene_producto);
     const hasMaterial = v.inspections.some((i: any) => i.tiene_material_pop);
-    const materialStatus = hasMaterial ? 'Completo' : hasProduct ? 'Parcial' : 'Sin material';
+    // If no inspections, assume 'Sin datos' or empty
+    const materialStatus = count > 0 ? (hasMaterial ? 'Completo' : hasProduct ? 'Parcial' : 'Sin material') : '—';
+
     return { ...v, avgCompliance, materialStatus, count };
   });
 
