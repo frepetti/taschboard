@@ -27,7 +27,7 @@ interface ProductSelectorProps {
 export function ProductSelector({ onClose, onProductsChange }: ProductSelectorProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'all' | 'selected'>('all');
 
   useEffect(() => {
@@ -340,7 +340,7 @@ export function ProductSelector({ onClose, onProductsChange }: ProductSelectorPr
               </button>
               <button
                 onClick={saveAndClose}
-                disabled={saving}
+                disabled={false}
                 className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 <Check className="w-4 h-4" />

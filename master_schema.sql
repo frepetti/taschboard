@@ -80,6 +80,8 @@ CREATE TABLE btl_puntos_venta (
   contacto_telefono TEXT,
   segmento TEXT, -- Premium, Estándar, Masivo
   potencial_ventas TEXT, -- Alto, Medio, Bajo
+  global_score NUMERIC DEFAULT 0,
+  last_inspection_date TIMESTAMPTZ,
   created_by UUID REFERENCES btl_usuarios(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -168,6 +170,7 @@ CREATE TABLE btl_inspecciones (
   precio_venta DECIMAL(10,2),
   en_promocion BOOLEAN DEFAULT FALSE,
   visibilidad_score DECIMAL(5,2),
+  global_score NUMERIC DEFAULT 0,
   
   -- Material POP (Point of Purchase)
   tiene_material_pop BOOLEAN DEFAULT false,

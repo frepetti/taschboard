@@ -173,20 +173,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
     }
   };
 
-  const handleUpdateProduct = async (clientProductId: string, updates: Partial<ClientProduct>) => {
-    try {
-      const { error } = await supabase
-        .from('btl_cliente_productos')
-        .update(updates)
-        .eq('id', clientProductId);
 
-      if (error) throw error;
-      await loadClientProducts();
-    } catch (error) {
-      console.error('Error updating product:', error);
-      toast.error('Error al actualizar producto');
-    }
-  };
 
 
 

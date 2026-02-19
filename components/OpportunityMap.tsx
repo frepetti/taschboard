@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import * as L from "leaflet";
 import { useLanguage } from '../utils/LanguageContext';
 import { supabase } from '../utils/supabase/client';
+import { calculateVenueStatus } from "../utils/scoreCalculations";
 
 interface OpportunityMapProps {
   inspections?: any[];
@@ -25,6 +26,8 @@ interface ImportedVenue {
   lng: number | null;
   imported: boolean;
   importedAt: string;
+  segmento?: string; // Added field
+  potencial_ventas?: string; // Added field
   // Campos adicionales para coincidir con VenueTable
   image?: string;
   brandPresence?: number;
@@ -32,6 +35,7 @@ interface ImportedVenue {
   materialStatus?: string;
   shareOfMenu?: number;
   competitor?: string;
+  global_score?: number;
 }
 
 // Coordenadas base de Buenos Aires
@@ -79,7 +83,7 @@ export function OpportunityMap({
       try {
         const { data, error } = await supabase
           .from('btl_puntos_venta')
-          .select('id, nombre, direccion, region:region_id(nombre), tipo, ciudad, latitud, longitud')
+          .select('id, nombre, direccion, region:region_id(nombre), tipo, ciudad, latitud, longitud, segmento, potencial_ventas')
           .order('nombre');
 
         if (error) throw error;
@@ -96,6 +100,8 @@ export function OpportunityMap({
             lng: v.longitud || null,
             imported: true,
             importedAt: '',
+            segmento: v.segmento,
+            potencial_ventas: v.potencial_ventas
           }));
           setImportedVenues(mapped);
           console.log('📍 Loaded', mapped.length, 'venues from DB for map');
@@ -160,12 +166,29 @@ export function OpportunityMap({
     venue: ImportedVenue,
     index: number,
   ): "strategic" | "opportunity" | "activated" | "risk" => {
+    // 1. Try to use 'segmento' or 'potencial_ventas' from DB
+    const segment = (venue.segmento || venue.potencial_ventas || '').toLowerCase();
+
+    if (segment.includes('gold') || segment.includes('premium') || segment.includes('alto') || segment.includes('high') || segment.includes('a+') || segment.includes('estratégico')) {
+      return "strategic";
+    }
+    if (segment.includes('silver') || segment.includes('medio') || segment.includes('medium') || segment.includes('standard') || segment.includes('oportunidad')) {
+      return "opportunity";
+    }
+    if (segment.includes('bronze') || segment.includes('bajo') || segment.includes('low') || segment.includes('básico') || segment.includes('riesgo')) {
+      // Risk or Activated depending on business logic - let's default to Risk for low tier if not activated
+      return "risk";
+    }
+
+    // 2. Fallback to channel/tipo logic
     if (
       venue.channel?.toLowerCase().includes("premium") ||
       venue.channel?.toLowerCase().includes("high")
     ) {
       return "strategic";
     }
+
+    // 3. Fallback to random distribution if no data available (Legacy behavior)
     const types: Array<
       "strategic" | "opportunity" | "activated" | "risk"
     > = ["strategic", "opportunity", "activated", "risk"];
@@ -192,12 +215,22 @@ export function OpportunityMap({
         lng = coords[1];
       }
 
+      // Determine type/color based on global_score if available
+      let type: "strategic" | "opportunity" | "activated" | "risk" = getVenueType(venue, index);
+
+      // If we have a global_score (and it's not 0 or null), use it to determine status dynamically
+      // This overrides string matching if the score exists
+      if (venue.global_score !== undefined && venue.global_score !== null) {
+        const status = calculateVenueStatus(venue.global_score);
+        type = status.status as any;
+      }
+
       return {
         ...venue,
-        lat: lat,
-        lng: lng,
-        type: getVenueType(venue, index),
-        score: getVenueScore(venue.id),
+        lat: lat as number,
+        lng: lng as number,
+        type: type,
+        score: venue.global_score || getVenueScore(venue.id), // Use global_score if available
       };
     });
   }, [importedVenues]);

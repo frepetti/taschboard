@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getInspections, createInspection, getUserRole } from '../utils/api-direct'; // ✅ Usar API directa
 import { supabase } from '../utils/supabase/client';
+import { calculateGlobalScore, calculateVenueStatus } from '../utils/scoreCalculations';
 
 interface InspectorDashboardProps {
   session: any;
@@ -94,11 +95,26 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
       console.log('📤 Submitting inspection...', data);
 
+      // Calculate Global Score
+      const scores = calculateGlobalScore({
+        staffKnowledge: data.staffKnowledge,
+        certifiedBartenders: data.certifiedBartenders,
+        totalBartenders: data.totalBartenders,
+        brandAdvocacy: data.brandAdvocacy,
+        backBarVisibility: data.backBarVisibility,
+        shelfPosition: data.shelfPosition,
+        tiene_material_pop: data.backBarSignage !== 'missing' || (data.pos_materials && data.pos_materials.length > 0),
+        pos_materials: data.pos_materials,
+        stockLevel: data.stockLevel
+      });
+
+      const venueStatus = calculateVenueStatus(scores.globalScore);
+
       // Crear objeto de inspección (Modelo 1:1)
       const inspectionData = {
-        venue_id: selectedVenue.id,
+        punto_venta_id: selectedVenue.id,
         producto_id: selectedProduct.id,
-        inspector_id: session.user.id, // This is auth user id, but API directs maps to btl_user
+        inspector_id: session.user.id,
         fecha_inspeccion: new Date().toISOString(),
 
         // Datos del Producto
@@ -116,20 +132,42 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         observaciones: `${data.notes || ''}${data.recommendedActions ? `\n\n[RECOMENDACIONES]\n${data.recommendedActions}` : ''} `.trim(),
         fotos_urls: data.photos || [],
 
-        // Full Details for History
-        detalles: data,
+        // Full Details for History (now including score breakdown)
+        detalles: {
+          ...data,
+          scoreBreakdown: scores.breakdown,
+          venueStatus: venueStatus
+        },
 
-        // Default / Placeholder columns introduced in migration
-        precio_venta: 0,
+        // Global Score
+        global_score: scores.globalScore, // New column
+        visibilidad_score: scores.globalScore, // Keeping this for backward compatibility if used elsewhere
+        compliance_score: scores.globalScore, // Keeping this but treating global_score as primary
+
+        precio_venta: 0, // Default
         en_promocion: false,
-        visibilidad_score: 5
       };
 
       await createInspection(inspectionData as any);
 
-      console.log('✅ [Inspector Dashboard] Inspection created successfully');
+      // Update Venue Segment/Status + Score
+      const { error: venueError } = await supabase
+        .from('btl_puntos_venta')
+        .update({
+          segmento: venueStatus.label, // "Estratégico", "Oportunidad", "Riesgo"
+          global_score: scores.globalScore, // Saving score on venue as requested
+          last_inspection_date: new Date().toISOString()
+        })
+        .eq('id', selectedVenue.id);
+
+      if (venueError) {
+        console.error('Error updating venue status:', venueError);
+        // We don't block the flow, but log it
+      }
+
+      console.log('✅ [Inspector Dashboard] Inspection created successfully with Score:', scores.globalScore);
       toast.success('Inspección Enviada', {
-        description: 'Datos guardados exitosamente'
+        description: `Score Global: ${scores.globalScore} (${venueStatus.label})`
       });
 
       // Reload inspections

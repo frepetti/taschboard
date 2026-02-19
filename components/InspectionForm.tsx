@@ -60,7 +60,11 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
 
     // Notes
     notes: '',
-    recommendedActions: ''
+    recommendedActions: '',
+
+    // Dynamic Perfect Serve
+    perfectServeAnswers: {} as Record<string, boolean>,
+    perfectServeConfig: product.configuracion?.perfect_serve || null
   });
 
   const sections = [
@@ -278,33 +282,73 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
           <div className="space-y-4">
             <h3 className="text-lg text-white font-semibold mb-4">Checklist Perfect Serve</h3>
 
-            {[
-              { key: 'properGlassware', label: 'Cristalería Correcta (Copa/Balón)' },
-              { key: 'iceQuality', label: 'Calidad y Tamaño del Hielo' },
-              { key: 'correctGarnish', label: 'Garnish Correcto (Pepino)' },
-              { key: 'premiumTonic', label: 'Tónica Premium' },
-              { key: 'serveRitual', label: 'Ejecución del Ritual de Servicio' },
-            ].map((item) => (
-              <div
-                key={item.key}
-                className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-700/30"
-              >
-                <span className="text-slate-300">{item.label}</span>
-                <button
-                  onClick={() => updateField(item.key, !formData[item.key as keyof typeof formData])}
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${formData[item.key as keyof typeof formData]
-                    ? 'bg-green-600 text-white'
-                    : 'bg-slate-700/50 text-slate-500'
-                    }`}
-                >
-                  {formData[item.key as keyof typeof formData] ? (
-                    <Check className="w-6 h-6" />
-                  ) : (
-                    <X className="w-6 h-6" />
-                  )}
-                </button>
+            {(product.configuracion?.perfect_serve && product.configuracion.perfect_serve.length > 0) ? (
+              // Dynamic Questions from Configuration
+              <div className="space-y-3">
+                {product.configuracion.perfect_serve.map((q: any) => {
+                  const isAnswered = formData.perfectServeAnswers?.[q.id] === true;
+                  return (
+                    <div
+                      key={q.id}
+                      className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-700/30"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-slate-300">{q.question}</span>
+                        {q.required && <span className="text-xs text-amber-500/70">Requerido</span>}
+                      </div>
+                      <button
+                        onClick={() => {
+                          const current = formData.perfectServeAnswers || {};
+                          updateField('perfectServeAnswers', {
+                            ...current,
+                            [q.id]: !current[q.id]
+                          });
+                        }}
+                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${isAnswered
+                          ? 'bg-green-600 text-white'
+                          : 'bg-slate-700/50 text-slate-500'
+                          }`}
+                      >
+                        {isAnswered ? (
+                          <Check className="w-6 h-6" />
+                        ) : (
+                          <X className="w-6 h-6" />
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            ) : (
+              // Legacy/Default Questions
+              [
+                { key: 'properGlassware', label: 'Cristalería Correcta (Copa/Balón)' },
+                { key: 'iceQuality', label: 'Calidad y Tamaño del Hielo' },
+                { key: 'correctGarnish', label: 'Garnish Correcto (Pepino)' },
+                { key: 'premiumTonic', label: 'Tónica Premium' },
+                { key: 'serveRitual', label: 'Ejecución del Ritual de Servicio' },
+              ].map((item) => (
+                <div
+                  key={item.key}
+                  className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg border border-slate-700/30"
+                >
+                  <span className="text-slate-300">{item.label}</span>
+                  <button
+                    onClick={() => updateField(item.key, !formData[item.key as keyof typeof formData])}
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${formData[item.key as keyof typeof formData]
+                      ? 'bg-green-600 text-white'
+                      : 'bg-slate-700/50 text-slate-500'
+                      }`}
+                  >
+                    {formData[item.key as keyof typeof formData] ? (
+                      <Check className="w-6 h-6" />
+                    ) : (
+                      <X className="w-6 h-6" />
+                    )}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         )}
 

@@ -21,6 +21,13 @@ interface Product {
   descripcion: string | null;
   activo: boolean | null;
   orden_visualizacion: number | null;
+  configuracion?: {
+    perfect_serve?: {
+      question: string;
+      id: string;
+      required: boolean;
+    }[];
+  } | null;
 }
 
 export function ProductManagement() {
@@ -46,7 +53,8 @@ export function ProductManagement() {
     objetivo_pop: 60,
     descripcion: '',
     activo: true,
-    orden_visualizacion: 0
+    orden_visualizacion: 0,
+    configuracion: { perfect_serve: [] }
   };
 
   useEffect(() => {
@@ -287,20 +295,71 @@ function ProductForm({
   onSave: (product: Product) => void;
   onClose: () => void;
 }) {
-  const [formData, setFormData] = useState(product);
+  const [formData, setFormData] = useState<Product>(product);
+  const [activeTab, setActiveTab] = useState<'general' | 'perfect-serve'>('general');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
 
+  const addQuestion = () => {
+    const currentConfig = formData.configuracion || {};
+    const currentQuestions = currentConfig.perfect_serve || [];
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: [
+          ...currentQuestions,
+          {
+            id: Math.random().toString(36).substr(2, 9),
+            question: '',
+            required: true
+          }
+        ]
+      }
+    });
+  };
+
+  const updateQuestion = (id: string, field: 'question' | 'required', value: any) => {
+    const currentConfig = formData.configuracion || {};
+    const currentQuestions = currentConfig.perfect_serve || [];
+
+    const updatedQuestions = currentQuestions.map(q =>
+      q.id === id ? { ...q, [field]: value } : q
+    );
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: updatedQuestions
+      }
+    });
+  };
+
+  const removeQuestion = (id: string) => {
+    const currentConfig = formData.configuracion || {};
+    const currentQuestions = currentConfig.perfect_serve || [];
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: currentQuestions.filter(q => q.id !== id)
+      }
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl text-white font-bold">
                 {formData.id ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
@@ -312,145 +371,234 @@ function ProductForm({
                 <X className="w-6 h-6" />
               </button>
             </div>
+
+            {/* Tabs */}
+            <div className="flex gap-4 border-b border-slate-700/50">
+              <button
+                type="button"
+                onClick={() => setActiveTab('general')}
+                className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === 'general' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'
+                  }`}
+              >
+                Información General
+                {activeTab === 'general' && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('perfect-serve')}
+                className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === 'perfect-serve' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'
+                  }`}
+              >
+                Perfect Serve
+                {activeTab === 'perfect-serve' && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Form Fields */}
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Marca *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.marca}
-                  onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">SKU *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.sku || ''}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
-              </div>
-            </div>
+          {/* Form Content */}
+          <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+            {activeTab === 'general' ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Marca *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.marca}
+                      onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">SKU *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.sku || ''}
+                      onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-slate-300 text-sm mb-2">Nombre del Producto *</label>
-              <input
-                type="text"
-                required
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-              />
-            </div>
+                <div>
+                  <label className="block text-slate-300 text-sm mb-2">Nombre del Producto *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.nombre}
+                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Categoría</label>
-                <select
-                  value={formData.categoria || ''}
-                  onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                >
-                  <option>Cerveza</option>
-                  <option>Whisky</option>
-                  <option>Vodka</option>
-                  <option>Ron</option>
-                  <option>Tequila</option>
-                  <option>Gin</option>
-                  <option>Vino</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Subcategoría</label>
-                <select
-                  value={formData.subcategoria || ''}
-                  onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                >
-                  <option>Premium</option>
-                  <option>Estándar</option>
-                  <option>Popular</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Presentación</label>
-                <input
-                  type="text"
-                  value={formData.presentacion || ''}
-                  onChange={(e) => setFormData({ ...formData, presentacion: e.target.value })}
-                  placeholder="355ml, 750ml..."
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Categoría</label>
+                    <select
+                      value={formData.categoria || ''}
+                      onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    >
+                      <option>Cerveza</option>
+                      <option>Whisky</option>
+                      <option>Vodka</option>
+                      <option>Ron</option>
+                      <option>Tequila</option>
+                      <option>Gin</option>
+                      <option>Vino</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Subcategoría</label>
+                    <select
+                      value={formData.subcategoria || ''}
+                      onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    >
+                      <option>Premium</option>
+                      <option>Estándar</option>
+                      <option>Popular</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Presentación</label>
+                    <input
+                      type="text"
+                      value={formData.presentacion || ''}
+                      onChange={(e) => setFormData({ ...formData, presentacion: e.target.value })}
+                      placeholder="355ml, 750ml..."
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Color Primario</label>
-                <input
-                  type="color"
-                  value={formData.color_primario || '#000000'}
-                  onChange={(e) => setFormData({ ...formData, color_primario: e.target.value })}
-                  className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Color Secundario</label>
-                <input
-                  type="color"
-                  value={formData.color_secundario || '#000000'}
-                  onChange={(e) => setFormData({ ...formData, color_secundario: e.target.value })}
-                  className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Color Primario</label>
+                    <input
+                      type="color"
+                      value={formData.color_primario || '#000000'}
+                      onChange={(e) => setFormData({ ...formData, color_primario: e.target.value })}
+                      className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Color Secundario</label>
+                    <input
+                      type="color"
+                      value={formData.color_secundario || '#000000'}
+                      onChange={(e) => setFormData({ ...formData, color_secundario: e.target.value })}
+                      className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Objetivo Presencia (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.objetivo_presencia ?? 0}
-                  onChange={(e) => setFormData({ ...formData, objetivo_presencia: Number(e.target.value) })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Objetivo Presencia (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.objetivo_presencia ?? 0}
+                      onChange={(e) => setFormData({ ...formData, objetivo_presencia: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Objetivo Stock (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.objetivo_stock ?? 0}
+                      onChange={(e) => setFormData({ ...formData, objetivo_stock: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm mb-2">Objetivo POP (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.objetivo_pop ?? 0}
+                      onChange={(e) => setFormData({ ...formData, objetivo_pop: Number(e.target.value) })}
+                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              // Perfect Serve Tab
+              <div className="space-y-4">
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                  <p className="text-sm text-blue-300">
+                    Define las preguntas de verificación para el Perfect Serve.
+                    Estas aparecerán en el formulario de inspección para este producto.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {(formData.configuracion?.perfect_serve || []).map((q, idx) => (
+                    <div key={q.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 flex gap-3 items-start group">
+                      <div className="pt-3 text-slate-500 text-xs font-mono">{idx + 1}</div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={q.question}
+                          onChange={(e) => updateQuestion(q.id, 'question', e.target.value)}
+                          placeholder="Ej: ¿Se sirve en copa balón?"
+                          className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-md text-white text-sm focus:outline-none focus:border-amber-500/50"
+                        />
+                        <label className="flex items-center gap-2 cursor-pointer w-fit">
+                          <input
+                            type="checkbox"
+                            checked={q.required}
+                            onChange={(e) => updateQuestion(q.id, 'required', e.target.checked)}
+                            className="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500/50"
+                          />
+                          <span className="text-xs text-slate-400">Requerido (cuenta para el puntaje)</span>
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(q.id)}
+                        className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Eliminar pregunta"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {(formData.configuracion?.perfect_serve || []).length === 0 && (
+                    <div className="text-center py-8 text-slate-500 text-sm italic border border-dashed border-slate-700/50 rounded-lg">
+                      No hay preguntas configuradas. Se usarán las preguntas por defecto.
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="w-full py-2 border-2 border-dashed border-slate-700 hover:border-amber-500/50 text-slate-400 hover:text-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar Pregunta
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Objetivo Stock (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.objetivo_stock ?? 0}
-                  onChange={(e) => setFormData({ ...formData, objetivo_stock: Number(e.target.value) })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-300 text-sm mb-2">Objetivo POP (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.objetivo_pop ?? 0}
-                  onChange={(e) => setFormData({ ...formData, objetivo_pop: Number(e.target.value) })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-700/50 bg-slate-800/30 flex justify-end gap-3">
+          <div className="p-6 border-t border-slate-700/50 bg-slate-800/30 flex justify-end gap-3 sticky bottom-0 z-10">
             <button
               type="button"
               onClick={onClose}

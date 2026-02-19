@@ -332,22 +332,51 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
                   <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
                     <h3 className="text-sm text-amber-500 font-semibold mb-3">Perfect Serve</h3>
                     <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Cristalería:</span>
-                        <span className="text-slate-200">{selectedInspection.detalles.glassware ? 'Correcta' : 'Incorrecta'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Hielo:</span>
-                        <span className="text-slate-200">{selectedInspection.detalles.ice ? 'Correcto' : 'Incorrecto'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Garnish:</span>
-                        <span className="text-slate-200">{selectedInspection.detalles.garnish ? 'Correcto' : 'Incorrecto'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Ritual:</span>
-                        <span className="text-slate-200">{selectedInspection.detalles.ritual ? 'Correcto' : 'Incorrecto'}</span>
-                      </div>
+                      {(selectedInspection.detalles.perfectServeConfig && selectedInspection.detalles.perfectServeConfig.length > 0) ? (
+                        // Dynamic Perfect Serve
+                        selectedInspection.detalles.perfectServeConfig.map((q: any) => (
+                          <div key={q.id} className="flex justify-between items-start gap-2">
+                            <span className="text-slate-400">{q.question}:</span>
+                            <span className="text-slate-200 font-medium whitespace-nowrap">
+                              {selectedInspection.detalles.perfectServeAnswers?.[q.id] ? 'Sí' : 'No'}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        // Legacy Perfect Serve
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Cristalería:</span>
+                            <span className="text-slate-200">
+                              {selectedInspection.detalles.properGlassware || selectedInspection.detalles.glassware ? 'Correcta' : 'Incorrecta'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Hielo:</span>
+                            <span className="text-slate-200">
+                              {selectedInspection.detalles.iceQuality || selectedInspection.detalles.ice ? 'Correcto' : 'Incorrecto'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Garnish:</span>
+                            <span className="text-slate-200">
+                              {selectedInspection.detalles.correctGarnish || selectedInspection.detalles.garnish ? 'Correcto' : 'Incorrecto'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Tónica:</span>
+                            <span className="text-slate-200">
+                              {selectedInspection.detalles.premiumTonic || selectedInspection.detalles.tonic ? 'Premium' : 'Estándar'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Ritual:</span>
+                            <span className="text-slate-200">
+                              {selectedInspection.detalles.serveRitual || selectedInspection.detalles.ritual ? 'Correcto' : 'Incorrecto'}
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 

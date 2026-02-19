@@ -47,9 +47,15 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
   const competitorMap = new Map<string, number>();
 
   for (const insp of inspections) {
-    // Try competitor_presence field (from DEMO_DATA structure)
-    const comp = insp.competitor_presence || insp.competidor_principal || insp.main_competitor;
-    if (comp && typeof comp === 'string' && comp.trim()) {
+    // Try competitor_presence field (from DEMO_DATA structure) or new JSONB structure
+    let comp = insp.competitor_presence || insp.competidor_principal || insp.main_competitor;
+
+    // Check in detalles (new structure)
+    if (!comp && insp.detalles?.mainCompetitor) {
+      comp = insp.detalles.mainCompetitor;
+    }
+
+    if (comp && typeof comp === 'string' && comp.trim() && comp !== 'Ninguno' && comp !== 'N/A') {
       const key = comp.trim();
       competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
     }
@@ -58,10 +64,19 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
   // Also aggregate by competitor visibility level if no named competitors
   const visibilityMap = { Alta: 0, Media: 0, Baja: 0 };
   for (const insp of inspections) {
-    const vis = insp.presencia_competencia || insp.competitor_visibility;
-    if (vis === 'Alta' || vis === 'high') visibilityMap.Alta++;
-    else if (vis === 'Media' || vis === 'medium') visibilityMap.Media++;
-    else if (vis === 'Baja' || vis === 'low') visibilityMap.Baja++;
+    let vis = insp.presencia_competencia || insp.competitor_visibility;
+
+    // Check in detalles
+    if (!vis && insp.detalles?.competitorVisibility) {
+      vis = insp.detalles.competitorVisibility;
+    }
+
+    if (vis) {
+      const v = vis.toLowerCase();
+      if (v === 'alta' || v === 'high') visibilityMap.Alta++;
+      else if (v === 'media' || v === 'medium') visibilityMap.Media++;
+      else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
+    }
   }
 
   const hasNamedCompetitors = competitorMap.size > 0;
