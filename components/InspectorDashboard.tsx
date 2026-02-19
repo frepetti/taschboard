@@ -9,7 +9,7 @@ import { InspectionHistory } from './InspectionHistory';
 import { DebugPanel } from './DebugPanel';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getInspections, createInspection, getUserRole } from '../utils/api-direct'; // ✅ Usar API directa
+import { getInspections, createInspection, updateInspection, getUserRole } from '../utils/api-direct'; // ✅ Import updateInspection
 import { supabase } from '../utils/supabase/client';
 import { calculateGlobalScore, calculateVenueStatus } from '../utils/scoreCalculations';
 
@@ -23,6 +23,8 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [inspections, setInspections] = useState<any[]>([]);
+  const [editingInspectionId, setEditingInspectionId] = useState<string | null>(null); // State for edit mode
+  const [initialFormData, setInitialFormData] = useState<any>(null); // State for form data
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -78,6 +80,8 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
     setSelectedVenue(null);
     setSelectedClient(null);
     setSelectedProduct(null);
+    setEditingInspectionId(null);
+    setInitialFormData(null);
   }
 
   const handleBackToClient = () => {
@@ -87,6 +91,33 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
   const handleBackToProductSelection = () => {
     setSelectedProduct(null);
+    if (editingInspectionId) {
+      // If cancelling edit, go back to history
+      setCurrentView('history');
+      setEditingInspectionId(null);
+      setInitialFormData(null);
+      setSelectedVenue(null);
+    }
+  };
+
+  const handleEditInspection = (inspection: any) => {
+    console.log('✏️ Editing inspection:', inspection);
+
+    // Set states to effectively "open" the form in edit mode
+    setSelectedVenue(inspection.btl_puntos_venta);
+
+    // Need to format product to match what ProductSelector returns (flatten)
+    if (inspection.btl_productos) {
+      setSelectedProduct(inspection.btl_productos);
+    } else {
+      toast.error("No se encontraron datos del producto para esta inspección.");
+      return;
+    }
+
+    setEditingInspectionId(inspection.id);
+    setInitialFormData(inspection);
+    setCurrentView('new'); // Switch to form view
+    // Note: selectedClient is not strictly needed for the form itself if we have product
   };
 
   const handleSubmitInspection = async (data: any) => {
@@ -110,12 +141,12 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
       const venueStatus = calculateVenueStatus(scores.globalScore);
 
-      // Crear objeto de inspección (Modelo 1:1)
+      // Crear objeto de inspección
       const inspectionData = {
         punto_venta_id: selectedVenue.id,
         producto_id: selectedProduct.id,
         usuario_id: session.user.id,
-        fecha_inspeccion: new Date().toISOString(),
+        fecha_inspeccion: editingInspectionId ? undefined : new Date().toISOString(), // Only set date on create? or update? Keep original if edit.
 
         // Datos del Producto
         tiene_producto: data.brandOnMenu || data.brand_present || false,
@@ -132,7 +163,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         observaciones: `${data.notes || ''}${data.recommendedActions ? `\n\n[RECOMENDACIONES]\n${data.recommendedActions}` : ''} `.trim(),
         fotos_urls: data.photos || [],
 
-        // Full Details for History (now including score breakdown)
+        // Full Details for History
         detalles: {
           ...data,
           scoreBreakdown: scores.breakdown,
@@ -140,42 +171,58 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         },
 
         // Global Score
-        global_score: scores.globalScore, // New column
-        visibilidad_score: scores.globalScore, // Keeping this for backward compatibility if used elsewhere
-        compliance_score: scores.globalScore, // Keeping this but treating global_score as primary
+        global_score: scores.globalScore,
+        visibilidad_score: scores.globalScore,
+        compliance_score: scores.globalScore,
 
-        precio_venta: 0, // Default
+        precio_venta: 0,
         en_promocion: false,
       };
 
-      await createInspection(inspectionData as any);
+      if (editingInspectionId) {
+        // UPDATE existing
+        await updateInspection(editingInspectionId, inspectionData);
+        toast.success('Inspección Actualizada', {
+          description: `Nuevo Score: ${scores.globalScore}`
+        });
+      } else {
+        // CREATE new
+        await createInspection(inspectionData as any);
+        toast.success('Inspección Enviada', {
+          description: `Score Global: ${scores.globalScore} (${venueStatus.label})`
+        });
+      }
 
       // Update Venue Segment/Status + Score
       const { error: venueError } = await supabase
         .from('btl_puntos_venta')
         .update({
-          segmento: venueStatus.label, // "Estratégico", "Oportunidad", "Riesgo"
-          global_score: scores.globalScore, // Saving score on venue as requested
+          segmento: venueStatus.label,
+          global_score: scores.globalScore,
           last_inspection_date: new Date().toISOString()
         })
         .eq('id', selectedVenue.id);
 
       if (venueError) {
         console.error('Error updating venue status:', venueError);
-        // We don't block the flow, but log it
       }
-
-      console.log('✅ [Inspector Dashboard] Inspection created successfully with Score:', scores.globalScore);
-      toast.success('Inspección Enviada', {
-        description: `Score Global: ${scores.globalScore} (${venueStatus.label})`
-      });
 
       // Reload inspections
       await loadInspections();
 
+      // Reset state
       setSelectedVenue(null);
       setSelectedClient(null);
       setSelectedProduct(null);
+      setEditingInspectionId(null);
+      setInitialFormData(null);
+
+      // If was editing, go back to history? No, flow usually returns to start.
+      // But if we want to see the result, history is better.
+      if (editingInspectionId) {
+        setCurrentView('history');
+      }
+
     } catch (error: any) {
       console.error('❌ [Inspector Dashboard] Error submitting inspection:', error);
       toast.error('Error al enviar la inspección', {
@@ -199,7 +246,15 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
     <>
       <InspectorHeader
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={(view) => {
+          setCurrentView(view);
+          if (view === 'new') {
+            setEditingInspectionId(null);
+            setInitialFormData(null);
+            setSelectedVenue(null);
+            setSelectedProduct(null);
+          }
+        }}
       />
 
       <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 pb-20">
@@ -211,22 +266,26 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
           <>
             {!selectedVenue ? (
               <VenueSelectionForm onVenueSelect={handleVenueSelect} />
-            ) : !selectedClient ? (
-              <ClientSelectionForm
-                onClientSelect={handleClientSelect}
-                onBack={handleBackToVenue}
-              />
             ) : !selectedProduct ? (
-              <ProductSelectorInspection
-                venue={selectedVenue}
-                clientId={selectedClient.id}
-                onBack={handleBackToClient}
-                onProductSelect={handleProductSelect}
-              />
+              // Skip Client Selection if we are in Edit Mode or if we just want to select product
+              !editingInspectionId && !selectedClient ? (
+                <ClientSelectionForm
+                  onClientSelect={handleClientSelect}
+                  onBack={handleBackToVenue}
+                />
+              ) : (
+                <ProductSelectorInspection
+                  venue={selectedVenue}
+                  clientId={selectedClient?.id} // Optional
+                  onBack={handleBackToClient}
+                  onProductSelect={handleProductSelect}
+                />
+              )
             ) : (
               <InspectionForm
                 venue={selectedVenue}
                 product={selectedProduct}
+                initialData={initialFormData} // Pass initial data
                 onBack={handleBackToProductSelection}
                 onSubmit={handleSubmitInspection}
               />
@@ -237,10 +296,13 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
             inspections={inspections}
             onRefresh={loadInspections}
             onBack={() => setCurrentView('new')}
+            onEdit={handleEditInspection} // Pass edit handler
             userRole={userRole}
           />
         )}
       </main>
+
+      {/* ... (Error and Debug panels remain the same) */}
 
       {/* Authentication Error Toast */}
       {authError && (

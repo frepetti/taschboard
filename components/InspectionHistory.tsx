@@ -1,22 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Clock, MapPin, RefreshCw, CheckCircle, XCircle, ArrowLeft, Eye, Trash2 } from 'lucide-react';
+import { Clock, MapPin, RefreshCw, CheckCircle, XCircle, ArrowLeft, Eye, Trash2, Edit2 } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { deleteInspection } from '../utils/api-direct';
 import { toast } from 'sonner';
 
 interface InspectionHistoryProps {
   inspections: any[];
-  onRefresh?: () => void; // Made optional to match existing code usage if any
+  onRefresh?: () => void;
   onBack?: () => void;
+  onEdit?: (inspection: any) => void; // New prop
   userRole?: string | null;
 }
 
-export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: InspectionHistoryProps) {
+export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, userRole }: InspectionHistoryProps) {
   const [selectedInspection, setSelectedInspection] = useState<any>(null);
   const [venueNames, setVenueNames] = useState<Record<string, string>>({});
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (e: React.MouseEvent) => {
+    // ... existing delete logic ...
     e.stopPropagation();
     if (!selectedInspection || isDeleting) return;
 
@@ -39,6 +41,38 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
       setIsDeleting(false);
     }
   };
+
+  // ... (rest of the file)
+
+  // Inside the modal rendering:
+  // ...
+  <div className="flex items-center gap-2">
+    {(userRole === 'admin' || userRole === 'superadmin') && (
+      <>
+        <button
+          onClick={() => onEdit && onEdit(selectedInspection)}
+          className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
+          title="Editar Inspección"
+        >
+          <Edit2 className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+          title="Eliminar Inspección"
+        >
+          {isDeleting ? <span className="animate-spin">⌛</span> : <Trash2 className="w-5 h-5" />}
+        </button>
+      </>
+    )}
+    <button
+      onClick={() => setSelectedInspection(null)}
+      className="text-slate-400 hover:text-white transition-colors"
+    >
+      <XCircle className="w-6 h-6" />
+    </button>
+  </div>
 
   // Cargar los nombres de los puntos de venta
   useEffect(() => {
@@ -219,14 +253,25 @@ export function InspectionHistory({ inspections, onRefresh, onBack, userRole }: 
                 </div>
                 <div className="flex items-center gap-2">
                   {(userRole === 'admin' || userRole === 'superadmin') && (
-                    <button
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
-                      title="Eliminar Inspección"
-                    >
-                      {isDeleting ? <span className="animate-spin">⌛</span> : <Trash2 className="w-5 h-5" />}
-                    </button>
+                    <>
+                      {onEdit && (
+                        <button
+                          onClick={() => onEdit(selectedInspection)}
+                          className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
+                          title="Editar Inspección"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                        title="Eliminar Inspección"
+                      >
+                        {isDeleting ? <span className="animate-spin">⌛</span> : <Trash2 className="w-5 h-5" />}
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => setSelectedInspection(null)}

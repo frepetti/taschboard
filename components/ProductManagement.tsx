@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Plus, Edit2, Trash2, Search, X, Check } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, Upload, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { ProductImporter } from './ProductImporter';
 
 interface Product {
   id?: string;
@@ -35,6 +36,7 @@ export function ProductManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
@@ -138,6 +140,11 @@ export function ProductManagement() {
     (p.sku || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleImportComplete = () => {
+    setShowImporter(false);
+    loadProducts();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -148,17 +155,39 @@ export function ProductManagement() {
             Administra el catálogo de productos disponibles para los clientes
           </p>
         </div>
-        <button
-          onClick={() => {
-            setEditingProduct(emptyProduct);
-            setShowForm(true);
-          }}
-          className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Nuevo Producto
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowImporter(!showImporter)}
+            className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all flex items-center gap-2"
+          >
+            {showImporter ? (
+              <>
+                <Package className="w-4 h-4" />
+                Ver Lista
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                Importar Excel
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => {
+              setEditingProduct(emptyProduct);
+              setShowForm(true);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Nuevo Producto
+          </button>
+        </div>
       </div>
+
+      {showImporter && (
+        <ProductImporter onImportComplete={handleImportComplete} />
+      )}
 
       {/* Search */}
       <div className="relative">

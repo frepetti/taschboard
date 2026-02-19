@@ -111,29 +111,35 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
         setPerfectServeChecklist(checklist);
 
         // --- Calculate Actual Perfect Serve Score (Strictly Ritual Questions) ---
+        // --- Calculate Actual Perfect Serve Score (Strictly Ritual Questions) ---
         let psScore = 0;
         let psTotal = 0;
 
-        if (d.perfectServeAnswers) {
+        const hasDynamicAnswers = d.perfectServeAnswers && Object.keys(d.perfectServeAnswers).length > 0;
+
+        if (hasDynamicAnswers) {
           // Dynamic questions
           const answerKeys = Object.keys(d.perfectServeAnswers);
-          if (answerKeys.length > 0) {
-            psTotal = answerKeys.length;
-            psScore = answerKeys.filter(k => d.perfectServeAnswers[k]).length;
-          }
+          psTotal = answerKeys.length;
+          psScore = answerKeys.filter(k => d.perfectServeAnswers[k]).length;
         } else {
           // Legacy fields fallback
           const psFields = [
-            d.properGlassware || d.glassware, // Cristalería
-            d.iceQuality || d.ice,           // Hielo
-            d.correctGarnish || d.garnish,   // Garnish
-            d.premiumTonic || d.tonic,       // Tónica
-            d.serveRitual || d.ritual        // Ritual
+            d.properGlassware ?? d.glassware, // Cristalería
+            d.iceQuality ?? d.ice,           // Hielo
+            d.correctGarnish ?? d.garnish,   // Garnish
+            d.premiumTonic ?? d.tonic,       // Tónica
+            d.serveRitual ?? d.ritual        // Ritual
           ];
-          // Filter out undefined/nulls to avoid skewing score if data missing? 
-          // Assuming 5 standard questions for legacy
+
+          // Count defined boolean fields (true/false) as part of the total
+          // If a field is null/undefined, we might strictly not count it or count it as fail?
+          // Let's assume for legacy we expect 5 questions.
+          // Or better: filter fields that are explicitly boolean?
+          // Current legacy data is boolean.
+
           psTotal = 5;
-          psScore = psFields.filter(Boolean).length;
+          psScore = psFields.filter(f => f === true).length;
         }
 
         const calculatedPsPerc = psTotal > 0 ? Math.round((psScore / psTotal) * 100) : 0;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Camera, Check, X, Plus, Minus, Package, Loader2 } from 'lucide-react';
 import { uploadInspectionPhoto } from '../utils/api-direct';
 import { toast } from 'sonner';
@@ -6,11 +6,12 @@ import { toast } from 'sonner';
 interface InspectionFormProps {
   venue: any;
   product: any;
+  initialData?: any; // New prop for editing
   onBack: () => void;
   onSubmit: (data: any) => void;
 }
 
-export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionFormProps) {
+export function InspectionForm({ venue, product, initialData, onBack, onSubmit }: InspectionFormProps) {
   const [activeSection, setActiveSection] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -64,8 +65,23 @@ export function InspectionForm({ venue, product, onBack, onSubmit }: InspectionF
 
     // Dynamic Perfect Serve
     perfectServeAnswers: {} as Record<string, boolean>,
-    perfectServeConfig: product.configuracion?.perfect_serve || null
+    perfectServeConfig: product?.configuracion?.perfect_serve || null
   });
+
+  // Load initial data if provided (Edit Mode)
+  useEffect(() => {
+    if (initialData && initialData.detalles) {
+      console.log('📝 Loading initial data into form:', initialData);
+      setFormData(prev => ({
+        ...prev,
+        ...initialData.detalles,
+        // Ensure arrays are preserved
+        photos: initialData.fotos_urls || [],
+        notes: initialData.observaciones?.split('[RECOMENDACIONES]')[0]?.trim() || '',
+        recommendedActions: initialData.observaciones?.split('[RECOMENDACIONES]')[1]?.trim() || '',
+      }));
+    }
+  }, [initialData]);
 
   const sections = [
     { id: 0, title: 'Presencia de Marca', icon: '🏷️' },
