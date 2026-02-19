@@ -373,29 +373,50 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
           <div className="space-y-6">
             <h3 className="text-lg text-white font-semibold">Materiales y Señalización</h3>
 
-            {[
-              { key: 'backBarSignage', label: 'Señalización en Barra' },
-              { key: 'menuInserts', label: 'Insertos en Menú' },
-              { key: 'coasters', label: 'Posavasos' },
-              { key: 'tableCards', label: 'Table Cards' },
-              { key: 'outdoorSignage', label: 'Señalización Exterior' }
-            ].map((item) => (
-              <div key={item.key}>
-                <label className="block text-sm text-slate-300 mb-2">{item.label}</label>
-                <select
-                  value={formData[item.key as keyof typeof formData] as string}
-                  onChange={(e) => updateField(item.key, e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
-                >
-                  <option value="good">Buena</option>
-                  <option value="average">Promedio</option>
-                  <option value="poor">Mala</option>
-                  <option value="present">Presente</option>
-                  <option value="missing">Faltante</option>
-                  <option value="not-applicable">No Aplica</option>
-                </select>
-              </div>
-            ))}
+            <div className="space-y-6">
+              <h3 className="text-lg text-white font-semibold">Materiales y Señalización</h3>
+
+              {/* Quality Scale Items */}
+              {[
+                { key: 'backBarSignage', label: 'Señalización en Barra' },
+                { key: 'outdoorSignage', label: 'Señalización Exterior' }
+              ].map((item) => (
+                <div key={item.key}>
+                  <label className="block text-sm text-slate-300 mb-2">{item.label}</label>
+                  <select
+                    value={formData[item.key as keyof typeof formData] as string}
+                    onChange={(e) => updateField(item.key, e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  >
+                    <option value="good">Buena</option>
+                    <option value="average">Promedio</option>
+                    <option value="poor">Mala</option>
+                    <option value="missing">Faltante</option>
+                    <option value="not-applicable">No Aplica</option>
+                  </select>
+                </div>
+              ))}
+
+              {/* Binary Scale Items */}
+              {[
+                { key: 'menuInserts', label: 'Insertos en Menú' },
+                { key: 'coasters', label: 'Posavasos' },
+                { key: 'tableCards', label: 'Table Cards' },
+              ].map((item) => (
+                <div key={item.key}>
+                  <label className="block text-sm text-slate-300 mb-2">{item.label}</label>
+                  <select
+                    value={formData[item.key as keyof typeof formData] as string}
+                    onChange={(e) => updateField(item.key, e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                  >
+                    <option value="present">Presente</option>
+                    <option value="missing">Faltante</option>
+                    <option value="not-applicable">No Aplica</option>
+                  </select>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

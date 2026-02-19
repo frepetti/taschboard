@@ -76,7 +76,7 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
   const [kpis, setKpis] = useState<any>(null);
   const [activations, setActivations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState('30d');
+  const [dateFilter, setDateFilter] = useState('1M');
   const [regionFilter, setRegionFilter] = useState('all');
   const [selectedVenue, setSelectedVenue] = useState<any>(null);
   const [regions, setRegions] = useState<Region[]>([]);
@@ -156,9 +156,11 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
       }
 
       const date = new Date();
-      if (dateFilter === '7d') date.setDate(date.getDate() - 7);
-      else if (dateFilter === '30d') date.setDate(date.getDate() - 30);
-      else if (dateFilter === '90d') date.setDate(date.getDate() - 90);
+      if (dateFilter === '1M') date.setDate(date.getDate() - 30);
+      else if (dateFilter === '3M') date.setDate(date.getDate() - 90);
+      else if (dateFilter === '6M') date.setDate(date.getDate() - 180);
+      else if (dateFilter === '1Y') date.setDate(date.getDate() - 365);
+      else if (dateFilter === 'YTD') date.setMonth(0, 1); // Jan 1st of current year
 
       if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no está en el state inicial
         inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
@@ -181,12 +183,8 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
         ticketsQuery = ticketsQuery.eq('btl_puntos_venta.region_id', regionFilter);
       }
 
-      // Para tickets futuros, tal vez queramos ver más allá del filtro de fecha pasado, 
-      // pero por coherencia podríamos aplicar algo similar o simplemente traer los próximos.
-      // Aquí traeremos todos los futuros relevantes.
-
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
-      if (ticketsError) console.error("Error loading tickets:", ticketsError); // No bloqueante
+      if (ticketsError) console.error("Error loading tickets:", ticketsError);
 
       // 3. Procesar Activaciones (Combinar Pasadas y Futuras)
       const pastActivations = (inspectionsData || [])
@@ -196,7 +194,7 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
           venue: i.btl_puntos_venta?.nombre || 'Unknown Venue',
           date: i.fecha_inspeccion,
           type: 'Ejecutada',
-          impact: 'N/A', // Se podría calcular si tuviéramos métricas específicas
+          impact: 'N/A',
           status: 'success',
           rawDate: new Date(i.fecha_inspeccion)
         }));
@@ -212,25 +210,27 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
           rawDate: new Date(t.fecha_activacion_solicitada || t.created_at)
         }));
 
-      // Combinar y ordenar por fecha (más reciente a más futuro, o cronológico inverso)
-      // Para el timeline, suele ser útil ver lo próximo primero, o lo más reciente ejecutado.
-      // Vamos a ordenar cronológicamente descendente (lo más nuevo arriba)
+      // Combinar y ordenar
       const allActivations = [...pastActivations, ...futureActivations].sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
 
       setActivations(allActivations);
 
-      // Calcular KPIs basados en datos reales con comparación de períodos
+      // Calcular KPIs basados en datos reales
       const now = new Date();
       let startDate = new Date();
-      if (dateFilter === '7d') startDate.setDate(now.getDate() - 7);
-      else if (dateFilter === '30d') startDate.setDate(now.getDate() - 30);
-      else if (dateFilter === '90d') startDate.setDate(now.getDate() - 90);
-      else startDate = new Date(0); // All time
+      if (dateFilter === '1M') startDate.setDate(now.getDate() - 30);
+      else if (dateFilter === '3M') startDate.setDate(now.getDate() - 90);
+      else if (dateFilter === '6M') startDate.setDate(now.getDate() - 180);
+      else if (dateFilter === '1Y') startDate.setDate(now.getDate() - 365);
+      else if (dateFilter === 'YTD') startDate.setMonth(0, 1);
+      else startDate = new Date(0);
 
       const previousStartDate = new Date(startDate);
-      if (dateFilter === '7d') previousStartDate.setDate(startDate.getDate() - 7);
-      else if (dateFilter === '30d') previousStartDate.setDate(startDate.getDate() - 30);
-      else if (dateFilter === '90d') previousStartDate.setDate(startDate.getDate() - 90);
+      if (dateFilter === '1M') previousStartDate.setDate(startDate.getDate() - 30);
+      else if (dateFilter === '3M') previousStartDate.setDate(startDate.getDate() - 90);
+      else if (dateFilter === '6M') previousStartDate.setDate(startDate.getDate() - 180);
+      else if (dateFilter === '1Y') previousStartDate.setDate(startDate.getDate() - 365);
+      else if (dateFilter === 'YTD') previousStartDate.setFullYear(startDate.getFullYear() - 1);
 
       const currentInspections = (inspectionsData || []) as any[];
 
@@ -242,19 +242,18 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
 
       setKpis({
         visitedVenues: totalVenues,
-        visitedVenuesTrend: 0, // Trends require historical data query - setting to 0 for now to avoid fake data
+        visitedVenuesTrend: 0,
         compliance: avgCompliance,
         complianceTrend: 0,
         activations: totalActivations,
         activationsTrend: 0,
-        roi: 0, // ROI requires sales data we don't have
+        roi: 0,
         roiTrend: 0,
-        totalRegisteredVenues: allVenues.length // Add this KPI maybe?
+        totalRegisteredVenues: allVenues.length
       });
 
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      // Leave state empty — don't fall back to demo data in real mode
     } finally {
       setLoading(false);
     }
@@ -290,19 +289,29 @@ export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDa
         {/* Filters Section */}
         <div className="flex flex-wrap gap-3">
           <FilterChip
-            label="Últimos 7 días"
-            active={dateFilter === '7d'}
-            onClick={() => setDateFilter('7d')}
+            label="1 Mes"
+            active={dateFilter === '1M'}
+            onClick={() => setDateFilter('1M')}
           />
           <FilterChip
-            label="Últimos 30 días"
-            active={dateFilter === '30d'}
-            onClick={() => setDateFilter('30d')}
+            label="3 Meses"
+            active={dateFilter === '3M'}
+            onClick={() => setDateFilter('3M')}
           />
           <FilterChip
-            label="Últimos 90 días"
-            active={dateFilter === '90d'}
-            onClick={() => setDateFilter('90d')}
+            label="6 Meses"
+            active={dateFilter === '6M'}
+            onClick={() => setDateFilter('6M')}
+          />
+          <FilterChip
+            label="1 Año"
+            active={dateFilter === '1Y'}
+            onClick={() => setDateFilter('1Y')}
+          />
+          <FilterChip
+            label="YTD"
+            active={dateFilter === 'YTD'}
+            onClick={() => setDateFilter('YTD')}
           />
 
           <div className="border-l border-slate-700 mx-2"></div>

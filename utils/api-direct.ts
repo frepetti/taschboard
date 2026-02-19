@@ -389,8 +389,15 @@ export async function updateInspection(id: string, inspectionData: any) {
   try {
     await verifyAuthOrThrow();
 
-    // Remover campos que no deben actualizarse o son de lectura (joins)
-    const { btl_puntos_venta, btl_productos, id: _id, created_at, ...updateData } = inspectionData;
+    // Remover campos que no deben actualizarse o son de lectura (joins/FKs inmutables)
+    const {
+      btl_puntos_venta,
+      btl_productos,
+      id: _id,
+      created_at,
+      usuario_id, // Excluir usuario_id para evitar error de FK 23503
+      ...updateData
+    } = inspectionData;
 
     const { data, error } = await supabase
       .from('btl_inspecciones')
@@ -416,24 +423,12 @@ export async function getClients(): Promise<any[]> {
   console.log('📡 [API Direct] Fetching clients...');
 
   try {
-    // Debug: Check who is making the request
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('👤 [API Direct - getClients] Current Auth User:', user?.id, user?.email);
-
     const data = await executeWithRetry(async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from('btl_usuarios')
         .select('*')
-        .in('rol', ['client', 'cliente'])
+        .in('rol', ['client', 'cliente']) // Support both role names
         .order('nombre');
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('❌ [API Direct - getClients] Supabase Error:', error);
-      } else {
-        console.log('📦 [API Direct - getClients] Raw Data:', data);
-      }
 
       return { data: data as any, error };
     });

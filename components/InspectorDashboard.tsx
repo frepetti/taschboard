@@ -126,6 +126,15 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
 
       console.log('📤 Submitting inspection...', data);
 
+      // Aggregate POP materials for scoring
+      const posMaterials = [
+        data.backBarSignage !== 'missing' && data.backBarSignage !== 'not-applicable' ? 'backBarSignage' : null,
+        data.outdoorSignage !== 'missing' && data.outdoorSignage !== 'not-applicable' ? 'outdoorSignage' : null,
+        data.menuInserts === 'present' ? 'menuInserts' : null,
+        data.coasters === 'present' ? 'coasters' : null,
+        data.tableCards === 'present' ? 'tableCards' : null,
+      ].filter(Boolean) as string[];
+
       // Calculate Global Score
       const scores = calculateGlobalScore({
         staffKnowledge: data.staffKnowledge,
@@ -134,8 +143,8 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         brandAdvocacy: data.brandAdvocacy,
         backBarVisibility: data.backBarVisibility,
         shelfPosition: data.shelfPosition,
-        tiene_material_pop: data.backBarSignage !== 'missing' || (data.pos_materials && data.pos_materials.length > 0),
-        pos_materials: data.pos_materials,
+        tiene_material_pop: posMaterials.length > 0,
+        pos_materials: posMaterials,
         stockLevel: data.stockLevel
       });
 

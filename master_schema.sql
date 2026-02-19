@@ -411,6 +411,25 @@ CREATE POLICY "admins_can_delete_users" ON btl_usuarios
   FOR DELETE
   USING (is_admin());
 
+-- Helper function to check if current user is inspector (cached, no recursion)
+CREATE OR REPLACE FUNCTION is_inspector()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM btl_usuarios 
+    WHERE auth_user_id = auth.uid() 
+    AND rol = 'inspector'
+  );
+END;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
+
+CREATE POLICY "inspectors_can_read_clients" ON btl_usuarios
+  FOR SELECT
+  USING (
+    is_inspector() 
+    AND rol IN ('client', 'cliente')
+  );
+
 -- ==============================================================================
 -- REGIONES: Todos ven, Admins editan
 -- ==============================================================================
@@ -558,6 +577,10 @@ CREATE POLICY "cliente_productos_admin_all" ON btl_cliente_productos
 CREATE POLICY "cliente_productos_read_own" ON btl_cliente_productos 
   FOR SELECT 
   USING (usuario_id = current_user_id());
+
+CREATE POLICY "cliente_productos_inspector_read" ON btl_cliente_productos 
+  FOR SELECT 
+  USING (is_inspector());
 
 CREATE POLICY "cliente_productos_manage_own" ON btl_cliente_productos 
   FOR ALL 
