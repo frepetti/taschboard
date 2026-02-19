@@ -504,12 +504,45 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
 
             <div>
               <label className="block text-sm text-slate-300 mb-2">Competidor Principal</label>
-              <input
-                type="text"
-                value={formData.mainCompetitor}
-                onChange={(e) => updateField('mainCompetitor', e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-              />
+              {product?.competidores && product.competidores.length > 0 ? (
+                <div className="space-y-3">
+                  <select
+                    value={product.competidores.includes(formData.mainCompetitor) ? formData.mainCompetitor : '__other__'}
+                    onChange={(e) => {
+                      if (e.target.value === '__other__') {
+                        updateField('mainCompetitor', '');
+                      } else {
+                        updateField('mainCompetitor', e.target.value);
+                      }
+                    }}
+                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  >
+                    <option value="" disabled>Seleccionar competidor...</option>
+                    {product.competidores.map((c: string) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                    <option value="__other__">Otro (Escribir manualmente)</option>
+                  </select>
+
+                  {!product.competidores.includes(formData.mainCompetitor) && (
+                    <input
+                      type="text"
+                      placeholder="Especifique el competidor..."
+                      value={formData.mainCompetitor}
+                      onChange={(e) => updateField('mainCompetitor', e.target.value)}
+                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                      autoFocus
+                    />
+                  )}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.mainCompetitor}
+                  onChange={(e) => updateField('mainCompetitor', e.target.value)}
+                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                />
+              )}
             </div>
 
             <div>

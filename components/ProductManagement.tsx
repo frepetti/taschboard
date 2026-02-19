@@ -29,6 +29,7 @@ interface Product {
       required: boolean;
     }[];
   } | null;
+  competidores?: string[];
 }
 
 export function ProductManagement() {
@@ -56,7 +57,8 @@ export function ProductManagement() {
     descripcion: '',
     activo: true,
     orden_visualizacion: 0,
-    configuracion: { perfect_serve: [] }
+    configuracion: { perfect_serve: [] },
+    competidores: []
   };
 
   useEffect(() => {
@@ -326,59 +328,29 @@ function ProductForm({
 }) {
   const [formData, setFormData] = useState<Product>(product);
   const [activeTab, setActiveTab] = useState<'general' | 'perfect-serve'>('general');
+  const [newCompetitor, setNewCompetitor] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
 
-  const addQuestion = () => {
-    const currentConfig = formData.configuracion || {};
-    const currentQuestions = currentConfig.perfect_serve || [];
-
-    setFormData({
-      ...formData,
-      configuracion: {
-        ...currentConfig,
-        perfect_serve: [
-          ...currentQuestions,
-          {
-            id: Math.random().toString(36).substr(2, 9),
-            question: '',
-            required: true
-          }
-        ]
-      }
-    });
+  const addCompetitor = () => {
+    if (!newCompetitor.trim()) return;
+    const currentCompetitors = formData.competidores || [];
+    if (!currentCompetitors.includes(newCompetitor.trim())) {
+      setFormData({
+        ...formData,
+        competidores: [...currentCompetitors, newCompetitor.trim()]
+      });
+    }
+    setNewCompetitor('');
   };
 
-  const updateQuestion = (id: string, field: 'question' | 'required', value: any) => {
-    const currentConfig = formData.configuracion || {};
-    const currentQuestions = currentConfig.perfect_serve || [];
-
-    const updatedQuestions = currentQuestions.map(q =>
-      q.id === id ? { ...q, [field]: value } : q
-    );
-
+  const removeCompetitor = (competitor: string) => {
     setFormData({
       ...formData,
-      configuracion: {
-        ...currentConfig,
-        perfect_serve: updatedQuestions
-      }
-    });
-  };
-
-  const removeQuestion = (id: string) => {
-    const currentConfig = formData.configuracion || {};
-    const currentQuestions = currentConfig.perfect_serve || [];
-
-    setFormData({
-      ...formData,
-      configuracion: {
-        ...currentConfig,
-        perfect_serve: currentQuestions.filter(q => q.id !== id)
-      }
+      competidores: (formData.competidores || []).filter(c => c !== competitor)
     });
   };
 
@@ -561,6 +533,46 @@ function ProductForm({
                       onChange={(e) => setFormData({ ...formData, objetivo_pop: Number(e.target.value) })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
+                  </div>
+                </div>
+
+                {/* Competitors Section */}
+                <div className="pt-4 border-t border-slate-700/50">
+                  <label className="block text-slate-300 text-sm mb-2">Competidores Directos</label>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={newCompetitor}
+                      onChange={(e) => setNewCompetitor(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCompetitor())}
+                      placeholder="Agregar competidor..."
+                      className="flex-1 bg-slate-800/50 border border-slate-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500/50"
+                    />
+                    <button
+                      type="button"
+                      onClick={addCompetitor}
+                      className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {(formData.competidores || []).map((comp, idx) => (
+                      <div key={idx} className="flex items-center gap-1 bg-slate-800 text-slate-300 text-sm px-3 py-1 rounded-full border border-slate-600/50">
+                        <span>{comp}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCompetitor(comp)}
+                          className="text-slate-500 hover:text-red-400 focus:outline-none ml-1"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {(formData.competidores || []).length === 0 && (
+                      <p className="text-slate-500 text-sm italic">Sin competidores asignados</p>
+                    )}
                   </div>
                 </div>
               </>
