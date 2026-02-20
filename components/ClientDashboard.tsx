@@ -1,9 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabase/client';
 import { ManagerDashboard } from './ManagerDashboard';
 import { MessageSquarePlus } from 'lucide-react';
 import { TicketModal } from './TicketModal';
 import { ProductMetrics } from './ProductMetrics';
 import { VenueTrainingAnalytics } from './VenueTrainingAnalytics';
+
+interface Product {
+  id: string;
+  nombre: string;
+  marca: string;
+}
 
 interface ClientDashboardProps {
   session: any;
@@ -18,6 +25,67 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
   // Shared State for Filters (Lifted from ManagerDashboard)
   const [dateFilter, setDateFilter] = useState('1M');
   const [regionFilter, setRegionFilter] = useState('all');
+
+  // Lifted Product State
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadProducts();
+  }, [isAdmin]);
+
+  const loadProducts = async () => {
+    try {
+      if (isAdmin) {
+        // Admin: load ALL active products
+        const { data: productsData, error } = await supabase
+          .from('btl_productos')
+          .select('id, nombre, marca')
+          .eq('activo', true)
+          .order('marca', { ascending: true });
+
+        if (error) throw error;
+
+        if (productsData && productsData.length > 0) {
+          setProducts(productsData as any);
+          setSelectedProductId((productsData[0] as any).id);
+        }
+      } else {
+        // Client: load only assigned products
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: btlUser } = await supabase
+          .from('btl_usuarios')
+          .select('id')
+          .eq('auth_user_id', user.id)
+          .single();
+
+        if (!btlUser) return;
+
+        const { data: productsData, error } = await supabase
+          .from('btl_productos')
+          .select(`
+            id,
+            nombre,
+            marca,
+            btl_cliente_productos!inner(visible_dashboard, orden)
+          `)
+          .eq('btl_cliente_productos.usuario_id', (btlUser as any).id)
+          .eq('activo', true)
+          .order('marca', { ascending: true });
+
+        if (error) throw error;
+
+        if (productsData && productsData.length > 0) {
+          setProducts(productsData as any);
+          setSelectedProductId((productsData[0] as any).id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
 
   return (
     <>
@@ -42,6 +110,10 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
             isAdmin={isAdmin}
             dateFilter={dateFilter}
             regionFilter={regionFilter}
+            // Controlled props
+            products={products}
+            selectedProductId={selectedProductId}
+            onProductSelect={setSelectedProductId}
           />
         )}
 
@@ -60,6 +132,8 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
           setDateFilter={setDateFilter}
           regionFilter={regionFilter}
           setRegionFilter={setRegionFilter}
+          // New filtered product
+          productId={selectedProductId}
         />
       </div>
 

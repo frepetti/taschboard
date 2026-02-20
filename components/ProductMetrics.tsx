@@ -30,81 +30,36 @@ interface ProductMetricsProps {
   dateFilter?: string;
   regionFilter?: string;
   className?: string;
+  // New props for controlled mode
+  products?: Product[];
+  selectedProductId?: string | null;
+  onProductSelect?: (productId: string) => void;
 }
 
-export function ProductMetrics({ isAdmin = false, dateFilter = '1M', regionFilter = 'all', className = '' }: ProductMetricsProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+export function ProductMetrics({
+  isAdmin = false,
+  dateFilter = '1M',
+  regionFilter = 'all',
+  className = '',
+  products = [],
+  selectedProductId = null,
+  onProductSelect
+}: ProductMetricsProps) {
+  // const [products, setProducts] = useState<Product[]>([]); // Removed internal state
+  // const [selectedProductId, setSelectedProductId] = useState<string | null>(null); // Removed internal state
   const [metric, setMetric] = useState<ProductMetric | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed initial to false since products come from props
   const [loadingMetrics, setLoadingMetrics] = useState(false);
 
-  useEffect(() => {
-    loadProducts();
-  }, [isAdmin]); // Reload products if admin status changes
+  // Removed internal loadProducts useEffect and function
 
   useEffect(() => {
     if (selectedProductId) {
       loadMetricsForProduct(selectedProductId);
+    } else {
+      setMetric(null);
     }
   }, [selectedProductId, dateFilter, regionFilter]); // Reload metrics if filters change
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-
-      if (isAdmin) {
-        // Admin: load ALL active products
-        const { data: productsData, error } = await supabase
-          .from('btl_productos')
-          .select('id, nombre, marca')
-          .eq('activo', true)
-          .order('marca', { ascending: true });
-
-        if (error) throw error;
-
-        if (productsData && productsData.length > 0) {
-          setProducts(productsData as any);
-          setSelectedProductId((productsData[0] as any).id);
-        }
-      } else {
-        // Client: load only assigned products
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: btlUser } = await supabase
-          .from('btl_usuarios')
-          .select('id')
-          .eq('auth_user_id', user.id)
-          .single();
-
-        if (!btlUser) return;
-
-        const { data: productsData, error } = await supabase
-          .from('btl_productos')
-          .select(`
-            id,
-            nombre,
-            marca,
-            btl_cliente_productos!inner(visible_dashboard, orden)
-          `)
-          .eq('btl_cliente_productos.usuario_id', (btlUser as any).id)
-          .eq('activo', true)
-          .order('marca', { ascending: true });
-
-        if (error) throw error;
-
-        if (productsData && productsData.length > 0) {
-          setProducts(productsData as any);
-          setSelectedProductId((productsData[0] as any).id);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadMetricsForProduct = async (productId: string) => {
     try {
@@ -206,15 +161,7 @@ export function ProductMetrics({ isAdmin = false, dateFilter = '1M', regionFilte
     return 'bg-red-500';
   };
 
-  if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 shadow-xl">
-        <div className="flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </div>
-    );
-  }
+
 
   if (products.length === 0) {
     return (
@@ -249,7 +196,7 @@ export function ProductMetrics({ isAdmin = false, dateFilter = '1M', regionFilte
           </div>
           <select
             value={selectedProductId || ''}
-            onChange={(e) => setSelectedProductId(e.target.value)}
+            onChange={(e) => onProductSelect && onProductSelect(e.target.value)}
             className="w-full bg-slate-800/80 border border-slate-700 text-white pl-4 pr-10 py-2.5 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer hover:bg-slate-800 transition-colors"
           >
             {products.map((product) => (

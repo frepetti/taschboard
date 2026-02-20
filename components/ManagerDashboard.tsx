@@ -20,6 +20,7 @@ interface ManagerDashboardProps {
   setDateFilter?: (filter: string) => void;
   regionFilter?: string;
   setRegionFilter?: (filter: string) => void;
+  productId?: string | null;
 }
 
 interface Region {
@@ -81,7 +82,8 @@ export function ManagerDashboard({
   dateFilter: propDateFilter,
   setDateFilter: propSetDateFilter,
   regionFilter: propRegionFilter,
-  setRegionFilter: propSetRegionFilter
+  setRegionFilter: propSetRegionFilter,
+  productId = null
 }: ManagerDashboardProps) {
   const [inspections, setInspections] = useState<any[]>([]);
   const [kpis, setKpis] = useState<any>(null);
@@ -116,7 +118,7 @@ export function ManagerDashboard({
     } else {
       loadDashboardData();
     }
-  }, [dateFilter, regionFilter, isDemo]);
+  }, [dateFilter, regionFilter, isDemo, productId]);
 
   const loadRegions = async () => {
     try {
@@ -174,6 +176,10 @@ export function ManagerDashboard({
 
       if (regionFilter !== 'all') {
         inspectionsQuery = inspectionsQuery.eq('btl_puntos_venta.region_id', regionFilter);
+      }
+
+      if (productId) {
+        inspectionsQuery = inspectionsQuery.eq('producto_id', productId);
       }
 
       const date = new Date();

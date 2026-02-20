@@ -126,9 +126,28 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProduct, setFilterProduct] = useState('');
+  const [availableProducts, setAvailableProducts] = useState<string[]>([]);
 
-  // Get unique products for filter
-  const uniqueProducts = Array.from(new Set(safeInspections.map(i => i.btl_productos?.nombre).filter(Boolean)));
+  // Load all active products for the filter
+  useEffect(() => {
+    const loadProducts = async () => {
+      const { data } = await supabase
+        .from('btl_productos')
+        .select('nombre')
+        .eq('activo', true)
+        .order('nombre');
+
+      if (data) {
+        setAvailableProducts(data.map(p => p.nombre));
+      }
+    };
+    loadProducts();
+  }, []);
+
+  // Use available products if loaded, otherwise fallback to unique products from inspections
+  const filterOptions = availableProducts.length > 0
+    ? availableProducts
+    : Array.from(new Set(safeInspections.map(i => i.btl_productos?.nombre).filter(Boolean)));
 
   const filteredInspections = safeInspections.filter(inspection => {
     const venueName = venueNames[inspection.punto_venta_id]?.toLowerCase() || '';
@@ -186,7 +205,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 className="flex-1 sm:max-w-xs bg-slate-900/50 border border-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
               >
                 <option value="">Todos los Productos</option>
-                {uniqueProducts.map(p => (
+                {filterOptions.map(p => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
