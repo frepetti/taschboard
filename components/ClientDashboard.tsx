@@ -15,6 +15,10 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showProductMetrics, _setShowProductMetrics] = useState(true);
 
+  // Shared State for Filters (Lifted from ManagerDashboard)
+  const [dateFilter, setDateFilter] = useState('1M');
+  const [regionFilter, setRegionFilter] = useState('all');
+
   return (
     <>
       {/* Floating Action Buttons - Hide in demo mode */}
@@ -34,7 +38,11 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
       <div className="px-4 md:px-6 lg:px-8 space-y-6">
         {/* Product Metrics Section */}
         {!isDemo && showProductMetrics && (
-          <ProductMetrics isAdmin={isAdmin} />
+          <ProductMetrics
+            isAdmin={isAdmin}
+            dateFilter={dateFilter}
+            regionFilter={regionFilter}
+          />
         )}
 
         {/* Training Analytics Section */}
@@ -43,7 +51,16 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
         )}
 
         {/* Read-only Dashboard */}
-        <ManagerDashboard session={session} readOnly={true} isDemo={isDemo} />
+        <ManagerDashboard
+          session={session}
+          readOnly={true}
+          isDemo={isDemo}
+          // Pass shared state
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          regionFilter={regionFilter}
+          setRegionFilter={setRegionFilter}
+        />
       </div>
 
       {/* Ticket Modal */}

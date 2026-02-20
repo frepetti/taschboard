@@ -16,6 +16,10 @@ interface ManagerDashboardProps {
   session: any;
   readOnly?: boolean;
   isDemo?: boolean;
+  dateFilter?: string;
+  setDateFilter?: (filter: string) => void;
+  regionFilter?: string;
+  setRegionFilter?: (filter: string) => void;
 }
 
 interface Region {
@@ -71,13 +75,30 @@ const DEMO_DATA = {
   ]
 };
 
-export function ManagerDashboard({ readOnly = false, isDemo = false }: ManagerDashboardProps) {
+export function ManagerDashboard({
+  readOnly = false,
+  isDemo = false,
+  dateFilter: propDateFilter,
+  setDateFilter: propSetDateFilter,
+  regionFilter: propRegionFilter,
+  setRegionFilter: propSetRegionFilter
+}: ManagerDashboardProps) {
   const [inspections, setInspections] = useState<any[]>([]);
   const [kpis, setKpis] = useState<any>(null);
   const [activations, setActivations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState('1M');
-  const [regionFilter, setRegionFilter] = useState('all');
+
+  // Internal state for uncontrolled mode
+  const [internalDateFilter, setInternalDateFilter] = useState('1M');
+  const [internalRegionFilter, setInternalRegionFilter] = useState('all');
+
+  // Use props if available (Controlled), else use internal state (Uncontrolled)
+  const dateFilter = propDateFilter !== undefined ? propDateFilter : internalDateFilter;
+  const setDateFilter = propSetDateFilter || setInternalDateFilter;
+
+  const regionFilter = propRegionFilter !== undefined ? propRegionFilter : internalRegionFilter;
+  const setRegionFilter = propSetRegionFilter || setInternalRegionFilter;
+
   const [selectedVenue, setSelectedVenue] = useState<any>(null);
   const [regions, setRegions] = useState<Region[]>([]);
 

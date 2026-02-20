@@ -39,9 +39,87 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
     'https://images.unsplash.com/photo-1739203852867-87038459791a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXJ0ZW5kZXIlMjBwb3VyaW5nJTIwY29ja3RhaWx8ZW58MXx8fHwxNzY3NzMwODA4fDA&ixlib=rb-4.1.0&q=80&w=1080',
   ];
 
+  const [actionTypes, setActionTypes] = useState<string[]>(['Tasting', 'Training', 'Brand Activation', 'Social Media']);
+  const [savingAction, setSavingAction] = useState(false);
+  const [btlFormData, setBtlFormData] = useState({
+    tipo: 'Tasting',
+    asunto: '',
+    fecha_programada: '',
+    presupuesto: 0,
+    notas: ''
+  });
+
   useEffect(() => {
     loadVenueData();
+    loadActionTypes();
   }, [venueId]);
+
+  const loadActionTypes = async () => {
+    try {
+      const { data, error } = await (supabase
+        .from('btl_config' as any)
+        .select('valor')
+        .eq('clave', 'action_types')
+        .single()) as any;
+
+      if (data && data.valor) {
+        setActionTypes(data.valor);
+      }
+    } catch (e) {
+      console.log('Using default action types');
+    }
+  };
+
+  const handleSaveBTLAction = async () => {
+    if (!btlFormData.asunto) {
+      toast.error('Por favor ingresa un asunto');
+      return;
+    }
+
+    setSavingAction(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { data: btlUser } = await supabase
+        .from('btl_usuarios')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!btlUser) throw new Error('User profile not found');
+
+      const { error } = await (supabase
+        .from('btl_acciones' as any)
+        .insert({
+          punto_venta_id: venueId,
+          usuario_id: btlUser.id,
+          tipo: btlFormData.tipo,
+          asunto: btlFormData.asunto,
+          fecha_programada: btlFormData.fecha_programada || null,
+          presupuesto: btlFormData.presupuesto,
+          notas: btlFormData.notas,
+          estado: 'pendiente'
+        })) as any;
+
+      if (error) throw error;
+
+      toast.success('Acción BTL creada correctamente');
+      setShowBTLModal(false);
+      setBtlFormData({
+        tipo: actionTypes[0] || 'Tasting',
+        asunto: '',
+        fecha_programada: '',
+        presupuesto: 0,
+        notas: ''
+      });
+    } catch (error: any) {
+      console.error('Error creating BTL action:', error);
+      toast.error('Error al crear la acción: ' + error.message);
+    } finally {
+      setSavingAction(false);
+    }
+  };
 
   const loadVenueData = async () => {
     try {
@@ -360,7 +438,7 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
         </div>
       </main>
 
-      {/* BTL Action Modal - Translated */}
+      {/* BTL Action Modal - Real Implementation */}
       {showBTLModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -380,11 +458,14 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
             <div className="p-6 space-y-6">
               <div>
                 <label className="block text-sm text-slate-300 mb-2">{t('tickets.type')}</label>
-                <select className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors">
-                  <option>{t('venue_detail.rec_tasting')}</option>
-                  <option>{t('venue_detail.rec_training')}</option>
-                  <option>{t('venue_detail.rec_social')}</option>
-                  <option>Activación de Marca</option>
+                <select
+                  value={btlFormData.tipo}
+                  onChange={(e) => setBtlFormData({ ...btlFormData, tipo: e.target.value })}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                >
+                  {actionTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
               </div>
 
@@ -392,6 +473,8 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                 <label className="block text-sm text-slate-300 mb-2">{t('tickets.subject')}</label>
                 <input
                   type="text"
+                  value={btlFormData.asunto}
+                  onChange={(e) => setBtlFormData({ ...btlFormData, asunto: e.target.value })}
                   placeholder="Ej. Experiencia Premium Hendrick's"
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
                 />
@@ -404,7 +487,9 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                     {t('tickets.activation_date')}
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
+                    value={btlFormData.fecha_programada}
+                    onChange={(e) => setBtlFormData({ ...btlFormData, fecha_programada: e.target.value })}
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
                   />
                 </div>
@@ -415,10 +500,23 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                   </label>
                   <input
                     type="number"
+                    value={btlFormData.presupuesto}
+                    onChange={(e) => setBtlFormData({ ...btlFormData, presupuesto: Number(e.target.value) })}
                     placeholder="2800"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-slate-300 mb-2">Notas / Detalles</label>
+                <textarea
+                  value={btlFormData.notas}
+                  onChange={(e) => setBtlFormData({ ...btlFormData, notas: e.target.value })}
+                  placeholder="Detalles adicionales sobre la acción..."
+                  rows={3}
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                />
               </div>
 
               {/* Footer Buttons */}
@@ -430,15 +528,18 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                   {t('common.cancel')}
                 </button>
                 <button
-                  onClick={() => {
-                    setShowBTLModal(false);
-                    toast.success('BTL Action saved!', {
-                      description: 'Demo mode - action would be saved to database'
-                    });
-                  }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20"
+                  onClick={handleSaveBTLAction}
+                  disabled={savingAction}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {t('common.save')}
+                  {savingAction ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    t('common.save')
+                  )}
                 </button>
               </div>
             </div>

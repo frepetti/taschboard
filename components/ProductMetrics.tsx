@@ -27,9 +27,12 @@ interface Product {
 
 interface ProductMetricsProps {
   isAdmin?: boolean;
+  dateFilter?: string;
+  regionFilter?: string;
+  className?: string;
 }
 
-export function ProductMetrics({ isAdmin = false }: ProductMetricsProps) {
+export function ProductMetrics({ isAdmin = false, dateFilter = '1M', regionFilter = 'all', className = '' }: ProductMetricsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [metric, setMetric] = useState<ProductMetric | null>(null);
@@ -38,13 +41,13 @@ export function ProductMetrics({ isAdmin = false }: ProductMetricsProps) {
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [isAdmin]); // Reload products if admin status changes
 
   useEffect(() => {
     if (selectedProductId) {
       loadMetricsForProduct(selectedProductId);
     }
-  }, [selectedProductId]);
+  }, [selectedProductId, dateFilter, regionFilter]); // Reload metrics if filters change
 
   const loadProducts = async () => {
     try {
@@ -115,11 +118,34 @@ export function ProductMetrics({ isAdmin = false }: ProductMetricsProps) {
 
       if (productError) throw productError;
 
-      // Obtener inspecciones con este producto (ahora directamente de btl_inspecciones)
-      const { data: inspectionProducts, error: inspError } = await supabase
+      // Obtener inspecciones con este producto (con filtros de fecha y region)
+      let query = supabase
         .from('btl_inspecciones')
-        .select('*')
+        .select(`
+          *,
+          btl_puntos_venta!inner(id, region_id)
+        `)
         .eq('producto_id', productId);
+
+      // Apply Date Filter
+      const now = new Date();
+      let startDate = new Date();
+      if (dateFilter === '1M') startDate.setDate(now.getDate() - 30);
+      else if (dateFilter === '3M') startDate.setDate(now.getDate() - 90);
+      else if (dateFilter === '6M') startDate.setDate(now.getDate() - 180);
+      else if (dateFilter === '1Y') startDate.setDate(now.getDate() - 365);
+      else if (dateFilter === 'YTD') startDate.setMonth(0, 1);
+
+      if (dateFilter !== 'all') {
+        query = query.gte('fecha_inspeccion', startDate.toISOString());
+      }
+
+      // Apply Region Filter
+      if (regionFilter && regionFilter !== 'all') {
+        query = query.eq('btl_puntos_venta.region_id', regionFilter);
+      }
+
+      const { data: inspectionProducts, error: inspError } = await query;
 
       if (inspError) throw inspError;
 

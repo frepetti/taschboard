@@ -39,6 +39,7 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
         name: venue.nombre || '—',
         channel: venue.canal || '—',
         inspections: [],
+        global_score: venue.global_score // Capture global_score from the joined venue data
       });
     }
     venueMap.get(key).inspections.push(insp);
@@ -48,11 +49,14 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
     const count = v.inspections.length;
     let avgCompliance = 0;
 
-    if (count > 0) {
+    if (v.global_score !== undefined && v.global_score !== null) {
+      // Use the official global score from the venue record (updated by trigger)
+      avgCompliance = v.global_score;
+    } else if (count > 0) {
+      // Fallback: calculate average from loaded inspections if global_score is missing
       avgCompliance = Math.round(v.inspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / count);
     } else {
-      // Fallback to global score if no inspections in this period (Admin View)
-      avgCompliance = v.global_score || 0;
+      avgCompliance = 0;
     }
 
     const hasProduct = v.inspections.some((i: any) => i.tiene_producto);

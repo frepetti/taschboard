@@ -673,3 +673,81 @@ ALTER TABLE btl_inspecciones ADD COLUMN IF NOT EXISTS compliance_score NUMERIC D
 
 -- 15. FIN
 SELECT 'Base de datos generada exitosamente con RLS policies corregidas.' as status;
+
+-- ==============================================================================
+-- 12. BTL ACTIONS & CONFIGURATION
+-- ==============================================================================
+
+-- Tabla de Configuración (Tipos de Acciones, etc.)
+CREATE TABLE IF NOT EXISTS btl_config (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  clave VARCHAR(100) NOT NULL UNIQUE, -- e.g. 'action_types'
+  valor JSONB NOT NULL, -- e.g. ["Tasting", "Training", "Social Media"]
+  descripcion TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabla de Acciones BTL
+CREATE TABLE IF NOT EXISTS btl_acciones (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  punto_venta_id UUID NOT NULL REFERENCES btl_puntos_venta(id) ON DELETE CASCADE,
+  usuario_id UUID NOT NULL REFERENCES btl_usuarios(id),
+  tipo VARCHAR(100) NOT NULL, -- Tasting, Training, etc.
+  asunto VARCHAR(255) NOT NULL,
+  fecha_programada TIMESTAMPTZ,
+  presupuesto DECIMAL(10,2),
+  estado VARCHAR(50) DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'aprobada', 'rechazada', 'completada')),
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS for BTL Actions
+ALTER TABLE btl_acciones ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "btl_acciones_admin_all" ON btl_acciones 
+  FOR ALL 
+  USING (is_admin());
+
+CREATE POLICY "btl_acciones_read_own_venue" ON btl_acciones 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_puntos_venta pv
+      LEFT JOIN btl_clientes_venues cv ON pv.id = cv.venue_id
+      WHERE pv.id = btl_acciones.punto_venta_id
+      AND (
+        pv.created_by = auth.uid() OR -- Inspector created venue
+        cv.cliente_id = current_user_id() -- Client assigned to venue
+      )
+    )
+  );
+  
+CREATE POLICY "btl_acciones_create_inspector" ON btl_acciones 
+  FOR INSERT 
+  WITH CHECK (is_inspector());
+
+-- ==============================================================================
+-- 13. GLOBAL SCORE TRIGGER
+-- ==============================================================================
+
+CREATE OR REPLACE FUNCTION update_venue_global_score()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Update the global_score of the venue with the compliance_score of the new inspection
+  -- We use the NEW inspection's score because it is the latest state of the venue
+  UPDATE btl_puntos_venta
+  SET 
+    global_score = COALESCE(NEW.global_score, 0), -- Use 'global_score' from inspection (calculated in frontend/backend)
+    last_inspection_date = NEW.fecha_inspeccion
+  WHERE id = NEW.punto_venta_id;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_venue_global_score
+  AFTER INSERT ON btl_inspecciones
+  FOR EACH ROW
+  EXECUTE FUNCTION update_venue_global_score();
