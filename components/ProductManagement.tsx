@@ -354,6 +354,52 @@ function ProductForm({
     });
   };
 
+  const addQuestion = () => {
+    const currentConfig = formData.configuracion || { perfect_serve: [] };
+    const currentQuestions = currentConfig.perfect_serve || [];
+    const newQuestion = {
+      id: crypto.randomUUID(),
+      question: '',
+      required: true
+    };
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: [...currentQuestions, newQuestion]
+      }
+    });
+  };
+
+  const updateQuestion = (id: string, field: 'question' | 'required', value: string | boolean) => {
+    const currentConfig = formData.configuracion || { perfect_serve: [] };
+    const currentQuestions = currentConfig.perfect_serve || [];
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: currentQuestions.map(q =>
+          q.id === id ? { ...q, [field]: value } : q
+        )
+      }
+    });
+  };
+
+  const removeQuestion = (id: string) => {
+    const currentConfig = formData.configuracion || { perfect_serve: [] };
+    const currentQuestions = currentConfig.perfect_serve || [];
+
+    setFormData({
+      ...formData,
+      configuracion: {
+        ...currentConfig,
+        perfect_serve: currentQuestions.filter(q => q.id !== id)
+      }
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">

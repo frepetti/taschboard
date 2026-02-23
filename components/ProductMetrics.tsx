@@ -37,10 +37,8 @@ interface ProductMetricsProps {
 }
 
 export function ProductMetrics({
-  isAdmin = false,
   dateFilter = '1M',
   regionFilter = 'all',
-  className = '',
   products = [],
   selectedProductId = null,
   onProductSelect
@@ -48,7 +46,6 @@ export function ProductMetrics({
   // const [products, setProducts] = useState<Product[]>([]); // Removed internal state
   // const [selectedProductId, setSelectedProductId] = useState<string | null>(null); // Removed internal state
   const [metric, setMetric] = useState<ProductMetric | null>(null);
-  const [loading, setLoading] = useState(false); // Changed initial to false since products come from props
   const [loadingMetrics, setLoadingMetrics] = useState(false);
 
   // Removed internal loadProducts useEffect and function
