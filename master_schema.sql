@@ -17,7 +17,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ⚠️ CUIDADO: ESTO BORRARÁ TODOS LOS DATOS EXISTENTES
 DROP TABLE IF EXISTS btl_ticket_comentarios CASCADE;
 DROP TABLE IF EXISTS btl_reportes CASCADE;
-DROP TABLE IF EXISTS btl_inspeccion_productos CASCADE;
 DROP TABLE IF EXISTS btl_inspecciones CASCADE;
 DROP TABLE IF EXISTS btl_cliente_productos CASCADE;
 DROP TABLE IF EXISTS btl_clientes_venues CASCADE;
@@ -111,6 +110,8 @@ CREATE TABLE btl_productos (
   descripcion TEXT,
   activo BOOLEAN DEFAULT TRUE,
   orden_visualizacion INTEGER DEFAULT 0,
+  configuracion JSONB DEFAULT '{"perfect_serve": []}'::jsonb,
+  competidores TEXT[] DEFAULT '{}'::text[],
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -587,33 +588,6 @@ CREATE POLICY "cliente_productos_manage_own" ON btl_cliente_productos
   USING (usuario_id = current_user_id());
 
 -- ==============================================================================
--- INSPECCION PRODUCTOS (Detalle)
--- ==============================================================================
-CREATE POLICY "inspeccion_productos_admin_all" ON btl_inspeccion_productos 
-  FOR ALL 
-  USING (is_admin());
-
-CREATE POLICY "inspeccion_productos_read" ON btl_inspeccion_productos 
-  FOR SELECT 
-  USING (
-    EXISTS (
-      SELECT 1 FROM btl_inspecciones 
-      WHERE id = inspeccion_id 
-      AND (usuario_id = current_user_id() OR is_admin())
-    )
-  );
-
-CREATE POLICY "inspeccion_productos_inspector_manage" ON btl_inspeccion_productos 
-  FOR ALL 
-  USING (
-    EXISTS (
-      SELECT 1 FROM btl_inspecciones 
-      WHERE id = inspeccion_id 
-      AND usuario_id = current_user_id()
-    )
-  );
-
--- ==============================================================================
 -- CAPACITACIONES
 -- ==============================================================================
 CREATE POLICY "capacitaciones_read_all" ON btl_capacitaciones 
@@ -663,8 +637,13 @@ VALUES ('inspection-photos', 'inspection-photos', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Policies for inspection-photos
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'inspection-photos');
+
+DROP POLICY IF EXISTS "Auth Upload" ON storage.objects;
 CREATE POLICY "Auth Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'inspection-photos' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Auth Update" ON storage.objects;
 CREATE POLICY "Auth Update" ON storage.objects FOR UPDATE USING (bucket_id = 'inspection-photos' AND auth.role() = 'authenticated');
 
 -- 14. COMPLIANCE SCORE (Legacy/Compatibility)
@@ -724,6 +703,7 @@ CREATE POLICY "btl_acciones_read_own_venue" ON btl_acciones
     )
   );
   
+DROP POLICY IF EXISTS "btl_acciones_create_inspector" ON btl_acciones;
 CREATE POLICY "btl_acciones_create_inspector" ON btl_acciones 
   FOR INSERT 
   WITH CHECK (is_inspector());
