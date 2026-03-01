@@ -465,6 +465,7 @@ export function ManagerDashboard({
           <div className="h-full overflow-y-auto">
             <VenueDetail
               venueId={selectedVenue.id}
+              selectedProductId={productId}
               onBack={() => {
                 setSelectedVenue(null);
                 // Refresh data when returning from detail

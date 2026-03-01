@@ -49,14 +49,11 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
     const count = v.inspections.length;
     let avgCompliance = 0;
 
-    if (v.global_score !== undefined && v.global_score !== null) {
-      // Use the official global score from the venue record (updated by trigger)
-      avgCompliance = v.global_score;
-    } else if (count > 0) {
-      // Fallback: calculate average from loaded inspections if global_score is missing
-      avgCompliance = Math.round(v.inspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / count);
-    } else {
-      avgCompliance = 0;
+    if (count > 0) {
+      // Use average compliance_score from the inspections received (already filtered by product)
+      avgCompliance = Math.round(
+        v.inspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / count
+      );
     }
 
     const hasProduct = v.inspections.some((i: any) => i.tiene_producto);

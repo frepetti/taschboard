@@ -1,4 +1,5 @@
 import { ArrowLeft, MapPin, Phone, Check, X, Calendar, DollarSign, Award } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -21,10 +22,11 @@ interface Venue {
 
 interface VenueDetailProps {
   venueId: string;
+  selectedProductId?: string | null;
   onBack: () => void;
 }
 
-export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
+export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailProps) {
   const { t } = useLanguage();
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,7 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
   const [perfectServeScore, setPerfectServeScore] = useState(0);
   const [perfectServeChecklist, setPerfectServeChecklist] = useState<{ item: string; status: boolean }[]>([]);
   const [showBTLModal, setShowBTLModal] = useState(false);
+  const [avgProductScore, setAvgProductScore] = useState<number | null>(null);
 
   // Fallback images if no photos are found
   const fallbackImages = [
@@ -52,11 +55,11 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
   useEffect(() => {
     loadVenueData();
     loadActionTypes();
-  }, [venueId]);
+  }, [venueId, selectedProductId]);
 
   const loadActionTypes = async () => {
     try {
-      const { data, error } = await (supabase
+      const { data } = await (supabase
         .from('btl_config' as any)
         .select('valor')
         .eq('clave', 'action_types')
@@ -136,17 +139,42 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
 
       const venueData = venueResult as any; // Cast to any to avoid missing property errors for global_score
 
-      // 2. Fetch Latest Inspection for this Venue
-      const { data: latestInspection, error: inspectionError } = await supabase
+      // 2. Fetch Latest Inspection for this Venue (filtered by product if selected)
+      let inspQuery = supabase
         .from('btl_inspecciones')
         .select('*, detalles, fotos_urls')
         .eq('punto_venta_id', venueId)
         .order('fecha_inspeccion', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
+
+      if (selectedProductId) {
+        inspQuery = (inspQuery as any).eq('producto_id', selectedProductId);
+      }
+
+      const { data: latestInspection, error: inspectionError } = await inspQuery.single();
 
       // Type assertion for the inspection data since automatic types might be missing 'detalles'
       const inspection = latestInspection as any;
+
+      // 2b. Fetch ALL inspections for this venue+product to compute average score
+      let allInspQuery = supabase
+        .from('btl_inspecciones')
+        .select('compliance_score')
+        .eq('punto_venta_id', venueId);
+
+      if (selectedProductId) {
+        allInspQuery = (allInspQuery as any).eq('producto_id', selectedProductId);
+      }
+
+      const { data: allInspData } = await allInspQuery;
+      if (allInspData && allInspData.length > 0) {
+        const avg = Math.round(
+          allInspData.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / allInspData.length
+        );
+        setAvgProductScore(avg);
+      } else {
+        setAvgProductScore(null);
+      }
 
       // Basic Venue Object
       const newVenue: Venue = {
@@ -309,11 +337,14 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
             <div className="flex items-center gap-4 lg:flex-col lg:text-right lg:items-end">
               <div className="flex-1 lg:flex-initial">
                 <div className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('venue_detail.global_score')}</div>
-                <div className={`text-4xl sm:text-6xl font-bold ${venue.global_score >= 90 ? 'text-green-400' :
-                  venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
-                  }`}>
-                  {venue.global_score}
-                </div>
+                <Tooltip text="Basado en última inspección" position="left">
+                  <div className={`text-4xl sm:text-6xl font-bold cursor-help ${venue.global_score >= 90 ? 'text-green-400' :
+                    venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
+                    }`}
+                  >
+                    {venue.global_score}
+                  </div>
+                </Tooltip>
                 <div className="text-xs sm:text-sm text-slate-400">{t('venue_detail.out_of_100')}</div>
               </div>
               <button
@@ -349,9 +380,9 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
               )}
             </div>
 
-            {/* Perfect Serve Checklist -> Global Score Breakdown */}
+            {/* Checklist Breakdown */}
             <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Desglose de Puntaje Global</h3>
+              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Cumplimiento de Checklist</h3>
               <div className="space-y-2 sm:space-y-3">
                 {perfectServeChecklist.length > 0 ? (
                   perfectServeChecklist.map((item, i) => (
@@ -401,6 +432,20 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
                   </div>
                 </div>
 
+                {/* Average Score across all inspections for this product */}
+                {avgProductScore !== null && (
+                  <Tooltip text="Basado en todas las inspecciones para este producto" position="top">
+                    <div className="bg-slate-800/30 p-3 rounded-lg cursor-help col-span-2 w-full">
+                      <div className="text-xs text-slate-400 mb-1">Puntaje Global del Producto ⓘ</div>
+                      <div className={`text-xl font-bold ${avgProductScore !== null && avgProductScore >= 90 ? 'text-green-400' :
+                        avgProductScore !== null && avgProductScore >= 70 ? 'text-amber-400' : 'text-red-400'
+                        }`}>
+                        {avgProductScore} <span className="text-sm font-normal text-slate-400">/ 100</span>
+                      </div>
+                    </div>
+                  </Tooltip>
+                )}
+
                 {/* Share of Menu - Only show if available */}
                 {venue.shareOfMenu !== undefined && (
                   <div className="bg-slate-800/30 p-3 rounded-lg">
@@ -436,116 +481,118 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
             </div>
           </div>
         </div>
-      </main>
+      </main >
 
       {/* BTL Action Modal - Real Implementation */}
-      {showBTLModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border-b border-amber-500/30 p-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl text-white font-bold">{t('venue_detail.create_btl')}</h2>
-                <button
-                  onClick={() => setShowBTLModal(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <p className="text-sm text-slate-300 mt-2">Planificar nueva activación para {venue.nombre}</p>
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">{t('tickets.type')}</label>
-                <select
-                  value={btlFormData.tipo}
-                  onChange={(e) => setBtlFormData({ ...btlFormData, tipo: e.target.value })}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
-                >
-                  {actionTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">{t('tickets.subject')}</label>
-                <input
-                  type="text"
-                  value={btlFormData.asunto}
-                  onChange={(e) => setBtlFormData({ ...btlFormData, asunto: e.target.value })}
-                  placeholder="Ej. Experiencia Premium Hendrick's"
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-slate-300 mb-2">
-                    <Calendar className="w-4 h-4 inline mr-1" />
-                    {t('tickets.activation_date')}
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={btlFormData.fecha_programada}
-                    onChange={(e) => setBtlFormData({ ...btlFormData, fecha_programada: e.target.value })}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
-                  />
+      {
+        showBTLModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border-b border-amber-500/30 p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl text-white font-bold">{t('venue_detail.create_btl')}</h2>
+                  <button
+                    onClick={() => setShowBTLModal(false)}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
+                <p className="text-sm text-slate-300 mt-2">Planificar nueva activación para {venue.nombre}</p>
+              </div>
+
+              <div className="p-6 space-y-6">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-2">
-                    <DollarSign className="w-4 h-4 inline mr-1" />
-                    {t('tickets.budget')} (USD)
-                  </label>
+                  <label className="block text-sm text-slate-300 mb-2">{t('tickets.type')}</label>
+                  <select
+                    value={btlFormData.tipo}
+                    onChange={(e) => setBtlFormData({ ...btlFormData, tipo: e.target.value })}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                  >
+                    {actionTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">{t('tickets.subject')}</label>
                   <input
-                    type="number"
-                    value={btlFormData.presupuesto}
-                    onChange={(e) => setBtlFormData({ ...btlFormData, presupuesto: Number(e.target.value) })}
-                    placeholder="2800"
+                    type="text"
+                    value={btlFormData.asunto}
+                    onChange={(e) => setBtlFormData({ ...btlFormData, asunto: e.target.value })}
+                    placeholder="Ej. Experiencia Premium Hendrick's"
                     className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm text-slate-300 mb-2">Notas / Detalles</label>
-                <textarea
-                  value={btlFormData.notas}
-                  onChange={(e) => setBtlFormData({ ...btlFormData, notas: e.target.value })}
-                  placeholder="Detalles adicionales sobre la acción..."
-                  rows={3}
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      {t('tickets.activation_date')}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={btlFormData.fecha_programada}
+                      onChange={(e) => setBtlFormData({ ...btlFormData, fecha_programada: e.target.value })}
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-2">
+                      <DollarSign className="w-4 h-4 inline mr-1" />
+                      {t('tickets.budget')} (USD)
+                    </label>
+                    <input
+                      type="number"
+                      value={btlFormData.presupuesto}
+                      onChange={(e) => setBtlFormData({ ...btlFormData, presupuesto: Number(e.target.value) })}
+                      placeholder="2800"
+                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors"
+                    />
+                  </div>
+                </div>
 
-              {/* Footer Buttons */}
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={() => setShowBTLModal(false)}
-                  className="flex-1 px-6 py-3 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={handleSaveBTLAction}
-                  disabled={savingAction}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {savingAction ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Guardando...
-                    </>
-                  ) : (
-                    t('common.save')
-                  )}
-                </button>
+                <div>
+                  <label className="block text-sm text-slate-300 mb-2">Notas / Detalles</label>
+                  <textarea
+                    value={btlFormData.notas}
+                    onChange={(e) => setBtlFormData({ ...btlFormData, notas: e.target.value })}
+                    placeholder="Detalles adicionales sobre la acción..."
+                    rows={3}
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 transition-colors resize-none"
+                  />
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="flex gap-4 pt-4">
+                  <button
+                    onClick={() => setShowBTLModal(false)}
+                    className="flex-1 px-6 py-3 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={handleSaveBTLAction}
+                    disabled={savingAction}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {savingAction ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Guardando...
+                      </>
+                    ) : (
+                      t('common.save')
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
