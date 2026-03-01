@@ -433,6 +433,7 @@ export function ManagerDashboard({
         {/* Map Section */}
         <OpportunityMap
           inspections={inspections}
+          selectedProductId={productId}
           onVenueSelect={(venue) => {
             console.log('🗺️ Map selected venue:', venue);
             // Ensure ID is number to match VenueDetail expectation

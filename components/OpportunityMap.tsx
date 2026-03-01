@@ -10,6 +10,7 @@ import { calculateVenueStatus } from "../utils/scoreCalculations";
 
 interface OpportunityMapProps {
   inspections?: any[];
+  selectedProductId?: string | null;
   filter?: string;
   onFilterChange?: (filter: string) => void;
   onVenueSelect?: (venue: any) => void;
@@ -42,6 +43,8 @@ interface ImportedVenue {
 const BA_CENTER: [number, number] = [-34.6037, -58.3816];
 
 export function OpportunityMap({
+  inspections = [],
+  selectedProductId,
   filter: externalFilter,
   onFilterChange: externalOnFilterChange,
   onVenueSelect,
@@ -202,38 +205,76 @@ export function OpportunityMap({
     return Number((6.5 + (hash % 35) / 10).toFixed(1));
   };
 
+  // Build a lookup map: venueId -> inspection (for the currently selected product)
+  const inspectionByVenueId = useMemo(() => {
+    const map = new Map<string, any>();
+    (inspections || []).forEach((insp) => {
+      const venueId = String(
+        insp.punto_venta_id ||
+        insp.btl_puntos_venta?.id ||
+        ''
+      );
+      if (venueId) {
+        // Keep highest-score inspection if there are multiple
+        if (!map.has(venueId) || (insp.compliance_score ?? 0) > (map.get(venueId).compliance_score ?? 0)) {
+          map.set(venueId, insp);
+        }
+      }
+    });
+    return map;
+  }, [inspections]);
+
   const locations = useMemo(() => {
     return importedVenues.map((venue, index) => {
       let lat = venue.lat;
       let lng = venue.lng;
 
       if (!lat || !lng) {
-        const coords = getCoordinatesFromZone(
-          venue.zone,
-        );
+        const coords = getCoordinatesFromZone(venue.zone);
         lat = coords[0];
         lng = coords[1];
       }
 
-      // Determine type/color based on global_score if available
-      let type: "strategic" | "opportunity" | "activated" | "risk" = getVenueType(venue, index);
+      // When a product is selected, only inspected venues get a real color.
+      // Everyone else → 'none' (gray)
+      const inspection = inspectionByVenueId.get(String(venue.id));
+      const hasProductFilter = selectedProductId != null && selectedProductId !== '';
 
-      // If we have a global_score (and it's not 0 or null), use it to determine status dynamically
-      // This overrides string matching if the score exists
-      if (venue.global_score !== undefined && venue.global_score !== null) {
-        const status = calculateVenueStatus(venue.global_score);
-        type = status.status as any;
+      let type: "strategic" | "opportunity" | "activated" | "risk" | "none";
+      let score: number;
+
+      if (hasProductFilter) {
+        if (inspection) {
+          // Color based on compliance score of the inspection
+          const complianceScore = inspection.compliance_score ?? 0;
+          const status = calculateVenueStatus(complianceScore);
+          type = status.status as any;
+          score = complianceScore;
+        } else {
+          // Not inspected for this product
+          type = "none";
+          score = 0;
+        }
+      } else {
+        // No product filter active: use segment-based or fallback logic
+        type = getVenueType(venue, index);
+        if (venue.global_score !== undefined && venue.global_score !== null) {
+          const status = calculateVenueStatus(venue.global_score);
+          type = status.status as any;
+        }
+        score = venue.global_score || getVenueScore(venue.id);
       }
 
       return {
         ...venue,
         lat: lat as number,
         lng: lng as number,
-        type: type,
-        score: venue.global_score || getVenueScore(venue.id), // Use global_score if available
+        type,
+        score,
+        hasInspection: !!inspection,
       };
     });
-  }, [importedVenues]);
+  }, [importedVenues, inspectionByVenueId, selectedProductId]);
 
   const filteredLocations = useMemo(() => {
     return filter === "all"
@@ -247,6 +288,7 @@ export function OpportunityMap({
     { id: "opportunity", label: t('map.opportunity'), color: "blue" },
     { id: "risk", label: t('map.risk'), color: "red" },
     { id: "activated", label: t('map.activated'), color: "amber" },
+    { id: "none", label: language === 'es' ? 'Sin inspección' : 'Not inspected', color: "slate" },
   ];
 
   const createCustomIcon = (type: string) => {
@@ -264,6 +306,9 @@ export function OpportunityMap({
         break;
       case "activated":
         colorClass = "bg-amber-500";
+        break;
+      case "none":
+        colorClass = "bg-slate-500";
         break;
     }
 
@@ -298,16 +343,21 @@ export function OpportunityMap({
       case "activated":
         typeColor = "border-amber-500 text-amber-400";
         break;
+      case "none":
+        typeColor = "border-slate-500 text-slate-400";
+        break;
     }
+
+    const typeLabel = loc.type === 'none' ? 'Sin inspección' : loc.type;
 
     return `
       <div class="p-1 min-w-[200px] font-sans">
         <h4 class="font-bold text-white text-base mb-1">${loc.name}</h4>
         <div class="flex items-center gap-2 mb-3">
           <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${typeColor}">
-            ${loc.type}
+            ${typeLabel}
           </span>
-          <span class="text-xs font-bold text-amber-400">★ ${loc.score}</span>
+          ${loc.type !== 'none' ? `<span class="text-xs font-bold text-amber-400">★ ${loc.score}</span>` : ''}
         </div>
         <div class="space-y-1">
           <p class="text-slate-300 text-xs m-0">
@@ -533,6 +583,12 @@ export function OpportunityMap({
           <div className="w-3 h-3 rounded-full bg-amber-500 ring-2 ring-amber-500/30" />
           <span className="text-slate-400">{t('map.activated')}</span>
         </div>
+        {selectedProductId && (
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-slate-500 ring-2 ring-slate-500/30" />
+            <span className="text-slate-400">{language === 'es' ? 'Sin inspección' : 'Not inspected'}</span>
+          </div>
+        )}
       </div>
     </div>
   );

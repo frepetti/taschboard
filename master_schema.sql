@@ -388,26 +388,32 @@ $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 -- ==============================================================================
 -- USUARIOS: Simple policies without recursion
 -- ==============================================================================
+DROP POLICY IF EXISTS "users_can_read_own_data" ON btl_usuarios;
 CREATE POLICY "users_can_read_own_data" ON btl_usuarios
   FOR SELECT
   USING (auth.uid() = auth_user_id);
 
+DROP POLICY IF EXISTS "admins_can_read_all_users" ON btl_usuarios;
 CREATE POLICY "admins_can_read_all_users" ON btl_usuarios
   FOR SELECT
   USING (is_admin());
 
+DROP POLICY IF EXISTS "users_can_update_own_data" ON btl_usuarios;
 CREATE POLICY "users_can_update_own_data" ON btl_usuarios
   FOR UPDATE
   USING (auth.uid() = auth_user_id);
 
+DROP POLICY IF EXISTS "admins_can_update_all_users" ON btl_usuarios;
 CREATE POLICY "admins_can_update_all_users" ON btl_usuarios
   FOR UPDATE
   USING (is_admin());
 
+DROP POLICY IF EXISTS "users_can_insert_own_data" ON btl_usuarios;
 CREATE POLICY "users_can_insert_own_data" ON btl_usuarios
   FOR INSERT
   WITH CHECK (auth.uid() = auth_user_id);
 
+DROP POLICY IF EXISTS "admins_can_delete_users" ON btl_usuarios;
 CREATE POLICY "admins_can_delete_users" ON btl_usuarios
   FOR DELETE
   USING (is_admin());
@@ -424,6 +430,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
+DROP POLICY IF EXISTS "inspectors_can_read_clients" ON btl_usuarios;
 CREATE POLICY "inspectors_can_read_clients" ON btl_usuarios
   FOR SELECT
   USING (
@@ -434,10 +441,12 @@ CREATE POLICY "inspectors_can_read_clients" ON btl_usuarios
 -- ==============================================================================
 -- REGIONES: Todos ven, Admins editan
 -- ==============================================================================
+DROP POLICY IF EXISTS "regiones_read_all" ON btl_regiones;
 CREATE POLICY "regiones_read_all" ON btl_regiones 
   FOR SELECT 
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "regiones_admin_all" ON btl_regiones;
 CREATE POLICY "regiones_admin_all" ON btl_regiones 
   FOR ALL 
   USING (is_admin());
@@ -445,10 +454,12 @@ CREATE POLICY "regiones_admin_all" ON btl_regiones
 -- ==============================================================================
 -- PRODUCTOS: Todos ven, Admins editan
 -- ==============================================================================
+DROP POLICY IF EXISTS "productos_read_all" ON btl_productos;
 CREATE POLICY "productos_read_all" ON btl_productos 
   FOR SELECT 
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "productos_admin_all" ON btl_productos;
 CREATE POLICY "productos_admin_all" ON btl_productos 
   FOR ALL 
   USING (is_admin());
@@ -456,10 +467,12 @@ CREATE POLICY "productos_admin_all" ON btl_productos
 -- ==============================================================================
 -- PUNTOS DE VENTA: Admins todo, Inspectores leen todo, Clientes ven asignados
 -- ==============================================================================
+DROP POLICY IF EXISTS "venues_admin_all" ON btl_puntos_venta;
 CREATE POLICY "venues_admin_all" ON btl_puntos_venta 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "venues_inspector_read" ON btl_puntos_venta;
 CREATE POLICY "venues_inspector_read" ON btl_puntos_venta 
   FOR SELECT 
   USING (
@@ -470,6 +483,7 @@ CREATE POLICY "venues_inspector_read" ON btl_puntos_venta
     )
   );
 
+DROP POLICY IF EXISTS "venues_client_read_assigned" ON btl_puntos_venta;
 CREATE POLICY "venues_client_read_assigned" ON btl_puntos_venta 
   FOR SELECT 
   USING (
@@ -483,10 +497,12 @@ CREATE POLICY "venues_client_read_assigned" ON btl_puntos_venta
 -- ==============================================================================
 -- INSPECCIONES: Admins todo, Clientes ven todas, Inspectores solo propias
 -- ==============================================================================
+DROP POLICY IF EXISTS "inspecciones_admin_all" ON btl_inspecciones;
 CREATE POLICY "inspecciones_admin_all" ON btl_inspecciones 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "inspecciones_client_read_all" ON btl_inspecciones;
 CREATE POLICY "inspecciones_client_read_all" ON btl_inspecciones 
   FOR SELECT 
   USING (
@@ -497,10 +513,12 @@ CREATE POLICY "inspecciones_client_read_all" ON btl_inspecciones
     )
   );
 
+DROP POLICY IF EXISTS "inspecciones_inspector_read_own" ON btl_inspecciones;
 CREATE POLICY "inspecciones_inspector_read_own" ON btl_inspecciones 
   FOR SELECT 
   USING (usuario_id = current_user_id());
 
+DROP POLICY IF EXISTS "inspecciones_inspector_create" ON btl_inspecciones;
 CREATE POLICY "inspecciones_inspector_create" ON btl_inspecciones 
   FOR INSERT 
   WITH CHECK (
@@ -512,6 +530,7 @@ CREATE POLICY "inspecciones_inspector_create" ON btl_inspecciones
     )
   );
 
+DROP POLICY IF EXISTS "inspecciones_inspector_update_own" ON btl_inspecciones;
 CREATE POLICY "inspecciones_inspector_update_own" ON btl_inspecciones 
   FOR UPDATE 
   USING (usuario_id = current_user_id());
@@ -519,18 +538,22 @@ CREATE POLICY "inspecciones_inspector_update_own" ON btl_inspecciones
 -- ==============================================================================
 -- REPORTES (TICKETS): Admins todo, Usuarios ven/crean propios
 -- ==============================================================================
+DROP POLICY IF EXISTS "reportes_admin_all" ON btl_reportes;
 CREATE POLICY "reportes_admin_all" ON btl_reportes 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "reportes_read_own" ON btl_reportes;
 CREATE POLICY "reportes_read_own" ON btl_reportes 
   FOR SELECT 
   USING (creado_por = current_user_id());
 
+DROP POLICY IF EXISTS "reportes_create_own" ON btl_reportes;
 CREATE POLICY "reportes_create_own" ON btl_reportes 
   FOR INSERT 
   WITH CHECK (creado_por = current_user_id());
 
+DROP POLICY IF EXISTS "reportes_update_own" ON btl_reportes;
 CREATE POLICY "reportes_update_own" ON btl_reportes 
   FOR UPDATE 
   USING (creado_por = current_user_id());
@@ -538,10 +561,12 @@ CREATE POLICY "reportes_update_own" ON btl_reportes
 -- ==============================================================================
 -- COMENTARIOS TICKETS
 -- ==============================================================================
+DROP POLICY IF EXISTS "comentarios_admin_all" ON btl_ticket_comentarios;
 CREATE POLICY "comentarios_admin_all" ON btl_ticket_comentarios 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "comentarios_read_related" ON btl_ticket_comentarios;
 CREATE POLICY "comentarios_read_related" ON btl_ticket_comentarios 
   FOR SELECT 
   USING (
@@ -553,6 +578,7 @@ CREATE POLICY "comentarios_read_related" ON btl_ticket_comentarios
     ))
   );
 
+DROP POLICY IF EXISTS "comentarios_create" ON btl_ticket_comentarios;
 CREATE POLICY "comentarios_create" ON btl_ticket_comentarios 
   FOR INSERT 
   WITH CHECK (usuario_id = current_user_id());
@@ -560,10 +586,12 @@ CREATE POLICY "comentarios_create" ON btl_ticket_comentarios
 -- ==============================================================================
 -- CLIENTES VENUES (Asignación)
 -- ==============================================================================
+DROP POLICY IF EXISTS "clientes_venues_admin_all" ON btl_clientes_venues;
 CREATE POLICY "clientes_venues_admin_all" ON btl_clientes_venues 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "clientes_venues_read_own" ON btl_clientes_venues;
 CREATE POLICY "clientes_venues_read_own" ON btl_clientes_venues 
   FOR SELECT 
   USING (cliente_id = current_user_id());
@@ -571,18 +599,22 @@ CREATE POLICY "clientes_venues_read_own" ON btl_clientes_venues
 -- ==============================================================================
 -- CLIENTE PRODUCTOS (Preferencias)
 -- ==============================================================================
+DROP POLICY IF EXISTS "cliente_productos_admin_all" ON btl_cliente_productos;
 CREATE POLICY "cliente_productos_admin_all" ON btl_cliente_productos 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "cliente_productos_read_own" ON btl_cliente_productos;
 CREATE POLICY "cliente_productos_read_own" ON btl_cliente_productos 
   FOR SELECT 
   USING (usuario_id = current_user_id());
 
+DROP POLICY IF EXISTS "cliente_productos_inspector_read" ON btl_cliente_productos;
 CREATE POLICY "cliente_productos_inspector_read" ON btl_cliente_productos 
   FOR SELECT 
   USING (is_inspector());
 
+DROP POLICY IF EXISTS "cliente_productos_manage_own" ON btl_cliente_productos;
 CREATE POLICY "cliente_productos_manage_own" ON btl_cliente_productos 
   FOR ALL 
   USING (usuario_id = current_user_id());
@@ -590,10 +622,12 @@ CREATE POLICY "cliente_productos_manage_own" ON btl_cliente_productos
 -- ==============================================================================
 -- CAPACITACIONES
 -- ==============================================================================
+DROP POLICY IF EXISTS "capacitaciones_read_all" ON btl_capacitaciones;
 CREATE POLICY "capacitaciones_read_all" ON btl_capacitaciones 
   FOR SELECT 
   USING (auth.role() = 'authenticated');
 
+DROP POLICY IF EXISTS "capacitaciones_admin_all" ON btl_capacitaciones;
 CREATE POLICY "capacitaciones_admin_all" ON btl_capacitaciones 
   FOR ALL 
   USING (is_admin());
@@ -601,10 +635,12 @@ CREATE POLICY "capacitaciones_admin_all" ON btl_capacitaciones
 -- ==============================================================================
 -- CAPACITACION ASISTENTES
 -- ==============================================================================
+DROP POLICY IF EXISTS "capacitacion_asistentes_read_own" ON btl_capacitacion_asistentes;
 CREATE POLICY "capacitacion_asistentes_read_own" ON btl_capacitacion_asistentes 
   FOR SELECT 
   USING (usuario_id = current_user_id() OR is_admin());
 
+DROP POLICY IF EXISTS "capacitacion_asistentes_admin_all" ON btl_capacitacion_asistentes;
 CREATE POLICY "capacitacion_asistentes_admin_all" ON btl_capacitacion_asistentes 
   FOR ALL 
   USING (is_admin());
@@ -685,10 +721,12 @@ CREATE TABLE IF NOT EXISTS btl_acciones (
 -- RLS for BTL Actions
 ALTER TABLE btl_acciones ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "btl_acciones_admin_all" ON btl_acciones;
 CREATE POLICY "btl_acciones_admin_all" ON btl_acciones 
   FOR ALL 
   USING (is_admin());
 
+DROP POLICY IF EXISTS "btl_acciones_read_own_venue" ON btl_acciones;
 CREATE POLICY "btl_acciones_read_own_venue" ON btl_acciones 
   FOR SELECT 
   USING (
@@ -731,3 +769,31 @@ CREATE TRIGGER trigger_update_venue_global_score
   AFTER INSERT ON btl_inspecciones
   FOR EACH ROW
   EXECUTE FUNCTION update_venue_global_score();
+
+-- ==============================================================================
+-- 14. PERMISSIONS & GRANTS
+-- ==============================================================================
+-- These ensure that the 'anon' and 'authenticated' roles used by Supabase API
+-- have the necessary access to the schema and its objects.
+-- CONSOLIDATED UNIVERSAL PERMISSIONS
+
+-- Grant usage on the public schema
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+-- Grant access to all tables for authenticated users
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+
+-- Grant read-only access to anon users (if needed for public views)
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+
+-- Grant usage on sequences (important for serial/identity columns)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- Grant execution on all functions
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated;
+
+-- Ensure future tables also get these permissions automatically
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated;
