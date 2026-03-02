@@ -338,7 +338,7 @@ export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailP
               <div className="flex-1 lg:flex-initial">
                 <div className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('venue_detail.global_score')}</div>
                 <Tooltip text="Basado en última inspección" position="left">
-                  <div className={`text-4xl sm:text-6xl font-bold cursor-help ${venue.global_score >= 90 ? 'text-green-400' :
+                  <div className={`text-4xl sm:text-6xl font-bold ${venue.global_score >= 90 ? 'text-green-400' :
                     venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
                     }`}
                   >
@@ -435,7 +435,7 @@ export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailP
                 {/* Average Score across all inspections for this product */}
                 {avgProductScore !== null && (
                   <Tooltip text="Basado en todas las inspecciones para este producto" position="top">
-                    <div className="bg-slate-800/30 p-3 rounded-lg cursor-help col-span-2 w-full">
+                    <div className="bg-slate-800/30 p-3 rounded-lg col-span-2 w-full">
                       <div className="text-xs text-slate-400 mb-1">Puntaje Global del Producto ⓘ</div>
                       <div className={`text-xl font-bold ${avgProductScore !== null && avgProductScore >= 90 ? 'text-green-400' :
                         avgProductScore !== null && avgProductScore >= 70 ? 'text-amber-400' : 'text-red-400'

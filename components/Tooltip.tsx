@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TooltipProps {
     text: string;
@@ -11,92 +12,159 @@ export function Tooltip({ text, children, position = 'top', className = '' }: To
     const [visible, setVisible] = useState(false);
     const [coords, setCoords] = useState({ top: 0, left: 0 });
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const tooltipRef = useRef<HTMLDivElement>(null);
 
-    const updatePosition = () => {
-        if (!wrapperRef.current || !tooltipRef.current) return;
+    // Estimate width so we can center/avoid clipping before mount
+    const APPROX_WIDTH = Math.max(text.length * 7.5, 120);
+    const APPROX_HEIGHT = 32;
+    const GAP = 8;
+
+    const calcCoords = () => {
+        if (!wrapperRef.current) return;
         const rect = wrapperRef.current.getBoundingClientRect();
-        const tip = tooltipRef.current.getBoundingClientRect();
-        const GAP = 8;
 
         let top = 0;
         let left = 0;
 
         switch (position) {
             case 'top':
-                top = rect.top - tip.height - GAP + window.scrollY;
-                left = rect.left + rect.width / 2 - tip.width / 2 + window.scrollX;
+                top = rect.top - APPROX_HEIGHT - GAP;
+                left = rect.left + rect.width / 2 - APPROX_WIDTH / 2;
                 break;
             case 'bottom':
-                top = rect.bottom + GAP + window.scrollY;
-                left = rect.left + rect.width / 2 - tip.width / 2 + window.scrollX;
+                top = rect.bottom + GAP;
+                left = rect.left + rect.width / 2 - APPROX_WIDTH / 2;
                 break;
             case 'left':
-                top = rect.top + rect.height / 2 - tip.height / 2 + window.scrollY;
-                left = rect.left - tip.width - GAP + window.scrollX;
+                top = rect.top + rect.height / 2 - APPROX_HEIGHT / 2;
+                left = rect.left - APPROX_WIDTH - GAP;
                 break;
             case 'right':
-                top = rect.top + rect.height / 2 - tip.height / 2 + window.scrollY;
-                left = rect.right + GAP + window.scrollX;
+                top = rect.top + rect.height / 2 - APPROX_HEIGHT / 2;
+                left = rect.right + GAP;
                 break;
         }
 
-        // Clamp to viewport
-        left = Math.max(8, Math.min(left, window.innerWidth - tip.width - 8));
+        // Clamp to viewport edges
+        left = Math.max(8, Math.min(left, window.innerWidth - APPROX_WIDTH - 8));
+        top = Math.max(8, Math.min(top, window.innerHeight - APPROX_HEIGHT - 8));
 
         setCoords({ top, left });
     };
 
+    const handleMouseEnter = () => {
+        calcCoords();
+        setVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+        setVisible(false);
+    };
+
+    // Recalculate on scroll/resize while visible
     useEffect(() => {
-        if (visible) {
-            // Small delay so the tooltip is rendered before measuring
-            requestAnimationFrame(updatePosition);
-        }
+        if (!visible) return;
+        const handleScroll = () => calcCoords();
+        window.addEventListener('scroll', handleScroll, true);
+        window.addEventListener('resize', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleScroll);
+        };
     }, [visible]);
+
+    const arrowBase = 'absolute w-0 h-0 border-transparent';
+
+    const tooltipContent = visible
+        ? createPortal(
+            <div
+                style={{
+                    position: 'fixed',
+                    top: coords.top,
+                    left: coords.left,
+                    zIndex: 99999,
+                    pointerEvents: 'none',
+                }}
+            >
+                <div
+                    style={{
+                        background: 'rgba(15, 23, 42, 0.97)',
+                        border: '1px solid rgba(100, 116, 139, 0.4)',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        color: '#e2e8f0',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                        backdropFilter: 'blur(8px)',
+                        position: 'relative',
+                    }}
+                >
+                    {text}
+                    {/* Arrow */}
+                    {position === 'top' && (
+                        <span
+                            className={arrowBase}
+                            style={{
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                top: '100%',
+                                borderWidth: '5px 5px 0',
+                                borderTopColor: 'rgba(100,116,139,0.4)',
+                            }}
+                        />
+                    )}
+                    {position === 'bottom' && (
+                        <span
+                            className={arrowBase}
+                            style={{
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                bottom: '100%',
+                                borderWidth: '0 5px 5px',
+                                borderBottomColor: 'rgba(100,116,139,0.4)',
+                            }}
+                        />
+                    )}
+                    {position === 'left' && (
+                        <span
+                            className={arrowBase}
+                            style={{
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                left: '100%',
+                                borderWidth: '5px 0 5px 5px',
+                                borderLeftColor: 'rgba(100,116,139,0.4)',
+                            }}
+                        />
+                    )}
+                    {position === 'right' && (
+                        <span
+                            className={arrowBase}
+                            style={{
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                right: '100%',
+                                borderWidth: '5px 5px 5px 0',
+                                borderRightColor: 'rgba(100,116,139,0.4)',
+                            }}
+                        />
+                    )}
+                </div>
+            </div>,
+            document.body
+        )
+        : null;
 
     return (
         <div
             ref={wrapperRef}
             className={`relative inline-flex ${className}`}
-            onMouseEnter={() => setVisible(true)}
-            onMouseLeave={() => setVisible(false)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
             {children}
-
-            {visible && (
-                <div
-                    ref={tooltipRef}
-                    style={{ top: coords.top, left: coords.left }}
-                    className={`
-            fixed z-[9999] pointer-events-none
-            px-3 py-1.5 rounded-lg
-            bg-slate-800/95 backdrop-blur-sm
-            border border-slate-600/60
-            text-slate-100 text-xs font-medium whitespace-nowrap
-            shadow-xl shadow-black/40
-            animate-in fade-in zoom-in-95 duration-150
-          `}
-                >
-                    {text}
-                    {/* Arrow */}
-                    {position === 'top' && (
-                        <span className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0
-              border-x-4 border-x-transparent border-t-4 border-t-slate-700/90" />
-                    )}
-                    {position === 'bottom' && (
-                        <span className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0
-              border-x-4 border-x-transparent border-b-4 border-b-slate-700/90" />
-                    )}
-                    {position === 'left' && (
-                        <span className="absolute top-1/2 -translate-y-1/2 left-full w-0 h-0
-              border-y-4 border-y-transparent border-l-4 border-l-slate-700/90" />
-                    )}
-                    {position === 'right' && (
-                        <span className="absolute top-1/2 -translate-y-1/2 right-full w-0 h-0
-              border-y-4 border-y-transparent border-r-4 border-r-slate-700/90" />
-                    )}
-                </div>
-            )}
+            {tooltipContent}
         </div>
     );
 }
