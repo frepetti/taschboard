@@ -56,7 +56,7 @@ export function VenueDetail({ venueId, onBack }: VenueDetailProps) {
 
   const loadActionTypes = async () => {
     try {
-      const { data, error } = await (supabase
+      const { data } = await (supabase
         .from('btl_config' as any)
         .select('valor')
         .eq('clave', 'action_types')
