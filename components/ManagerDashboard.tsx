@@ -433,13 +433,10 @@ export function ManagerDashboard({
         {/* Map Section */}
         <OpportunityMap
           inspections={inspections}
+          selectedProductId={productId}
           onVenueSelect={(venue) => {
             console.log('🗺️ Map selected venue:', venue);
-            // Ensure ID is number to match VenueDetail expectation
-            setSelectedVenue({
-              ...venue,
-              id: typeof venue.id === 'string' ? parseInt(venue.id, 10) : venue.id
-            });
+            setSelectedVenue(venue);
           }}
         />
 
@@ -464,6 +461,7 @@ export function ManagerDashboard({
           <div className="h-full overflow-y-auto">
             <VenueDetail
               venueId={selectedVenue.id}
+              selectedProductId={productId}
               onBack={() => {
                 setSelectedVenue(null);
                 // Refresh data when returning from detail

@@ -4,3 +4,6 @@ tsc_check.txt
 tsc_final.txt
 tsc_output.txt
 .agent/
+.vercel
+.env*.local
+extract_data
