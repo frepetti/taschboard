@@ -436,11 +436,7 @@ export function ManagerDashboard({
           selectedProductId={productId}
           onVenueSelect={(venue) => {
             console.log('🗺️ Map selected venue:', venue);
-            // Ensure ID is number to match VenueDetail expectation
-            setSelectedVenue({
-              ...venue,
-              id: typeof venue.id === 'string' ? parseInt(venue.id, 10) : venue.id
-            });
+            setSelectedVenue(venue);
           }}
         />
 

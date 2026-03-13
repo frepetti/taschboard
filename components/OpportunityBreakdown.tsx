@@ -67,7 +67,7 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
   const withMaterial = inspections.filter(i => i.tiene_material_pop).length;
   const withActivation = inspections.filter(i => i.activacion_ejecutada).length;
   const withStock = inspections.filter(i =>
-    i.stock_estimado != null && i.stock_estimado > 0
+    i.stock_nivel && i.stock_nivel !== 'out_of_stock' && i.stock_nivel !== 'critical'
   ).length;
 
   // Opportunity score: weighted average of positive signals
