@@ -6,18 +6,18 @@ Este documento detalla cómo se calculan los Key Performance Indicators (KPIs) y
 
 ---
 
-## 1. Puntaje Global (Global Score / Perfect Serve)
+## 1. Puntaje Global (Global Score)
 
-El **Puntaje Global** es el indicador principal de la calidad de ejecución en el punto de venta. Se calcula automáticamente en cada inspección y se promedia a nivel de venue.
+El **Puntaje Global** es el indicador principal de la calidad de ejecución en el punto de venta. Se calcula automáticamente para cada inspección (vinculada a un producto específico) y se persiste en `btl_inspecciones.global_score`. Un trigger de base de datos (`update_venue_global_score`) actualiza el campo `btl_puntos_venta.global_score` con el score de la última inspección.
 
 **Fórmula Maestra:**
-```javascript
+```
 Global Score = (Visibilidad × 0.4) + (Material POP × 0.3) + (Stock × 0.2) + (Conocimiento × 0.1)
 ```
 
 ### Desglose de Componentes
 
-#### A. Visibilidad (40%) (`calculateVisibilityScore`)
+#### A. Visibilidad (40%) — `calculateVisibilityScore()`
 Evalúa qué tan destacado está el producto en la barra. Se compone de dos sub-factores:
 
 1.  **Visibilidad en Back Bar (60 puntos max):**
@@ -31,20 +31,20 @@ Evalúa qué tan destacado está el producto en la barra. Se compone de dos sub-
     *   `Medio / Middle`: 20 pts
     *   `Inferior / Bottom`: 5 pts
 
-#### B. Material POP (30%) (`calculatePOPScore`)
+#### B. Material POP (30%) — `calculatePOPScore()`
 Evalúa la presencia de material promocional.
 *   **Base:** 50 puntos si hay *algún* material (`tiene_material_pop` = true).
-*   **Cantidad:** +10 puntos por cada tipo de material adicional registrado en `pos_materials`.
+*   **Cantidad:** +10 puntos por cada tipo de material adicional en `pos_materials`.
 *   **Tope:** Máximo 100 puntos.
-*   *Nota: Si no hay material ni presencia base, el puntaje es 0.*
+*   *Si no hay material ni presencia base, el puntaje es 0.*
 
-#### C. Stock (20%) (`calculateStockScore`)
+#### C. Stock (20%) — `calculateStockScore()`
 Basado en el nivel cualitativo reportado por el inspector.
 *   `Adecuado / Adequate`: 100 pts
 *   `Bajo / Low`: 50 pts
 *   `Crítico / Agotado / Out`: 0 pts
 
-#### D. Conocimiento & Advocacy (10%) (`calculateKnowledgeScore`)
+#### D. Conocimiento & Advocacy (10%) — `calculateKnowledgeScore()`
 Evalúa la capacitación y predisposición del staff.
 *   **Conocimiento del Staff (40% de este componente):** Nivel 1-10 escalado a 10-100.
 *   **Capacitación (40%):** % de bartenders certificados sobre el total de bartenders.
@@ -57,28 +57,51 @@ Evalúa la capacitación y predisposición del staff.
 
 ## 2. Segmentación de Puntos de Venta (Venue Status)
 
-Los puntos de venta se clasifican automáticamente en tres categorías según su **Puntaje Global Promedio**, calculado al momento de generar el mapa o listados.
+Los puntos de venta se clasifican automáticamente según su **Global Score** usando la función `calculateVenueStatus()`. Los umbrales están definidos en `scoreConfig.ts`.
 
-| Estado | Definición | Umbral de Puntaje (`scoreConfig.ts`) | Color |
+| Estado | Definición | Umbral | Color |
 |---|---|---|---|
-| **Estratégico** | Ejecución excelente, modelo a seguir. | **>= 85 pts** | 🟢 Verde |
-| **Oportunidad** | Ejecución promedio con potencial de mejora. | **>= 60 pts y < 85 pts** | 🟡 Ámbar |
+| **Estratégico** | Ejecución excelente, modelo a seguir. | **≥ 85 pts** | 🟢 Verde |
+| **Oportunidad** | Ejecución promedio con potencial de mejora. | **≥ 60 y < 85 pts** | 🟡 Ámbar |
 | **Riesgo** | Ejecución deficiente, requiere atención inmediata. | **< 60 pts** | 🔴 Rojo |
 
-*Nota: Alternativamente, si el venue tiene asignado un segmento (`Gold`, `Silver`, `Bronze`) en la base de datos, este puede prevalecer para la categorización inicial.*
+Adicionalmente, en el mapa (`OpportunityMap.tsx`), los venues que **no tienen inspección para el producto seleccionado** se muestran en **gris** (⚪ Sin inspección).
 
 ---
 
-## 3. Análisis de Oportunidades (Opportunity Score)
+## 3. Métricas por Producto (ProductMetrics)
 
-Este puntaje (0-10) prioriza qué venues tienen mayor potencial de crecimiento basado en brechas de ejecución. Se visualiza en el gráfico de "Análisis de Oportunidades" (`OpportunityBreakdown.tsx`).
+El componente `ProductMetrics.tsx` muestra tres indicadores clave para el producto seleccionado, calculados sobre las inspecciones del período y región filtrados.
+
+### 3.1 Presencia en PDV
+*   **Definición:** Porcentaje de inspecciones donde `tiene_producto = true`.
+*   **Cálculo:** `(inspecciones con producto / total inspecciones) × 100`
+*   **Objetivo:** Definido por `btl_productos.objetivo_presencia`.
+
+### 3.2 Disponibilidad Stock
+*   **Definición:** Porcentaje de inspecciones con stock disponible (no agotado).
+*   **Cálculo:** `(inspecciones con stock ≠ 'agotado' / total inspecciones) × 100`
+*   **Objetivo:** Definido por `btl_productos.objetivo_stock`.
+
+### 3.3 Material POP
+*   **Definición:** Porcentaje de inspecciones con material POP presente.
+*   **Cálculo:** `(inspecciones con tiene_material_pop = true / total inspecciones) × 100`
+*   **Objetivo:** Definido por `btl_productos.objetivo_pop`.
+
+> **Nota:** Las métricas se recalculan automáticamente cuando cambia el producto seleccionado, el filtro de fecha o la región. Los filtros de fecha soportados son: 1M, 3M, 6M, 1Y, YTD.
+
+---
+
+## 4. Análisis de Oportunidades (Opportunity Score)
+
+Este puntaje (0-10) prioriza qué venues tienen mayor potencial de crecimiento basado en brechas de ejecución. Se visualiza en `OpportunityBreakdown.tsx`.
 
 **Fórmula:**
 ```
 Opportunity Score = ( (% Presencia × 0.35) + (% POP × 0.25) + (% Stock × 0.25) + (% Activaciones × 0.15) ) / 10
 ```
 
-Se calcula sobre el **total de inspecciones** del periodo seleccionado:
+Se calcula sobre el **total de inspecciones** del período seleccionado:
 1.  **% Presencia (35%):** Porcentaje de inspecciones donde `tiene_producto = true`.
 2.  **% POP (25%):** Porcentaje de inspecciones donde `tiene_material_pop = true`.
 3.  **% Stock (25%):** Porcentaje de inspecciones donde `stock_estimado > 0`.
@@ -86,27 +109,75 @@ Se calcula sobre el **total de inspecciones** del periodo seleccionado:
 
 ---
 
-## 4. KPIs del Dashboard (Manager View)
+## 5. KPIs del Dashboard (Manager View)
 
-Estas métricas aparecen en las tarjetas superiores del dashboard (`KPICard`) en `ManagerDashboard.tsx`.
+Estas métricas aparecen en las tarjetas superiores (`KPICard`) del `ManagerDashboard.tsx`. **Se filtran por el producto seleccionado** en `ClientDashboard`.
 
-### 4.1 Cobertura de Venues
-*   **Definición:** Cantidad de puntos de venta únicos visitados en el periodo seleccionado.
-*   **Cálculo:** `Count(Distinct punto_venta_id)` en las inspecciones filtradas.
+### 5.1 Cobertura de Venues
+*   **Definición:** Cantidad de puntos de venta únicos visitados en el período.
+*   **Cálculo:** `Count(Distinct punto_venta_id)` en las inspecciones filtradas por producto y fecha.
 
-### 4.2 Cumplimiento (Compliance)
-*   **Definición:** Calidad promedio de ejecución en todas las visitas.
-*   **Cálculo:** Promedio simple del campo `compliance_score` (que corresponde al Global Score calculado al momento de la inspección) de todas las inspecciones del periodo.
+### 5.2 Cumplimiento (Compliance)
+*   **Definición:** Score promedio de ejecución en las visitas para el producto seleccionado.
+*   **Cálculo:** Promedio del campo `global_score` de las inspecciones filtradas por producto y fecha.
+*   **Tooltip:** "Promedio del puntaje de ejecución de las inspecciones del producto seleccionado en el período actual."
 
-### 4.3 Activaciones
+### 5.3 Activaciones
 *   **Definición:** Total de acciones BTL ejecutadas.
 *   **Cálculo:** Sumatoria de inspecciones donde `activacion_ejecutada = true`.
 
 ---
 
-## 5. Glosario de Campos de Base de Datos
+## 6. Mapa Interactivo (OpportunityMap)
 
-*   `btl_inspecciones`:
-    *   `detalles`: Campo JSONB que guarda el desglose granular (respuestas de checklist, valores crudos de visibilidad, etc.).
-    *   `global_score` / `compliance_score`: El puntaje final calculado (0-100) guardado en la inspección para consultas rápidas.
-    *   `tiene_producto`: Booleano, indica presencia básica.
+El mapa utiliza el `selectedProductId` del dashboard para colorear los venues:
+
+1.  **Con inspección para el producto:** Color basado en el `global_score` de la inspección (Estratégico / Oportunidad / Riesgo).
+2.  **Sin inspección para el producto:** Gris (⚪).
+3.  **Popup del venue:** Muestra el score y estado si tiene inspección, o "Sin inspección" si no.
+
+---
+
+## 7. Trigger de Base de Datos: `update_venue_global_score`
+
+Cuando se crea una nueva inspección (`INSERT` en `btl_inspecciones`), un trigger automáticamente:
+1.  Toma el `global_score` de la nueva inspección.
+2.  Actualiza el campo `global_score` en `btl_puntos_venta` para ese venue.
+3.  Actualiza `last_inspection_date` con la fecha de la inspección.
+
+Esto garantiza que el score del venue en la tabla de venues siempre refleje la **última inspección realizada**.
+
+---
+
+## 8. Glosario de Campos de Base de Datos
+
+### `btl_inspecciones`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `producto_id` | UUID | Producto específico inspeccionado |
+| `tiene_producto` | Boolean | Presencia básica del producto |
+| `stock_nivel` | VARCHAR | Nivel de stock (Alto, Medio, Bajo, Agotado) |
+| `visibilidad_score` | DECIMAL | Puntaje de visibilidad calculado |
+| `global_score` | NUMERIC | Puntaje global calculado (0-100) |
+| `tiene_material_pop` | Boolean | Presencia de material POP |
+| `material_pop_tipos` | TEXT[] | Tipos de material POP encontrados |
+| `detalles` | JSONB | Desglose granular (checklist, valores crudos) |
+| `compliance_score` | NUMERIC | Alias legacy del global_score |
+
+### `btl_puntos_venta`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `global_score` | NUMERIC | Score de la última inspección (via trigger) |
+| `last_inspection_date` | TIMESTAMPTZ | Fecha de la última inspección (via trigger) |
+| `segmento` | TEXT | Clasificación del venue (Premium, Estándar, Masivo) |
+| `potencial_ventas` | TEXT | Potencial de ventas (Alto, Medio, Bajo) |
+| `region_id` | UUID | Región geográfica asignada |
+
+### `btl_productos`
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `objetivo_presencia` | DECIMAL | Meta de presencia (%) |
+| `objetivo_stock` | DECIMAL | Meta de stock (%) |
+| `objetivo_pop` | DECIMAL | Meta de material POP (%) |
+| `competidores` | TEXT[] | Lista de marcas competidoras |
+| `configuracion` | JSONB | Configuración de perfect serve checklist |

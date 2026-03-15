@@ -198,13 +198,12 @@ export function ManagerDashboard({
 
       setInspections(inspectionsData || []);
 
-      // 2. Cargar Tickets de Activación BTL (Futuros/Programados)
+      // 2. Cargar Tickets de Activación BTL (Todos los estados)
       let ticketsQuery = supabase
         .from('btl_reportes')
         .select('*, btl_puntos_venta!btl_reportes_punto_venta_id_fkey(id, nombre, region_id)')
         .eq('categoria', 'accion_btl')
-        .neq('estado', 'cerrado') // Solo activos o pendientes
-        .order('fecha_activacion_solicitada', { ascending: true });
+        .order('fecha_activacion_solicitada', { ascending: false });
 
       if (regionFilter !== 'all') {
         ticketsQuery = ticketsQuery.eq('btl_puntos_venta.region_id', regionFilter);
@@ -213,32 +212,24 @@ export function ManagerDashboard({
       const { data: ticketsData, error: ticketsError } = await ticketsQuery;
       if (ticketsError) console.error("Error loading tickets:", ticketsError);
 
-      // 3. Procesar Activaciones (Combinar Pasadas y Futuras)
-      const pastActivations = (inspectionsData || [])
-        .filter((i: any) => i.activacion_ejecutada)
-        .map((i: any) => ({
-          id: `insp-${i.id}`,
-          venue: i.btl_puntos_venta?.nombre || 'Unknown Venue',
-          date: i.fecha_inspeccion,
-          type: 'Ejecutada',
-          impact: 'N/A',
-          status: 'success',
-          rawDate: new Date(i.fecha_inspeccion)
-        }));
+      // 3. Procesar Activaciones desde Tickets BTL (fuente única)
+      const getTicketStatus = (estado: string): string => {
+        if (estado === 'resuelto' || estado === 'cerrado') return 'success';
+        if (estado === 'en_progreso') return 'active';
+        return 'scheduled'; // 'abierto' u otros
+      };
 
-      const futureActivations = (ticketsData || [])
+      const allActivations = (ticketsData || [])
         .map((t: any) => ({
           id: `ticket-${t.id}`,
-          venue: t.btl_puntos_venta?.nombre || 'Unknown Venue',
+          venue: t.btl_puntos_venta?.nombre || 'Venue sin asignar',
           date: t.fecha_activacion_solicitada || t.created_at,
           type: t.tipo_activacion || 'Activación BTL',
-          impact: t.impacto_esperado ? `Est. ${t.impacto_esperado}` : 'TBD',
-          status: t.estado === 'en_progreso' ? 'active' : 'scheduled',
+          impact: t.estado === 'resuelto' || t.estado === 'cerrado' ? 'Completada' : 'N/A',
+          status: getTicketStatus(t.estado),
           rawDate: new Date(t.fecha_activacion_solicitada || t.created_at)
-        }));
-
-      // Combinar y ordenar
-      const allActivations = [...pastActivations, ...futureActivations].sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime());
+        }))
+        .sort((a: any, b: any) => b.rawDate.getTime() - a.rawDate.getTime());
 
       setActivations(allActivations);
 
@@ -265,7 +256,8 @@ export function ManagerDashboard({
       const avgCompliance = currentInspections.length > 0
         ? Math.round(currentInspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / currentInspections.length)
         : 0;
-      const totalActivations = currentInspections.filter((i: any) => i.activacion_ejecutada).length;
+      // Contar activaciones completadas desde tickets BTL
+      const totalActivations = (ticketsData || []).filter((t: any) => t.estado === 'resuelto' || t.estado === 'cerrado').length;
 
       setKpis({
         visitedVenues: totalVenues,

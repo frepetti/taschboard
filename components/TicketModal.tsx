@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 interface TicketModalProps {
   session: any;
   onClose: () => void;
+  preselectedVenueId?: string;
 }
 
 type TicketCategory = 'general' | 'capacitacion' | 'accion_btl' | 'material_pop';
@@ -38,8 +39,8 @@ interface MaterialItem {
   cantidad: number;
 }
 
-export function TicketModal({ session: _session, onClose }: TicketModalProps) {
-  const [category, setCategory] = useState<TicketCategory>('general');
+export function TicketModal({ session: _session, onClose, preselectedVenueId }: TicketModalProps) {
+  const [category, setCategory] = useState<TicketCategory>(preselectedVenueId ? 'accion_btl' : 'general');
   const [loading, setLoading] = useState(false);
 
   // Datos para selects
@@ -61,7 +62,7 @@ export function TicketModal({ session: _session, onClose }: TicketModalProps) {
   const [tipoActivacion, setTipoActivacion] = useState('');
   const [fechaActivacion, setFechaActivacion] = useState('');
   const [ubicacionActivacion, setUbicacionActivacion] = useState('');
-  const [selectedVenue, setSelectedVenue] = useState('');
+  const [selectedVenue, setSelectedVenue] = useState(preselectedVenueId || '');
   const [presupuestoEstimado, setPresupuestoEstimado] = useState<number>(0);
   const [impactoEsperado, setImpactoEsperado] = useState<number>(0);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -94,7 +95,7 @@ export function TicketModal({ session: _session, onClose }: TicketModalProps) {
       }
 
       // Cargar puntos de venta si es necesario
-      if (category === 'accion_btl') {
+      if (category === 'accion_btl' || preselectedVenueId) {
         const { data } = await supabase
           .from('btl_puntos_venta')
           .select('id, nombre, ciudad, tipo')
