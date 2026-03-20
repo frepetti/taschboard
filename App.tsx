@@ -556,10 +556,8 @@ function LandingPage() {
       <div className="max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-6">
-            <span className="text-white font-bold text-3xl">BM</span>
-          </div>
-          <h1 className="text-4xl text-white font-bold mb-3">Brand Monitor</h1>
+          <img src="/tasch_logo_04.png" alt="Tasch" className="h-16 w-auto mx-auto mb-6 object-contain" />
+          <h1 className="text-4xl text-white font-bold mb-3">Taschboard Brand Monitor</h1>
           <p className="text-slate-400 text-lg">Trade Marketing Intelligence Platform</p>
         </div>
 
@@ -636,7 +634,7 @@ function LandingPage() {
 
         {/* Footer */}
         <div className="text-center mt-12 text-slate-500 text-sm">
-          <p>© 2026 Brand Monitor. Trade Marketing Intelligence Platform.</p>
+          <p>© 2026 Taschboard Brand Monitor. Trade Marketing Intelligence Platform.</p>
 
           {/* Hidden Admin Link */}
           <button

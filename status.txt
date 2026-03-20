@@ -1,0 +1,54 @@
+On branch develop
+Your branch is up to date with 'origin/develop'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   App.tsx
+	deleted:    dist/assets/AdminAuth-rq2UWeGr.js
+	deleted:    dist/assets/AdminDashboard-CSeLrKX5.js
+	deleted:    dist/assets/ClientAuth-CuaC3HVa.js
+	deleted:    dist/assets/ClientDashboard-B6FdU8Aj.js
+	deleted:    dist/assets/InspectorAuth-BsWco0Za.js
+	deleted:    dist/assets/InspectorDashboard-Czq3H5ZJ.js
+	deleted:    dist/assets/UpdatePassword-qG0fNRui.js
+	deleted:    dist/assets/api-dUC0o1AW.js
+	deleted:    dist/assets/arrow-left-BNFQ4FEw.js
+	deleted:    dist/assets/circle-alert-2JTgpYUa.js
+	deleted:    dist/assets/circle-check-big-Cvm4yEdI.js
+	deleted:    dist/assets/index-CKD-ti16.css
+	deleted:    dist/assets/index-Cyduyn5y.js
+	deleted:    dist/assets/lock-6TcKZMTA.js
+	deleted:    dist/assets/mail-CzlPukbO.js
+	deleted:    dist/assets/refresh-cw-DaM1U693.js
+	deleted:    dist/assets/scoreCalculations-BqAmErZP.js
+	deleted:    dist/assets/users-DeWkMZqR.js
+	deleted:    dist/assets/x-BAEnTmY4.js
+	modified:   dist/index.html
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	dist/assets/AdminAuth-Brsxs5iC.js
+	dist/assets/AdminDashboard-BatKiElf.js
+	dist/assets/ClientAuth-Dp7WF03B.js
+	dist/assets/ClientDashboard-BrfnDDm7.js
+	dist/assets/InspectorAuth-BT1fpElf.js
+	dist/assets/InspectorDashboard-B_JlHUcy.js
+	dist/assets/UpdatePassword-BPYPNGWz.js
+	dist/assets/api-fEJXMeJr.js
+	dist/assets/arrow-left-DeLKhPuH.js
+	dist/assets/circle-alert-Cb7trvXK.js
+	dist/assets/circle-check-big-BJyp2PXQ.js
+	dist/assets/index-CFekxSm6.css
+	dist/assets/index-CWV6Dy6k.js
+	dist/assets/lock-DLkLBJl7.js
+	dist/assets/mail-DbHZHy_Q.js
+	dist/assets/refresh-cw-DG738_j2.js
+	dist/assets/scoreCalculations-Bzc694DJ.js
+	dist/assets/users-C7oJIX83.js
+	dist/assets/x-BYOxbCTY.js
+	dist/tasch_logo_04.png
+	public/
+	status.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
