@@ -14,6 +14,8 @@ interface OpportunityMapProps {
   filter?: string;
   onFilterChange?: (filter: string) => void;
   onVenueSelect?: (venue: any) => void;
+  isDemo?: boolean;
+  demoVenues?: any[];
 }
 
 interface ImportedVenue {
@@ -48,6 +50,8 @@ export function OpportunityMap({
   filter: externalFilter,
   onFilterChange: externalOnFilterChange,
   onVenueSelect,
+  isDemo = false,
+  demoVenues = [],
 }: OpportunityMapProps) {
   const { t, language } = useLanguage();
   const [importedVenues, setImportedVenues] = useState<
@@ -80,9 +84,29 @@ export function OpportunityMap({
   const onFilterChange =
     externalOnFilterChange || setInternalFilter;
 
-  // Load venues from Supabase DB
+  // Load venues from Supabase DB or use Demo data
   useEffect(() => {
     const loadVenues = async () => {
+      // 🚨 DEMO MODE BYPASS
+      if (isDemo && demoVenues && demoVenues.length > 0) {
+        setImportedVenues(demoVenues.map(v => ({
+            id: v.id,
+            name: v.venue_name || v.name,
+            address: v.address || 'Mock Address',
+            zone: v.zone || 'Palermo',
+            channel: v.channel || 'On Premise',
+            city: v.city || 'Buenos Aires',
+            lat: v.lat,
+            lng: v.lng,
+            imported: true,
+            importedAt: new Date().toISOString(),
+            segmento: v.type,
+            potencial_ventas: v.type,
+        })));
+        console.log('📍 Loaded', demoVenues.length, 'DEMO venues for map');
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('btl_puntos_venta')
@@ -120,7 +144,7 @@ export function OpportunityMap({
     };
 
     loadVenues();
-  }, []);
+  }, [isDemo, demoVenues]);
 
   // Genera coordenadas reales basadas en la zona si faltan
   const getCoordinatesFromZone = (

@@ -32,7 +32,7 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
             <XAxis type="number" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} axisLine={{ stroke: '#475569' }} />
             <YAxis type="category" dataKey="brand" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} axisLine={{ stroke: '#475569' }} width={120} />
             <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }} />
-            <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+            <Bar dataKey="count" fill="#DA407C" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
         <div className="mt-4 pt-4 border-t border-slate-700/50 text-sm text-slate-400">
@@ -104,13 +104,13 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
       .map(([label, count], i) => ({
         label,
         count,
-        color: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'][i % 7],
+        color: ['#DA407C', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316'][i % 7],
       }));
   } else {
     // Fall back to visibility level breakdown
     chartData = [
       { label: language === 'es' ? 'Alta presencia' : 'High presence', count: visibilityMap.Alta, color: '#ef4444' },
-      { label: language === 'es' ? 'Presencia media' : 'Medium presence', count: visibilityMap.Media, color: '#f59e0b' },
+      { label: language === 'es' ? 'Presencia media' : 'Medium presence', count: visibilityMap.Media, color: '#DA407C' },
       { label: language === 'es' ? 'Baja presencia' : 'Low presence', count: visibilityMap.Baja, color: '#10b981' },
     ].filter(d => d.count > 0);
   }

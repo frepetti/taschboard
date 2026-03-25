@@ -569,8 +569,8 @@ function LandingPage() {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-lg bg-white/20 flex items-center justify-center">
-                  <span className="text-3xl">✨</span>
+                <div className="w-14 h-14 rounded-lg bg-white/20 flex items-center justify-center p-2 shadow-sm">
+                  <img src="/tasch_perfil.png" alt="Tasch Logo" className="w-full h-full object-contain rounded-md" />
                 </div>
                 <div className="text-left">
                   <h3 className="text-xl text-white font-bold mb-1">Ver Dashboard Demo</h3>
@@ -991,8 +991,8 @@ function DemoApp() {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">✨</span>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
+                <img src="/tasch_perfil.png" alt="Tasch Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h1 className="text-lg text-white font-semibold">Dashboard Demo</h1>

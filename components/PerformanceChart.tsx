@@ -83,8 +83,8 @@ export function PerformanceChart({ inspections = [] }: PerformanceChartProps) {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+              <stop offset="5%" stopColor="#DA407C" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#DA407C" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
@@ -110,7 +110,7 @@ export function PerformanceChart({ inspections = [] }: PerformanceChartProps) {
           <Area
             type="monotone"
             dataKey={metric}
-            stroke="#f59e0b"
+            stroke="#DA407C"
             strokeWidth={3}
             fill="url(#colorMetric)"
           />

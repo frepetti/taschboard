@@ -59,3 +59,9 @@ Puedes crear y programar sesiones de capacitación para los inspectores.
 1.  Ve al módulo de **Capacitaciones**.
 2.  Crea una nueva sesión definiendo fecha, tema y cupo.
 3.  Los inspectores podrán ver estas sesiones y solicitar inscripción (generando un ticket de tipo 'capacitacion').
+
+## 6. Personalización de Diseño (Colores)
+
+El diseño de la aplicación Taschboard (incluyendo la paleta gráfica interactiva y los gráficos) está centralizado.
+1.  Para modificar los colores globales (modo claro y oscuro), edite el archivo `styles/globals.css`.
+2.  Las escalas de colores específicas (como los utilizados en componentes rígidos u opciones de Tailwind) se configuran en la extensión del theme en `tailwind.config.js`.

@@ -59,6 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // ✨ PRESERVE MOCK ON LOCALHOST
+    if (window.location.hostname === 'localhost' && session.user.id === '00000000-0000-0000-0000-000000000001') {
+      console.log('🚀 LOCALHOST BYPASS: Skipping DB role fetch for mock user');
+      setRoleLoading(false);
+      return;
+    }
+
     setRoleLoading(true);
     supabase
       .from('btl_usuarios')
@@ -93,6 +100,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('📋 Initial session:', session ? `User: ${session.user.email}` : 'No session');
+      
+      // ✨ AUTO-LOGIN FOR LOCALHOST
+      if (!session && window.location.hostname === 'localhost') {
+        const urlParams = new URLSearchParams(window.location.search);
+        let mode = urlParams.get('mode') || 'client';
+        // Map mode to valid roles
+        if (mode !== 'admin' && mode !== 'inspector' && mode !== 'client') {
+          mode = 'client';
+        }
+        
+        console.log(`🚀 LOCALHOST BYPASS: Auto-logging in as ${mode}`);
+        const mockSession = {
+          user: { 
+            id: '00000000-0000-0000-0000-000000000001', 
+            email: `dev@localhost`,
+            user_metadata: { role: mode }
+          },
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+        } as unknown as Session;
+        
+        setSession(mockSession);
+        setDbRole(mode as UserRole);
+        setDbUser({ 
+          rol: mode as UserRole, 
+          estado_aprobacion: 'approved', 
+          nombre: `Local Dev (${mode})`, 
+          email: 'dev@localhost' 
+        });
+        setLoading(false);
+        return;
+      }
+
       setSession(session);
       setLoading(false);
     }).catch((error) => {
@@ -113,6 +152,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out or session expired');
         handleSessionExpired(session, false);
+      }
+
+      // ✨ PRESERVE MOCK ON LOCALHOST
+      if (!session && window.location.hostname === 'localhost') {
+        return; // Don't override our mock session with null
       }
 
       setSession(session);
