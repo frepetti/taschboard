@@ -1159,7 +1159,7 @@ export function ManagerDashboard({
   const [loading, setLoading] = useState(true);
 
   // Internal state for uncontrolled mode
-  const [internalDateFilter, setInternalDateFilter] = useState('1M');
+  const [internalDateFilter, setInternalDateFilter] = useState('6M');
   const [internalRegionFilter, setInternalRegionFilter] = useState('all');
 
   // Use props if available (Controlled), else use internal state (Uncontrolled)

@@ -50,7 +50,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
     },
     amber: {
       bg: 'bg-amber-600/20',
-      text: 'text-amber-400',
+      text: 'text-amber-50',
       border: 'border-amber-500/30'
     },
     red: {

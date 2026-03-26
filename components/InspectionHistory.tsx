@@ -181,7 +181,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 {onBack && (
                   <button
                     onClick={onBack}
-                    className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-400 px-4 py-2 rounded-lg transition-colors text-sm"
+                    className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-white px-4 py-2 rounded-lg transition-colors text-sm"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Nueva Inspección</span>

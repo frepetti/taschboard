@@ -23,7 +23,7 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
   const [showProductMetrics, _setShowProductMetrics] = useState(true);
 
   // Shared State for Filters (Lifted from ManagerDashboard)
-  const [dateFilter, setDateFilter] = useState('1M');
+  const [dateFilter, setDateFilter] = useState('6M');
   const [regionFilter, setRegionFilter] = useState('all');
 
   // Lifted Product State
@@ -103,7 +103,7 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
         </div>
       )}
 
-      <div className="px-4 md:px-6 lg:px-8 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 space-y-6">
         {/* Product Metrics Section */}
         {!isDemo && showProductMetrics && (
           <ProductMetrics

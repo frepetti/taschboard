@@ -225,7 +225,7 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${ticket.status === 'abierto'
                   ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                   : ticket.status === 'en_progreso'
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    ? 'bg-amber-500/20 text-amber-50 border border-amber-500/30'
                     : ticket.status === 'resuelto'
                       ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                       : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'

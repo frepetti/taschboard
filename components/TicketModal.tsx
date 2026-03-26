@@ -568,7 +568,7 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
                   <button
                     type="button"
                     onClick={addMaterialItem}
-                    className="flex items-center gap-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 px-3 py-2 rounded-lg font-medium transition-colors text-sm"
+                    className="flex items-center gap-2 bg-amber-600/20 hover:bg-amber-600/30 text-white px-3 py-2 rounded-lg font-medium transition-colors text-sm"
                   >
                     <Plus className="w-4 h-4" />
                     Agregar Material

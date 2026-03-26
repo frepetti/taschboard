@@ -37,7 +37,7 @@ interface ProductMetricsProps {
 }
 
 export function ProductMetrics({
-  dateFilter = '1M',
+  dateFilter = '6M',
   regionFilter = 'all',
   products = [],
   selectedProductId = null,
