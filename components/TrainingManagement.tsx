@@ -24,13 +24,9 @@ interface Training {
   plataforma?: string | null;
   link_sesion?: string | null;
   instructor_nombre: string | null;
-  instructor_empresa?: string | null;
-  instructor_contacto?: string | null;
   cupo_maximo: number | null;
   cupo_minimo: number | null;
   certificado_emitido: boolean | null;
-  requiere_evaluacion?: boolean;
-  nota_minima_aprobacion?: number | null;
   estado: string | null;
   asistencia_esperada: number | null;
   asistencia_real?: number | null;
@@ -69,9 +65,7 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
     instructor_nombre: '',
     cupo_maximo: 30,
     cupo_minimo: 10,
-    certificado_emitido: true,
-    requiere_evaluacion: true,
-    nota_minima_aprobacion: 7.0,
+    certificado_emitido: false,
     estado: 'programada',
     asistencia_esperada: 25,
     temas: []
@@ -628,112 +622,63 @@ function TrainingForm({
                 <Users className="w-5 h-5 text-amber-400" />
                 Instructor
               </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Nombre *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.instructor_nombre || ''}
-                    onChange={(e) => setFormData({ ...formData, instructor_nombre: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Empresa</label>
-                  <input
-                    type="text"
-                    value={formData.instructor_empresa || ''}
-                    onChange={(e) => setFormData({ ...formData, instructor_empresa: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Contacto</label>
-                  <input
-                    type="text"
-                    value={formData.instructor_contacto || ''}
-                    onChange={(e) => setFormData({ ...formData, instructor_contacto: e.target.value })}
-                    placeholder="Email o teléfono"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
+              <div>
+                <label className="block text-slate-300 text-sm mb-2">Nombre *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.instructor_nombre || ''}
+                  onChange={(e) => setFormData({ ...formData, instructor_nombre: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                />
               </div>
             </div>
 
-            {/* Capacidad y Evaluación */}
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-white font-semibold mb-4">Capacidad</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Cupo Máximo</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.cupo_maximo ?? 0}
-                      onChange={(e) => setFormData({ ...formData, cupo_maximo: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Cupo Mínimo</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.cupo_minimo ?? 0}
-                      onChange={(e) => setFormData({ ...formData, cupo_minimo: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Asistencia Esperada</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.asistencia_esperada ?? 0}
-                      onChange={(e) => setFormData({ ...formData, asistencia_esperada: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
+            {/* Capacidad */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Capacidad</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-slate-300 text-sm mb-2">Cupo Máximo</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.cupo_maximo ?? 0}
+                    onChange={(e) => setFormData({ ...formData, cupo_maximo: Number(e.target.value) })}
+                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 text-sm mb-2">Cupo Mínimo</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.cupo_minimo ?? 0}
+                    onChange={(e) => setFormData({ ...formData, cupo_minimo: Number(e.target.value) })}
+                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 text-sm mb-2">Asistencia Esperada</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.asistencia_esperada ?? 0}
+                    onChange={(e) => setFormData({ ...formData, asistencia_esperada: Number(e.target.value) })}
+                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  />
                 </div>
               </div>
-              <div>
-                <h3 className="text-white font-semibold mb-4">Evaluación</h3>
-                <div className="space-y-4">
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.requiere_evaluacion}
-                      onChange={(e) => setFormData({ ...formData, requiere_evaluacion: e.target.checked })}
-                      className="w-5 h-5 rounded bg-slate-800/50 border-slate-700/50 text-amber-600 focus:ring-amber-500"
-                    />
-                    <span className="text-slate-300">Requiere Evaluación</span>
-                  </label>
-                  {formData.requiere_evaluacion && (
-                    <div>
-                      <label className="block text-slate-300 text-sm mb-2">Nota Mínima Aprobación</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={formData.nota_minima_aprobacion || 7.0}
-                        onChange={(e) => setFormData({ ...formData, nota_minima_aprobacion: Number(e.target.value) })}
-                        className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                      />
-                    </div>
-                  )}
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.certificado_emitido ?? false}
-                      onChange={(e) => setFormData({ ...formData, certificado_emitido: e.target.checked })}
-                      className="w-5 h-5 rounded bg-slate-800/50 border-slate-700/50 text-amber-600 focus:ring-amber-500"
-                    />
-                    <span className="text-slate-300">Emite Certificado</span>
-                  </label>
-                </div>
+              <div className="mt-4">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.certificado_emitido ?? false}
+                    onChange={(e) => setFormData({ ...formData, certificado_emitido: e.target.checked })}
+                    className="w-5 h-5 rounded bg-slate-800/50 border-slate-700/50 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-slate-300">Emite Certificado</span>
+                </label>
               </div>
             </div>
 

@@ -1288,15 +1288,43 @@ export function ManagerDashboard({
       };
 
       const allActivations = (ticketsData || [])
-        .map((t: any) => ({
-          id: `ticket-${t.id}`,
-          venue: t.btl_puntos_venta?.nombre || 'Venue sin asignar',
-          date: t.fecha_activacion_solicitada || t.created_at,
-          type: t.tipo_activacion || 'Activación BTL',
-          impact: t.estado === 'resuelto' || t.estado === 'cerrado' ? 'Completada' : 'N/A',
-          status: getTicketStatus(t.estado),
-          rawDate: new Date(t.fecha_activacion_solicitada || t.created_at)
-        }))
+        .map((t: any) => {
+          let impact = 'N/A';
+          let numericImpact: number | null = null;
+
+          if (t.estado === 'resuelto' || t.estado === 'cerrado') {
+            const venueId = t.punto_venta_id;
+            const actDate = new Date(t.fecha_activacion_solicitada || t.created_at);
+            
+            const venueInspections = currentInspections.filter((i:any) => i.punto_venta_id === venueId);
+            const beforeInspections = venueInspections.filter((i:any) => new Date(i.fecha_inspeccion) <= actDate);
+            const afterInspections = venueInspections.filter((i:any) => new Date(i.fecha_inspeccion) > actDate);
+
+            if (beforeInspections.length > 0 && afterInspections.length > 0) {
+              const avgBefore = beforeInspections.reduce((sum: number, i: any) => sum + (i.compliance_score || 0), 0) / beforeInspections.length;
+              const avgAfter = afterInspections.reduce((sum: number, i: any) => sum + (i.compliance_score || 0), 0) / afterInspections.length;
+              
+              if (avgBefore > 0) {
+                const uplift = ((avgAfter - avgBefore) / avgBefore) * 100;
+                numericImpact = uplift;
+                impact = `${uplift > 0 ? '+' : ''}${uplift.toFixed(1)}%`;
+              }
+            } else {
+              impact = '-';
+            }
+          }
+
+          return {
+            id: `ticket-${t.id}`,
+            venue: t.btl_puntos_venta?.nombre || 'Venue sin asignar',
+            date: t.fecha_activacion_solicitada || t.created_at,
+            type: t.tipo_activacion || 'Activación BTL',
+            impact: impact,
+            status: getTicketStatus(t.estado),
+            rawDate: new Date(t.fecha_activacion_solicitada || t.created_at),
+            numericImpact
+          };
+        })
         .sort((a: any, b: any) => b.rawDate.getTime() - a.rawDate.getTime());
 
       setActivations(allActivations);
@@ -1327,6 +1355,11 @@ export function ManagerDashboard({
       // Contar activaciones completadas desde tickets BTL
       const totalActivations = (ticketsData || []).filter((t: any) => t.estado === 'resuelto' || t.estado === 'cerrado').length;
 
+      const impactValues = allActivations.map((a: any) => a.numericImpact).filter((v: any) => v !== null && v !== undefined);
+      const avgRoi = impactValues.length > 0 
+        ? impactValues.reduce((sum: number, val: number) => sum + val, 0) / impactValues.length 
+        : null;
+
       setKpis({
         visitedVenues: totalVenues,
         visitedVenuesTrend: 0,
@@ -1334,7 +1367,7 @@ export function ManagerDashboard({
         complianceTrend: 0,
         activations: totalActivations,
         activationsTrend: 0,
-        roi: 0,
+        roi: avgRoi !== null ? avgRoi.toFixed(1) : '-',
         roiTrend: 0,
         totalRegisteredVenues: allVenues.length
       });
@@ -1440,7 +1473,7 @@ export function ManagerDashboard({
                 color: getTrendColor(kpis.visitedVenuesTrend),
                 icon: getTrendIcon(kpis.visitedVenuesTrend),
               }}
-              color="blue"
+              color="turquoise"
             />
             <KPICard
               title="Cumplimiento Promedio"
@@ -1452,7 +1485,7 @@ export function ManagerDashboard({
                 color: getTrendColor(kpis.complianceTrend),
                 icon: getTrendIcon(kpis.complianceTrend),
               }}
-              color="green"
+              color="turquoise"
             />
             <KPICard
               title="Activaciones Ejecutadas"
@@ -1464,23 +1497,21 @@ export function ManagerDashboard({
                 color: getTrendColor(kpis.activationsTrend),
                 icon: getTrendIcon(kpis.activationsTrend),
               }}
-              color="purple"
+              color="turquoise"
             />
-            {/* ROI Card - Only show in Demo Mode or if we have real ROI data (which we don't yet) */}
-            {isDemo && (
-              <KPICard
-                title="ROI Activaciones"
-                value={`${kpis.roi}%`}
-                icon={<DollarSign className="w-6 h-6" />}
-                trend={{
-                  value: kpis.roiTrend,
-                  label: `${Math.abs(kpis.roiTrend)}% vs período anterior`,
-                  color: getTrendColor(kpis.roiTrend),
-                  icon: getTrendIcon(kpis.roiTrend),
-                }}
-                color="amber"
-              />
-            )}
+            {/* Impacto de Activación Card */}
+            <KPICard
+              title={isDemo ? "ROI Activaciones" : "Impacto de Activación"}
+              value={kpis.roi === '-' ? '-' : `${kpis.roi}%`}
+              icon={<DollarSign className="w-6 h-6" />}
+              trend={{
+                value: kpis.roiTrend,
+                label: kpis.roi === '-' ? 'Sin datos anteriores' : `${Math.abs(kpis.roiTrend)}% vs período anterior`,
+                color: getTrendColor(kpis.roiTrend),
+                icon: getTrendIcon(kpis.roiTrend),
+              }}
+              color="turquoise"
+            />
           </div>
         )}
 

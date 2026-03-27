@@ -13,7 +13,7 @@ interface KPICardProps {
   } | string; // Soportar ambos formatos
   positive?: boolean; // Mantener compatibilidad
   sparkline?: number[]; // Hacer opcional
-  color?: 'blue' | 'green' | 'purple' | 'amber'; // Nueva prop
+  color?: 'blue' | 'green' | 'purple' | 'amber' | 'turquoise'; // Nueva prop
 }
 
 export function KPICard({ title, label, value, icon, trend, positive, sparkline, color = 'amber' }: KPICardProps) {
@@ -35,6 +35,7 @@ export function KPICard({ title, label, value, icon, trend, positive, sparkline,
     green: 'text-green-400',
     purple: 'text-purple-400',
     amber: 'text-amber-400',
+    turquoise: 'text-[#40E0D0]',
   };
 
   return (

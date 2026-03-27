@@ -191,8 +191,8 @@ export function OpportunityMap({
 
   const getVenueType = (
     venue: ImportedVenue,
-    index: number,
-  ): "strategic" | "opportunity" | "activated" | "risk" => {
+    _index: number,
+  ): "strategic" | "opportunity" | "activated" | "risk" | "none" => {
     // 1. Try to use 'segmento' or 'potencial_ventas' from DB
     const segment = (venue.segmento || venue.potencial_ventas || '').toLowerCase();
 
@@ -203,7 +203,6 @@ export function OpportunityMap({
       return "opportunity";
     }
     if (segment.includes('bronze') || segment.includes('bajo') || segment.includes('low') || segment.includes('básico') || segment.includes('riesgo')) {
-      // Risk or Activated depending on business logic - let's default to Risk for low tier if not activated
       return "risk";
     }
 
@@ -215,18 +214,12 @@ export function OpportunityMap({
       return "strategic";
     }
 
-    // 3. Fallback to random distribution if no data available (Legacy behavior)
-    const types: Array<
-      "strategic" | "opportunity" | "activated" | "risk"
-    > = ["strategic", "opportunity", "activated", "risk"];
-    return types[index % 4];
+    // 3. No DB data: return none (gray, no random assignment)
+    return "none";
   };
 
-  const getVenueScore = (venueId: string): number => {
-    const hash = venueId
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return Number((6.5 + (hash % 35) / 10).toFixed(1));
+  const getVenueScore = (_venueId: string): number => {
+    return 0;
   };
 
   // Build a lookup map: venueId -> inspection (for the currently selected product)

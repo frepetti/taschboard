@@ -71,7 +71,6 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
   const [materialItems, setMaterialItems] = useState<MaterialItem[]>([
     { tipo: '', cantidad: 1 }
   ]);
-  const [dimensiones, setDimensiones] = useState('');
   const [materialEspecificaciones, setMaterialEspecificaciones] = useState('');
   const [fechaEntregaRequerida, setFechaEntregaRequerida] = useState('');
   const [direccionEntrega, setDireccionEntrega] = useState('');
@@ -106,42 +105,54 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
 
       // Cargar productos del cliente si es necesario
       if (category === 'accion_btl' || category === 'material_pop') {
-        // Primero obtener el usuario actual
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: btlUser } = await supabase
             .from('btl_usuarios')
-            .select('id')
+            .select('id, rol')
             .eq('auth_user_id', user.id)
             .single();
 
           if (btlUser) {
-            // Obtener productos asignados a este cliente
-            const { data: clienteProductos } = await supabase
-              .from('btl_cliente_productos')
-              .select(`
-                producto_id,
-                visible_dashboard,
-                orden,
-                btl_productos!inner (
-                  id,
-                  nombre,
-                  marca,
-                  categoria
-                )
-              `)
-              .eq('usuario_id', btlUser.id)
-              .eq('visible_dashboard', true)
-              .order('orden', { ascending: true });
+            const isAdmin = (btlUser as any).rol === 'admin';
 
-            if (clienteProductos) {
-              const productosFormateados = clienteProductos.map((cp: any) => ({
-                id: cp.btl_productos.id,
-                nombre: cp.btl_productos.nombre,
-                marca: cp.btl_productos.marca,
-                categoria: cp.btl_productos.categoria
-              }));
-              setProducts(productosFormateados);
+            if (isAdmin) {
+              // Admins: load ALL active products directly
+              const { data: allProducts } = await supabase
+                .from('btl_productos')
+                .select('id, nombre, marca, categoria')
+                .eq('activo', true)
+                .order('marca', { ascending: true });
+
+              if (allProducts) setProducts(allProducts as Product[]);
+            } else {
+              // Clients: load only assigned products
+              const { data: clienteProductos } = await supabase
+                .from('btl_cliente_productos')
+                .select(`
+                  producto_id,
+                  visible_dashboard,
+                  orden,
+                  btl_productos!inner (
+                    id,
+                    nombre,
+                    marca,
+                    categoria
+                  )
+                `)
+                .eq('usuario_id', btlUser.id)
+                .eq('visible_dashboard', true)
+                .order('orden', { ascending: true });
+
+              if (clienteProductos) {
+                const productosFormateados = clienteProductos.map((cp: any) => ({
+                  id: cp.btl_productos.id,
+                  nombre: cp.btl_productos.nombre,
+                  marca: cp.btl_productos.marca,
+                  categoria: cp.btl_productos.categoria
+                }));
+                setProducts(productosFormateados);
+              }
             }
           }
         }
@@ -220,7 +231,6 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
         ticketData.productos_involucrados = selectedProducts.length > 0 ? selectedProducts : null;
       } else if (category === 'material_pop') {
         ticketData.material_items = materialItems;
-        ticketData.dimensiones = dimensiones;
         ticketData.material_especificaciones = materialEspecificaciones;
         ticketData.fecha_entrega_requerida = fechaEntregaRequerida || null;
         ticketData.direccion_entrega = direccionEntrega;
@@ -636,16 +646,6 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
                       onChange={(e) => setMarcaProducto(e.target.value)}
                       placeholder="Ej: Corona, Modelo, etc."
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-300 mb-2">Dimensiones</label>
-                    <input
-                      type="text"
-                      value={dimensiones}
-                      onChange={(e) => setDimensiones(e.target.value)}
-                      placeholder="Ej: 180cm x 60cm x 40cm"
                       className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     />
                   </div>
