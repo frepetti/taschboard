@@ -218,23 +218,49 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
 
       // Agregar campos específicos según categoría
       if (category === 'capacitacion') {
+        // Columnas reales de btl_reportes: capacitacion_id, descripcion
+        // participantes_estimados y temas_interes NO existen en el schema → se agregan a descripcion
         ticketData.capacitacion_id = selectedTraining || null;
-        ticketData.participantes_estimados = participantesEstimados;
-        ticketData.temas_interes = temasInteres ? temasInteres.split(',').map(t => t.trim()) : [];
+        const extraCapacitacion = [
+          participantesEstimados ? `Participantes estimados: ${participantesEstimados}` : null,
+          temasInteres ? `Temas de interés: ${temasInteres}` : null,
+        ].filter(Boolean).join('\n');
+        if (extraCapacitacion) {
+          ticketData.descripcion = `${ticketData.descripcion}\n\n${extraCapacitacion}`;
+        }
       } else if (category === 'accion_btl') {
+        // Columnas reales: tipo_activacion, fecha_activacion_solicitada, punto_venta_id, productos_involucrados
+        // ubicacion_activacion, presupuesto_estimado, impacto_esperado NO existen → se agregan a descripcion
         ticketData.tipo_activacion = tipoActivacion;
         ticketData.fecha_activacion_solicitada = fechaActivacion || null;
-        ticketData.ubicacion_activacion = ubicacionActivacion;
         ticketData.punto_venta_id = selectedVenue || null;
-        ticketData.presupuesto_estimado = presupuestoEstimado;
-        ticketData.impacto_esperado = impactoEsperado;
         ticketData.productos_involucrados = selectedProducts.length > 0 ? selectedProducts : null;
+        const extraBtl = [
+          ubicacionActivacion ? `Ubicación: ${ubicacionActivacion}` : null,
+          presupuestoEstimado ? `Presupuesto estimado: ${presupuestoEstimado}` : null,
+          impactoEsperado ? `Impacto esperado: ${impactoEsperado}` : null,
+        ].filter(Boolean).join('\n');
+        if (extraBtl) {
+          ticketData.descripcion = `${ticketData.descripcion}\n\n${extraBtl}`;
+        }
       } else if (category === 'material_pop') {
-        ticketData.material_items = materialItems;
-        ticketData.material_especificaciones = materialEspecificaciones;
+        // Columnas reales: tipo_material, cantidad_solicitada, marca_producto,
+        //                  fecha_entrega_requerida
+        // material_items, material_especificaciones, direccion_entrega NO existen → descripcion
+        ticketData.tipo_material = materialItems.map(i => i.tipo).filter(Boolean).join(', ') || null;
+        ticketData.cantidad_solicitada = materialItems.reduce((sum, i) => sum + (i.cantidad || 0), 0) || null;
+        ticketData.marca_producto = marcaProducto || null;
         ticketData.fecha_entrega_requerida = fechaEntregaRequerida || null;
-        ticketData.direccion_entrega = direccionEntrega;
-        ticketData.marca_producto = marcaProducto;
+        const extraPop = [
+          materialEspecificaciones ? `Especificaciones: ${materialEspecificaciones}` : null,
+          direccionEntrega ? `Dirección de entrega: ${direccionEntrega}` : null,
+          materialItems.length > 0
+            ? `Items: ${materialItems.map(i => `${i.cantidad}x ${i.tipo}`).filter(i => i.includes('x ')).join(', ')}`
+            : null,
+        ].filter(Boolean).join('\n');
+        if (extraPop) {
+          ticketData.descripcion = `${ticketData.descripcion}\n\n${extraPop}`;
+        }
       }
 
       const { data: newTicket, error } = await supabase
