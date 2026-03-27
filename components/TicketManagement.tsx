@@ -38,20 +38,31 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
   const loadTickets = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('btl_reportes')
-        .select(`
-          *,
-          btl_usuarios!btl_reportes_creado_por_fkey (
-            id,
-            nombre,
-            email,
-            empresa
-          )
-        `)
-        .order('created_at', { ascending: false });
+      const [ticketsResponse, productsResponse] = await Promise.all([
+        supabase
+          .from('btl_reportes')
+          .select(`
+            *,
+            btl_usuarios!btl_reportes_creado_por_fkey (
+              id,
+              nombre,
+              email,
+              empresa
+            ),
+            btl_puntos_venta!btl_reportes_punto_venta_id_fkey (
+              nombre
+            )
+          `)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('btl_productos')
+          .select('id, nombre')
+      ]);
 
-      if (error) throw error;
+      if (ticketsResponse.error) throw ticketsResponse.error;
+      const productsMap = new Map((productsResponse.data || []).map(p => [p.id, p.nombre]));
+
+      const data = ticketsResponse.data;
 
       // Format data to match expected structure
       const formattedTickets = (data || []).map((ticket: any) => ({
@@ -66,6 +77,10 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
         user_name: ticket.btl_usuarios?.nombre,
         user_email: ticket.btl_usuarios?.email,
         company: ticket.btl_usuarios?.empresa,
+        venue_name: ticket.btl_puntos_venta?.nombre,
+        productos_nombres: ticket.productos_involucrados && Array.isArray(ticket.productos_involucrados)
+          ? ticket.productos_involucrados.map((id: string) => productsMap.get(id)).filter(Boolean)
+          : [],
         created_at: ticket.created_at,
         updated_at: ticket.updated_at,
         metadata: ticket.metadata
@@ -285,6 +300,28 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                 <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('tickets.description')}</h4>
                 <p className="text-slate-300 whitespace-pre-wrap">{selectedTicket.description}</p>
               </div>
+
+              {/* Punto de Venta y Productos */}
+              {(selectedTicket.venue_name || (selectedTicket.productos_nombres && selectedTicket.productos_nombres.length > 0)) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedTicket.venue_name && (
+                    <div>
+                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">Punto de Venta</h4>
+                      <p className="text-white">{selectedTicket.venue_name}</p>
+                    </div>
+                  )}
+                  {selectedTicket.productos_nombres && selectedTicket.productos_nombres.length > 0 && (
+                    <div className={!selectedTicket.venue_name ? "col-span-2" : ""}>
+                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">Productos Involucrados</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedTicket.productos_nombres.map((prod: string, i: number) => (
+                          <span key={i} className="px-2 py-1 bg-slate-800 rounded-md text-slate-300 text-xs">{prod}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* User Info */}
               <div className="grid grid-cols-2 gap-4">
