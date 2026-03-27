@@ -1281,18 +1281,24 @@ export function ManagerDashboard({
       if (ticketsError) console.error("Error loading tickets:", ticketsError);
 
       // 3. Procesar Activaciones desde Tickets BTL (fuente única)
-      const getTicketStatus = (estado: string): string => {
-        if (estado === 'resuelto' || estado === 'cerrado') return 'success';
-        if (estado === 'en_progreso') return 'active';
+      const getTicketStatus = (estado: string | null | undefined): string => {
+        if (!estado) return 'scheduled';
+        const str = estado.toLowerCase().trim();
+        if (str === 'resuelto' || str === 'cerrado' || str === 'cerrada' || str === 'completado' || str === 'completada' || str === 'success') return 'success';
+        if (str === 'en_progreso' || str === 'en progreso' || str === 'active' || str === 'en_curso') return 'active';
         return 'scheduled'; // 'abierto' u otros
       };
+// removed lines
+// removed lines
+// removed lines
+
 
       const allActivations = (ticketsData || [])
         .map((t: any) => {
           let impact = 'N/A';
           let numericImpact: number | null = null;
 
-          if (t.estado === 'resuelto' || t.estado === 'cerrado') {
+          if (getTicketStatus(t.estado) === 'success') {
             const venueId = t.punto_venta_id;
             const actDate = new Date(t.fecha_activacion_solicitada || t.created_at);
             
@@ -1353,11 +1359,11 @@ export function ManagerDashboard({
         ? Math.round(currentInspections.reduce((acc: number, i: any) => acc + (i.compliance_score || 0), 0) / currentInspections.length)
         : 0;
       // Contar activaciones completadas desde tickets BTL
-      const totalActivations = (ticketsData || []).filter((t: any) => t.estado === 'resuelto' || t.estado === 'cerrado').length;
+      const totalActivations = (ticketsData || []).filter((t: any) => getTicketStatus(t.estado) === 'success').length;
 
       const impactValues = allActivations.map((a: any) => a.numericImpact).filter((v: any) => v !== null && v !== undefined);
       const avgRoi = impactValues.length > 0 
-        ? impactValues.reduce((sum: number, val: number) => sum + val, 0) / impactValues.length 
+        ? impactValues.reduce((sum: number, val: number) => sum + val, 0) / impactValues.length
         : null;
 
       setKpis({

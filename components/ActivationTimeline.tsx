@@ -58,7 +58,7 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
     switch (status) {
       case 'success': return 'Completada';
       case 'active': return 'En Progreso';
-      case 'scheduled': return 'Programada';
+      case 'scheduled': return 'Abierta';
       case 'pending': return 'Pendiente';
       default: return status;
     }
@@ -357,7 +357,7 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                Programados
+                Abiertos
               </button>
               <button
                 onClick={() => setFilterType('success')}
