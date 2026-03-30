@@ -89,7 +89,7 @@ const DEMO_DATA = {
     },
     {
         "id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "zone": "Boca",
         "lat": -34.6353,
         "lng": -58.3648,
@@ -112,16 +112,16 @@ const DEMO_DATA = {
         "lat": -34.58,
         "lng": -58.42,
         "type": "activated",
-        "channel": "Cervecería"
+        "channel": "Cervecer├¡a"
     },
     {
         "id": "v9",
-        "venue_name": "Café de la Plaza",
+        "venue_name": "Caf├® de la Plaza",
         "zone": "Centro",
         "lat": -34.6087,
         "lng": -58.38,
         "type": "risk",
-        "channel": "Café"
+        "channel": "Caf├®"
     },
     {
         "id": "v10",
@@ -191,7 +191,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 52"
+        "observations": "Observaci├│n autogenerada 52"
     },
     {
         "id": "insp-54",
@@ -205,7 +205,7 @@ const DEMO_DATA = {
         "main_competitor": "Otros",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 54"
+        "observations": "Observaci├│n autogenerada 54"
     },
     {
         "id": "insp-19",
@@ -219,7 +219,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 19"
+        "observations": "Observaci├│n autogenerada 19"
     },
     {
         "id": "insp-0",
@@ -233,7 +233,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 0"
+        "observations": "Observaci├│n autogenerada 0"
     },
     {
         "id": "insp-57",
@@ -247,7 +247,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 57"
+        "observations": "Observaci├│n autogenerada 57"
     },
     {
         "id": "insp-51",
@@ -261,7 +261,7 @@ const DEMO_DATA = {
         "main_competitor": "Otros",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 51"
+        "observations": "Observaci├│n autogenerada 51"
     },
     {
         "id": "insp-21",
@@ -275,7 +275,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 21"
+        "observations": "Observaci├│n autogenerada 21"
     },
     {
         "id": "insp-34",
@@ -289,7 +289,7 @@ const DEMO_DATA = {
         "main_competitor": "Otros",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 34"
+        "observations": "Observaci├│n autogenerada 34"
     },
     {
         "id": "insp-37",
@@ -303,12 +303,12 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 37"
+        "observations": "Observaci├│n autogenerada 37"
     },
     {
         "id": "insp-50",
         "punto_venta_id": "v9",
-        "venue_name": "Café de la Plaza",
+        "venue_name": "Caf├® de la Plaza",
         "fecha_inspeccion": "2026-02-28",
         "visit_date": "2026-02-28",
         "compliance_score": 84,
@@ -317,7 +317,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 50"
+        "observations": "Observaci├│n autogenerada 50"
     },
     {
         "id": "insp-26",
@@ -331,7 +331,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 26"
+        "observations": "Observaci├│n autogenerada 26"
     },
     {
         "id": "insp-46",
@@ -345,7 +345,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 46"
+        "observations": "Observaci├│n autogenerada 46"
     },
     {
         "id": "insp-8",
@@ -359,7 +359,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 8"
+        "observations": "Observaci├│n autogenerada 8"
     },
     {
         "id": "insp-40",
@@ -373,12 +373,12 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 40"
+        "observations": "Observaci├│n autogenerada 40"
     },
     {
         "id": "insp-58",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2026-01-09",
         "visit_date": "2026-01-09",
         "compliance_score": 97,
@@ -387,12 +387,12 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 58"
+        "observations": "Observaci├│n autogenerada 58"
     },
     {
         "id": "insp-41",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2025-12-31",
         "visit_date": "2025-12-31",
         "compliance_score": 90,
@@ -401,7 +401,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 41"
+        "observations": "Observaci├│n autogenerada 41"
     },
     {
         "id": "insp-23",
@@ -415,7 +415,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 23"
+        "observations": "Observaci├│n autogenerada 23"
     },
     {
         "id": "insp-38",
@@ -429,12 +429,12 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 38"
+        "observations": "Observaci├│n autogenerada 38"
     },
     {
         "id": "insp-30",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2025-12-06",
         "visit_date": "2025-12-06",
         "compliance_score": 97,
@@ -443,7 +443,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 30"
+        "observations": "Observaci├│n autogenerada 30"
     },
     {
         "id": "insp-48",
@@ -457,7 +457,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 48"
+        "observations": "Observaci├│n autogenerada 48"
     },
     {
         "id": "insp-15",
@@ -471,7 +471,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 15"
+        "observations": "Observaci├│n autogenerada 15"
     },
     {
         "id": "insp-16",
@@ -485,7 +485,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 16"
+        "observations": "Observaci├│n autogenerada 16"
     },
     {
         "id": "insp-22",
@@ -499,12 +499,12 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 22"
+        "observations": "Observaci├│n autogenerada 22"
     },
     {
         "id": "insp-42",
         "punto_venta_id": "v9",
-        "venue_name": "Café de la Plaza",
+        "venue_name": "Caf├® de la Plaza",
         "fecha_inspeccion": "2025-10-15",
         "visit_date": "2025-10-15",
         "compliance_score": 65,
@@ -513,7 +513,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 42"
+        "observations": "Observaci├│n autogenerada 42"
     },
     {
         "id": "insp-59",
@@ -527,7 +527,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 59"
+        "observations": "Observaci├│n autogenerada 59"
     },
     {
         "id": "insp-47",
@@ -541,7 +541,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 47"
+        "observations": "Observaci├│n autogenerada 47"
     },
     {
         "id": "insp-1",
@@ -555,7 +555,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 1"
+        "observations": "Observaci├│n autogenerada 1"
     },
     {
         "id": "insp-44",
@@ -569,7 +569,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 44"
+        "observations": "Observaci├│n autogenerada 44"
     },
     {
         "id": "insp-36",
@@ -583,7 +583,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 36"
+        "observations": "Observaci├│n autogenerada 36"
     },
     {
         "id": "insp-27",
@@ -597,7 +597,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 27"
+        "observations": "Observaci├│n autogenerada 27"
     },
     {
         "id": "insp-10",
@@ -611,7 +611,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 10"
+        "observations": "Observaci├│n autogenerada 10"
     },
     {
         "id": "insp-11",
@@ -625,12 +625,12 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 11"
+        "observations": "Observaci├│n autogenerada 11"
     },
     {
         "id": "insp-53",
         "punto_venta_id": "v9",
-        "venue_name": "Café de la Plaza",
+        "venue_name": "Caf├® de la Plaza",
         "fecha_inspeccion": "2025-08-15",
         "visit_date": "2025-08-15",
         "compliance_score": 89,
@@ -639,7 +639,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 53"
+        "observations": "Observaci├│n autogenerada 53"
     },
     {
         "id": "insp-33",
@@ -653,12 +653,12 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 33"
+        "observations": "Observaci├│n autogenerada 33"
     },
     {
         "id": "insp-5",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2025-07-29",
         "visit_date": "2025-07-29",
         "compliance_score": 96,
@@ -667,7 +667,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 5"
+        "observations": "Observaci├│n autogenerada 5"
     },
     {
         "id": "insp-55",
@@ -681,7 +681,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 55"
+        "observations": "Observaci├│n autogenerada 55"
     },
     {
         "id": "insp-14",
@@ -695,7 +695,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 14"
+        "observations": "Observaci├│n autogenerada 14"
     },
     {
         "id": "insp-9",
@@ -709,7 +709,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 9"
+        "observations": "Observaci├│n autogenerada 9"
     },
     {
         "id": "insp-35",
@@ -723,7 +723,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 35"
+        "observations": "Observaci├│n autogenerada 35"
     },
     {
         "id": "insp-45",
@@ -737,7 +737,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 45"
+        "observations": "Observaci├│n autogenerada 45"
     },
     {
         "id": "insp-17",
@@ -751,7 +751,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 17"
+        "observations": "Observaci├│n autogenerada 17"
     },
     {
         "id": "insp-56",
@@ -765,7 +765,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 56"
+        "observations": "Observaci├│n autogenerada 56"
     },
     {
         "id": "insp-49",
@@ -779,7 +779,7 @@ const DEMO_DATA = {
         "main_competitor": "Otros",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 49"
+        "observations": "Observaci├│n autogenerada 49"
     },
     {
         "id": "insp-31",
@@ -793,7 +793,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 31"
+        "observations": "Observaci├│n autogenerada 31"
     },
     {
         "id": "insp-29",
@@ -807,12 +807,12 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 29"
+        "observations": "Observaci├│n autogenerada 29"
     },
     {
         "id": "insp-43",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2025-06-23",
         "visit_date": "2025-06-23",
         "compliance_score": 68,
@@ -821,7 +821,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 43"
+        "observations": "Observaci├│n autogenerada 43"
     },
     {
         "id": "insp-39",
@@ -835,7 +835,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 39"
+        "observations": "Observaci├│n autogenerada 39"
     },
     {
         "id": "insp-13",
@@ -849,7 +849,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 13"
+        "observations": "Observaci├│n autogenerada 13"
     },
     {
         "id": "insp-32",
@@ -863,7 +863,7 @@ const DEMO_DATA = {
         "main_competitor": "Aviation",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 32"
+        "observations": "Observaci├│n autogenerada 32"
     },
     {
         "id": "insp-3",
@@ -877,7 +877,7 @@ const DEMO_DATA = {
         "main_competitor": "Roku",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 3"
+        "observations": "Observaci├│n autogenerada 3"
     },
     {
         "id": "insp-4",
@@ -891,12 +891,12 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 4"
+        "observations": "Observaci├│n autogenerada 4"
     },
     {
         "id": "insp-24",
         "punto_venta_id": "v6",
-        "venue_name": "Bodegón del Sur",
+        "venue_name": "Bodeg├│n del Sur",
         "fecha_inspeccion": "2025-05-31",
         "visit_date": "2025-05-31",
         "compliance_score": 81,
@@ -905,7 +905,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 24"
+        "observations": "Observaci├│n autogenerada 24"
     },
     {
         "id": "insp-25",
@@ -919,7 +919,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 25"
+        "observations": "Observaci├│n autogenerada 25"
     },
     {
         "id": "insp-18",
@@ -933,7 +933,7 @@ const DEMO_DATA = {
         "main_competitor": "Tanqueray",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 18"
+        "observations": "Observaci├│n autogenerada 18"
     },
     {
         "id": "insp-6",
@@ -947,7 +947,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 6"
+        "observations": "Observaci├│n autogenerada 6"
     },
     {
         "id": "insp-2",
@@ -961,7 +961,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 2"
+        "observations": "Observaci├│n autogenerada 2"
     },
     {
         "id": "insp-12",
@@ -975,7 +975,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": false,
-        "observations": "Observación autogenerada 12"
+        "observations": "Observaci├│n autogenerada 12"
     },
     {
         "id": "insp-20",
@@ -989,7 +989,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 20"
+        "observations": "Observaci├│n autogenerada 20"
     },
     {
         "id": "insp-28",
@@ -1003,7 +1003,7 @@ const DEMO_DATA = {
         "main_competitor": "Monkey 47",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 28"
+        "observations": "Observaci├│n autogenerada 28"
     },
     {
         "id": "insp-7",
@@ -1017,7 +1017,7 @@ const DEMO_DATA = {
         "main_competitor": "Bombay Sapphire",
         "tiene_producto": true,
         "tiene_material_pop": true,
-        "observations": "Observación autogenerada 7"
+        "observations": "Observaci├│n autogenerada 7"
     }
 ],
   activations: [
@@ -1135,7 +1135,7 @@ const DEMO_DATA = {
     },
     {
         "id": "act-5",
-        "venue": "Bodegón del Sur",
+        "venue": "Bodeg├│n del Sur",
         "date": "2025-04-11",
         "type": "Completed",
         "impact": "+34%",
@@ -1257,137 +1257,7 @@ export function ManagerDashboard({
       else if (dateFilter === '1Y') date.setDate(date.getDate() - 365);
       else if (dateFilter === 'YTD') date.setMonth(0, 1); // Jan 1st of current year
 
-      if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no está en el state inicial
-        inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
-      }
-
-      const { data: inspectionsData, error: inspectionsError } = await inspectionsQuery;
-      if (inspectionsError) throw inspectionsError;
-
-      setInspections(inspectionsData || []);
-
-      // 2. Cargar Tickets de Activación BTL (Todos los estados)
-      let ticketsQuery = supabase
-        .from('btl_reportes')
-        .select('*, btl_puntos_venta!btl_reportes_punto_venta_id_fkey(id, nombre, region_id)')
-        .eq('categoria', 'accion_btl')
-        .order('fecha_activacion_solicitada', { ascending: false });
-
-
-export function ManagerDashboard({
-  readOnly = false,
-  isDemo = false,
-  dateFilter: propDateFilter,
-  setDateFilter: propSetDateFilter,
-  regionFilter: propRegionFilter,
-  setRegionFilter: propSetRegionFilter,
-  productId = null
-}: ManagerDashboardProps) {
-  const [inspections, setInspections] = useState<any[]>([]);
-  const [kpis, setKpis] = useState<any>(null);
-  const [activations, setActivations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Internal state for uncontrolled mode
-  const [internalDateFilter, setInternalDateFilter] = useState('6M');
-  const [internalRegionFilter, setInternalRegionFilter] = useState('all');
-
-  // Use props if available (Controlled), else use internal state (Uncontrolled)
-  const dateFilter = propDateFilter !== undefined ? propDateFilter : internalDateFilter;
-  const setDateFilter = propSetDateFilter || setInternalDateFilter;
-
-  const regionFilter = propRegionFilter !== undefined ? propRegionFilter : internalRegionFilter;
-  const setRegionFilter = propSetRegionFilter || setInternalRegionFilter;
-
-  const [selectedVenue, setSelectedVenue] = useState<any>(null);
-  const [regions, setRegions] = useState<Region[]>([]);
-
-  useEffect(() => {
-    loadRegions();
-  }, []);
-
-  useEffect(() => {
-    if (isDemo) {
-      // Usar datos de demo
-      setKpis(DEMO_DATA.kpis);
-      setInspections(DEMO_DATA.inspections);
-      setActivations(DEMO_DATA.activations);
-      setLoading(false);
-    } else {
-      loadDashboardData();
-    }
-  }, [dateFilter, regionFilter, isDemo, productId]);
-
-  const loadRegions = async () => {
-    try {
-      const { data } = await supabase
-        .from('btl_regiones')
-        .select('id, nombre')
-        .order('nombre');
-
-      if (data) {
-        setRegions(data);
-      }
-    } catch (error) {
-      console.error('Error loading regions:', error);
-    }
-  };
-
-  // Admin View Logic
-  const { dbRole } = useAuth();
-  const [allVenues, setAllVenues] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (dbRole === 'admin') {
-      loadAllVenues();
-    }
-  }, [dbRole, regionFilter]); // Reload if region changes
-
-  const loadAllVenues = async () => {
-    try {
-      let query = supabase
-        .from('btl_puntos_venta')
-        .select('*')
-        .order('nombre');
-
-      if (regionFilter !== 'all') {
-        query = query.eq('region_id', regionFilter);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setAllVenues(data || []);
-    } catch (err) {
-      console.error('Error loading all venues for admin:', err);
-    }
-  };
-
-  const loadDashboardData = async () => {
-    setLoading(true);
-    try {
-      // 1. Cargar Inspecciones
-      let inspectionsQuery = supabase
-        .from('btl_inspecciones')
-        .select('*, btl_puntos_venta!btl_inspecciones_punto_venta_id_fkey(id, nombre, region_id)')
-        .order('fecha_inspeccion', { ascending: false })
-        .limit(100);
-
-      if (regionFilter !== 'all') {
-        inspectionsQuery = inspectionsQuery.eq('btl_puntos_venta.region_id', regionFilter);
-      }
-
-      if (productId) {
-        inspectionsQuery = inspectionsQuery.eq('producto_id', productId);
-      }
-
-      const date = new Date();
-      if (dateFilter === '1M') date.setDate(date.getDate() - 30);
-      else if (dateFilter === '3M') date.setDate(date.getDate() - 90);
-      else if (dateFilter === '6M') date.setDate(date.getDate() - 180);
-      else if (dateFilter === '1Y') date.setDate(date.getDate() - 365);
-      else if (dateFilter === 'YTD') date.setMonth(0, 1); // Jan 1st of current year
-
-      if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no está en el state inicial
+      if (dateFilter !== 'all') { // Asumiendo que podr├¡a haber un filtro 'all' aunque no est├í en el state inicial
         inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
       }
 
@@ -1411,34 +1281,32 @@ export function ManagerDashboard({
       if (ticketsError) console.error("Error loading tickets:", ticketsError);
 
       // 3. Procesar Activaciones desde Tickets BTL (fuente única)
-      const getTicketStatus = (estado: string | null | undefined): string => {
+      // IMPORTANTE: currentInspections debe declararse ANTES del .map() para el cálculo de impacto
+      const currentInspections = (inspectionsData || []) as any[];
+
+      const getTicketStatus = (estado: string | null | undefined): 'success' | 'active' | 'scheduled' => {
         if (!estado) return 'scheduled';
-        const str = estado.toLowerCase().trim();
-        if (str === 'resuelto' || str === 'cerrado' || str === 'cerrada' || str === 'completado' || str === 'completada' || str === 'success') return 'success';
-        if (str === 'en_progreso' || str === 'en progreso' || str === 'active' || str === 'en_curso') return 'active';
+        const s = estado.toLowerCase().trim();
+        if (s === 'resuelto' || s === 'cerrado' || s === 'cerrada' || s === 'completado' || s === 'completada') return 'success';
+        if (s === 'en_progreso' || s === 'en progreso' || s === 'en_curso') return 'active';
         return 'scheduled'; // 'abierto' u otros
       };
 
-      // IMPORTANTE: Declarar currentInspections ANTES de usarlo en el .map() de ticketsData
-      const currentInspections = (inspectionsData || []) as any[];
-
       const allActivations = (ticketsData || [])
         .map((t: any) => {
+          const ticketStatus = getTicketStatus(t.estado);
           let impact = 'N/A';
           let numericImpact: number | null = null;
 
-          if (getTicketStatus(t.estado) === 'success') {
+          if (ticketStatus === 'success') {
             const venueId = t.punto_venta_id;
             const actDate = new Date(t.fecha_activacion_solicitada || t.created_at);
-            
-            const venueInspections = currentInspections.filter((i:any) => i.punto_venta_id === venueId);
-            const beforeInspections = venueInspections.filter((i:any) => new Date(i.fecha_inspeccion) <= actDate);
-            const afterInspections = venueInspections.filter((i:any) => new Date(i.fecha_inspeccion) > actDate);
-
+            const venueInspections = currentInspections.filter((i: any) => i.punto_venta_id === venueId);
+            const beforeInspections = venueInspections.filter((i: any) => new Date(i.fecha_inspeccion) <= actDate);
+            const afterInspections = venueInspections.filter((i: any) => new Date(i.fecha_inspeccion) > actDate);
             if (beforeInspections.length > 0 && afterInspections.length > 0) {
               const avgBefore = beforeInspections.reduce((sum: number, i: any) => sum + (i.compliance_score || 0), 0) / beforeInspections.length;
               const avgAfter = afterInspections.reduce((sum: number, i: any) => sum + (i.compliance_score || 0), 0) / afterInspections.length;
-              
               if (avgBefore > 0) {
                 const uplift = ((avgAfter - avgBefore) / avgBefore) * 100;
                 numericImpact = uplift;
@@ -1454,19 +1322,17 @@ export function ManagerDashboard({
             venue: t.btl_puntos_venta?.nombre || 'Venue sin asignar',
             date: t.fecha_activacion_solicitada || t.created_at,
             type: t.tipo_activacion || 'Activación BTL',
-            impact: impact,
-            status: getTicketStatus(t.estado),
+            impact,
+            status: ticketStatus,
             rawDate: new Date(t.fecha_activacion_solicitada || t.created_at),
             numericImpact,
-            // Campos enriquecidos desde btl_reportes
             asunto: t.asunto || null,
             titulo: t.titulo || null,
             descripcion: t.descripcion || null,
             tipo_activacion: t.tipo_activacion || null,
-            notas: null, // btl_reportes no tiene campo notas; se usa descripcion
+            notas: null,
             ubicacion: t.btl_puntos_venta?.nombre || null,
-            presupuesto: null, // btl_reportes no tiene presupuesto; viene de btl_acciones
-            // Campos adicionales de activación BTL
+            presupuesto: null,
             productos_involucrados: t.productos_involucrados || null,
             tipo_material: t.tipo_material || null,
             cantidad_solicitada: t.cantidad_solicitada || null,
@@ -1496,7 +1362,6 @@ export function ManagerDashboard({
       else if (dateFilter === '1Y') previousStartDate.setDate(startDate.getDate() - 365);
       else if (dateFilter === 'YTD') previousStartDate.setFullYear(startDate.getFullYear() - 1);
 
-      // currentInspections ya fue declarado arriba (antes del .map de ticketsData)
 
       const totalVenues = new Set(currentInspections.map((i: any) => i.punto_venta_id)).size;
       const avgCompliance = currentInspections.length > 0
@@ -1505,11 +1370,6 @@ export function ManagerDashboard({
       // Contar activaciones completadas desde tickets BTL
       const totalActivations = (ticketsData || []).filter((t: any) => getTicketStatus(t.estado) === 'success').length;
 
-      const impactValues = allActivations.map((a: any) => a.numericImpact).filter((v: any) => v !== null && v !== undefined);
-      const avgRoi = impactValues.length > 0 
-        ? impactValues.reduce((sum: number, val: number) => sum + val, 0) / impactValues.length
-        : null;
-
       setKpis({
         visitedVenues: totalVenues,
         visitedVenuesTrend: 0,
@@ -1517,7 +1377,7 @@ export function ManagerDashboard({
         complianceTrend: 0,
         activations: totalActivations,
         activationsTrend: 0,
-        roi: avgRoi !== null ? avgRoi.toFixed(1) : '-',
+        roi: 0,
         roiTrend: 0,
         totalRegisteredVenues: allVenues.length
       });
@@ -1574,7 +1434,7 @@ export function ManagerDashboard({
             onClick={() => setDateFilter('6M')}
           />
           <FilterChip
-            label="1 Año"
+            label="1 A├▒o"
             active={dateFilter === '1Y'}
             onClick={() => setDateFilter('1Y')}
           />
@@ -1619,11 +1479,11 @@ export function ManagerDashboard({
               icon={<Store className="w-6 h-6" />}
               trend={{
                 value: kpis.visitedVenuesTrend,
-                label: `${Math.abs(kpis.visitedVenuesTrend)}% vs período anterior`,
+                label: `${Math.abs(kpis.visitedVenuesTrend)}% vs per├¡odo anterior`,
                 color: getTrendColor(kpis.visitedVenuesTrend),
                 icon: getTrendIcon(kpis.visitedVenuesTrend),
               }}
-              color="turquoise"
+              color="blue"
             />
             <KPICard
               title="Cumplimiento Promedio"
@@ -1631,11 +1491,11 @@ export function ManagerDashboard({
               icon={<Target className="w-6 h-6" />}
               trend={{
                 value: kpis.complianceTrend,
-                label: `${Math.abs(kpis.complianceTrend)}% vs período anterior`,
+                label: `${Math.abs(kpis.complianceTrend)}% vs per├¡odo anterior`,
                 color: getTrendColor(kpis.complianceTrend),
                 icon: getTrendIcon(kpis.complianceTrend),
               }}
-              color="turquoise"
+              color="green"
             />
             <KPICard
               title="Activaciones Ejecutadas"
@@ -1643,25 +1503,27 @@ export function ManagerDashboard({
               icon={<Users className="w-6 h-6" />}
               trend={{
                 value: kpis.activationsTrend,
-                label: kpis.activationsTrend !== 0 ? `${Math.abs(kpis.activationsTrend)}% vs período anterior` : 'Sin datos anteriores',
+                label: kpis.activationsTrend !== 0 ? `${Math.abs(kpis.activationsTrend)}% vs per├¡odo anterior` : 'Sin datos anteriores',
                 color: getTrendColor(kpis.activationsTrend),
                 icon: getTrendIcon(kpis.activationsTrend),
               }}
-              color="turquoise"
+              color="purple"
             />
-            {/* Impacto de Activación Card */}
-            <KPICard
-              title={isDemo ? "ROI Activaciones" : "Impacto de Activación"}
-              value={kpis.roi === '-' ? '-' : `${kpis.roi}%`}
-              icon={<DollarSign className="w-6 h-6" />}
-              trend={{
-                value: kpis.roiTrend,
-                label: kpis.roi === '-' ? 'Sin datos anteriores' : `${Math.abs(kpis.roiTrend)}% vs período anterior`,
-                color: getTrendColor(kpis.roiTrend),
-                icon: getTrendIcon(kpis.roiTrend),
-              }}
-              color="turquoise"
-            />
+            {/* ROI Card - Only show in Demo Mode or if we have real ROI data (which we don't yet) */}
+            {isDemo && (
+              <KPICard
+                title="ROI Activaciones"
+                value={`${kpis.roi}%`}
+                icon={<DollarSign className="w-6 h-6" />}
+                trend={{
+                  value: kpis.roiTrend,
+                  label: `${Math.abs(kpis.roiTrend)}% vs per├¡odo anterior`,
+                  color: getTrendColor(kpis.roiTrend),
+                  icon: getTrendIcon(kpis.roiTrend),
+                }}
+                color="amber"
+              />
+            )}
           </div>
         )}
 
@@ -1678,7 +1540,7 @@ export function ManagerDashboard({
           isDemo={isDemo}
           demoVenues={isDemo ? (DEMO_DATA as any).demoVenues : []}
           onVenueSelect={(venue) => {
-            console.log('🗺️ Map selected venue:', venue);
+            console.log('­ƒù║´©Å Map selected venue:', venue);
             setSelectedVenue(venue);
           }}
         />
