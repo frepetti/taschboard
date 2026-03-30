@@ -1273,6 +1273,136 @@ export function ManagerDashboard({
         .eq('categoria', 'accion_btl')
         .order('fecha_activacion_solicitada', { ascending: false });
 
+
+export function ManagerDashboard({
+  readOnly = false,
+  isDemo = false,
+  dateFilter: propDateFilter,
+  setDateFilter: propSetDateFilter,
+  regionFilter: propRegionFilter,
+  setRegionFilter: propSetRegionFilter,
+  productId = null
+}: ManagerDashboardProps) {
+  const [inspections, setInspections] = useState<any[]>([]);
+  const [kpis, setKpis] = useState<any>(null);
+  const [activations, setActivations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Internal state for uncontrolled mode
+  const [internalDateFilter, setInternalDateFilter] = useState('6M');
+  const [internalRegionFilter, setInternalRegionFilter] = useState('all');
+
+  // Use props if available (Controlled), else use internal state (Uncontrolled)
+  const dateFilter = propDateFilter !== undefined ? propDateFilter : internalDateFilter;
+  const setDateFilter = propSetDateFilter || setInternalDateFilter;
+
+  const regionFilter = propRegionFilter !== undefined ? propRegionFilter : internalRegionFilter;
+  const setRegionFilter = propSetRegionFilter || setInternalRegionFilter;
+
+  const [selectedVenue, setSelectedVenue] = useState<any>(null);
+  const [regions, setRegions] = useState<Region[]>([]);
+
+  useEffect(() => {
+    loadRegions();
+  }, []);
+
+  useEffect(() => {
+    if (isDemo) {
+      // Usar datos de demo
+      setKpis(DEMO_DATA.kpis);
+      setInspections(DEMO_DATA.inspections);
+      setActivations(DEMO_DATA.activations);
+      setLoading(false);
+    } else {
+      loadDashboardData();
+    }
+  }, [dateFilter, regionFilter, isDemo, productId]);
+
+  const loadRegions = async () => {
+    try {
+      const { data } = await supabase
+        .from('btl_regiones')
+        .select('id, nombre')
+        .order('nombre');
+
+      if (data) {
+        setRegions(data);
+      }
+    } catch (error) {
+      console.error('Error loading regions:', error);
+    }
+  };
+
+  // Admin View Logic
+  const { dbRole } = useAuth();
+  const [allVenues, setAllVenues] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (dbRole === 'admin') {
+      loadAllVenues();
+    }
+  }, [dbRole, regionFilter]); // Reload if region changes
+
+  const loadAllVenues = async () => {
+    try {
+      let query = supabase
+        .from('btl_puntos_venta')
+        .select('*')
+        .order('nombre');
+
+      if (regionFilter !== 'all') {
+        query = query.eq('region_id', regionFilter);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setAllVenues(data || []);
+    } catch (err) {
+      console.error('Error loading all venues for admin:', err);
+    }
+  };
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      // 1. Cargar Inspecciones
+      let inspectionsQuery = supabase
+        .from('btl_inspecciones')
+        .select('*, btl_puntos_venta!btl_inspecciones_punto_venta_id_fkey(id, nombre, region_id)')
+        .order('fecha_inspeccion', { ascending: false })
+        .limit(100);
+
+      if (regionFilter !== 'all') {
+        inspectionsQuery = inspectionsQuery.eq('btl_puntos_venta.region_id', regionFilter);
+      }
+
+      if (productId) {
+        inspectionsQuery = inspectionsQuery.eq('producto_id', productId);
+      }
+
+      const date = new Date();
+      if (dateFilter === '1M') date.setDate(date.getDate() - 30);
+      else if (dateFilter === '3M') date.setDate(date.getDate() - 90);
+      else if (dateFilter === '6M') date.setDate(date.getDate() - 180);
+      else if (dateFilter === '1Y') date.setDate(date.getDate() - 365);
+      else if (dateFilter === 'YTD') date.setMonth(0, 1); // Jan 1st of current year
+
+      if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no está en el state inicial
+        inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
+      }
+
+      const { data: inspectionsData, error: inspectionsError } = await inspectionsQuery;
+      if (inspectionsError) throw inspectionsError;
+
+      setInspections(inspectionsData || []);
+
+      // 2. Cargar Tickets de Activación BTL (Todos los estados)
+      let ticketsQuery = supabase
+        .from('btl_reportes')
+        .select('*, btl_puntos_venta!btl_reportes_punto_venta_id_fkey(id, nombre, region_id)')
+        .eq('categoria', 'accion_btl')
+        .order('fecha_activacion_solicitada', { ascending: false });
+
       if (regionFilter !== 'all') {
         ticketsQuery = ticketsQuery.eq('btl_puntos_venta.region_id', regionFilter);
       }
@@ -1288,10 +1418,9 @@ export function ManagerDashboard({
         if (str === 'en_progreso' || str === 'en progreso' || str === 'active' || str === 'en_curso') return 'active';
         return 'scheduled'; // 'abierto' u otros
       };
-// removed lines
-// removed lines
-// removed lines
 
+      // IMPORTANTE: Declarar currentInspections ANTES de usarlo en el .map() de ticketsData
+      const currentInspections = (inspectionsData || []) as any[];
 
       const allActivations = (ticketsData || [])
         .map((t: any) => {
@@ -1367,7 +1496,7 @@ export function ManagerDashboard({
       else if (dateFilter === '1Y') previousStartDate.setDate(startDate.getDate() - 365);
       else if (dateFilter === 'YTD') previousStartDate.setFullYear(startDate.getFullYear() - 1);
 
-      const currentInspections = (inspectionsData || []) as any[];
+      // currentInspections ya fue declarado arriba (antes del .map de ticketsData)
 
       const totalVenues = new Set(currentInspections.map((i: any) => i.punto_venta_id)).size;
       const avgCompliance = currentInspections.length > 0
