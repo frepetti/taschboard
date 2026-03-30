@@ -436,10 +436,19 @@ function TrainingForm({
   onSave: (training: Training) => void;
   onClose: () => void;
 }) {
-  const [formData, setFormData] = useState(training);
+  const [formData, setFormData] = useState<Training>(training);
+
+  const dateError = (() => {
+    if (!formData.fecha_inicio || !formData.fecha_fin) return null;
+    const start = new Date(formData.fecha_inicio);
+    const end = new Date(formData.fecha_fin);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    return end < start ? 'La Fecha Fin no puede ser anterior a la Fecha de Inicio.' : null;
+  })();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (dateError) return;
     onSave(formData);
   };
 
@@ -545,44 +554,7 @@ function TrainingForm({
             </div>
 
             {/* Programación */}
-            <div>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-amber-400" />
-                Programación
-              </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Fecha Inicio *</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={formData.fecha_inicio}
-                    onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Fecha Fin</label>
-                  <input
-                    type="datetime-local"
-                    value={formData.fecha_fin || ''}
-                    onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-300 text-sm mb-2">Duración (horas)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={formData.duracion_horas ?? 0}
-                    onChange={(e) => setFormData({ ...formData, duracion_horas: Number(e.target.value) })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                  />
-                </div>
-              </div>
-            </div>
+            <TrainingScheduleSection formData={formData} setFormData={setFormData} />
 
             {/* Ubicación */}
             <div>
@@ -641,30 +613,42 @@ function TrainingForm({
                 <div>
                   <label className="block text-slate-300 text-sm mb-2">Cupo Máximo</label>
                   <input
-                    type="number"
-                    min="1"
-                    value={formData.cupo_maximo ?? 0}
-                    onChange={(e) => setFormData({ ...formData, cupo_maximo: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.cupo_maximo ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, cupo_maximo: val === '' ? 0 : parseInt(val) || 0 });
+                    }}
+                    placeholder="0"
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-300 text-sm mb-2">Cupo Mínimo</label>
                   <input
-                    type="number"
-                    min="1"
-                    value={formData.cupo_minimo ?? 0}
-                    onChange={(e) => setFormData({ ...formData, cupo_minimo: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.cupo_minimo ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, cupo_minimo: val === '' ? 0 : parseInt(val) || 0 });
+                    }}
+                    placeholder="0"
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-300 text-sm mb-2">Asistencia Esperada</label>
                   <input
-                    type="number"
-                    min="0"
-                    value={formData.asistencia_esperada ?? 0}
-                    onChange={(e) => setFormData({ ...formData, asistencia_esperada: Number(e.target.value) })}
+                    type="text"
+                    inputMode="numeric"
+                    value={formData.asistencia_esperada ?? ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({ ...formData, asistencia_esperada: val === '' ? 0 : parseInt(val) || 0 });
+                    }}
+                    placeholder="0"
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
                 </div>
@@ -710,13 +694,131 @@ function TrainingForm({
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+              disabled={!!dateError}
+              className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
               Guardar
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sección Programación: fecha + hora separadas, validación de rango ───────
+function TrainingScheduleSection({
+  formData,
+  setFormData,
+}: {
+  formData: Training;
+  setFormData: React.Dispatch<React.SetStateAction<Training>>;
+}) {
+  // Extrae YYYY-MM-DD de un ISO/datetime-local string
+  const toDatePart = (iso: string | null | undefined): string => {
+    if (!iso) return '';
+    return iso.slice(0, 10);
+  };
+
+  // Extrae HH:mm de un ISO/datetime-local string
+  const toTimePart = (iso: string | null | undefined): string => {
+    if (!iso) return '';
+    const t = iso.indexOf('T');
+    if (t === -1) return '';
+    return iso.slice(t + 1, t + 6);
+  };
+
+  const startDate = toDatePart(formData.fecha_inicio);
+  const startTime = toTimePart(formData.fecha_inicio);
+  const endDate = toDatePart(formData.fecha_fin);
+
+  const dateError = (() => {
+    if (!formData.fecha_inicio || !formData.fecha_fin) return null;
+    const start = new Date(formData.fecha_inicio);
+    const end = new Date(formData.fecha_fin);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    return end < start ? 'La Fecha Fin no puede ser anterior a la Fecha de Inicio.' : null;
+  })();
+
+  const buildIso = (date: string, time: string): string => {
+    if (!date) return '';
+    return time ? `${date}T${time}:00` : `${date}T00:00:00`;
+  };
+
+  return (
+    <div>
+      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+        <Calendar className="w-5 h-5 text-amber-400" />
+        Programación
+      </h3>
+
+      {/* Fila 1: Fecha + Horario de Inicio */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-slate-300 text-sm mb-2">Fecha Inicio *</label>
+          <input
+            type="date"
+            required
+            value={startDate}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, fecha_inicio: buildIso(e.target.value, startTime) }))
+            }
+            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+          />
+        </div>
+        <div>
+          <label className="block text-slate-300 text-sm mb-2">Horario de Inicio</label>
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, fecha_inicio: buildIso(startDate, e.target.value) }))
+            }
+            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+          />
+        </div>
+      </div>
+
+      {/* Fila 2: Fecha Fin + Duración */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-slate-300 text-sm mb-2">Fecha Fin</label>
+          <input
+            type="date"
+            value={endDate}
+            min={startDate || undefined}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                fecha_fin: e.target.value ? buildIso(e.target.value, '23:59') : null,
+              }))
+            }
+            className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none focus:border-amber-500/50 ${
+              dateError ? 'border-red-500/70' : 'border-slate-700/50'
+            }`}
+          />
+          {dateError && (
+            <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              {dateError}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="block text-slate-300 text-sm mb-2">Duración (horas)</label>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={formData.duracion_horas ?? ''}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFormData((prev) => ({ ...prev, duracion_horas: val === '' ? 0 : parseFloat(val) || 0 }));
+            }}
+            placeholder="0"
+            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+          />
+        </div>
       </div>
     </div>
   );
