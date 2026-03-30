@@ -131,6 +131,36 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
     return t('tickets.prio_low');
   };
 
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case 'general': return 'Soporte General';
+      case 'capacitacion': return 'Capacitación';
+      case 'accion_btl': return 'Acción BTL';
+      case 'material_pop': return 'Material POP';
+      default: return 'Solicitud';
+    }
+  };
+
+  const getCategoryStyle = (cat: string) => {
+    switch (cat) {
+      case 'general': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
+      case 'capacitacion': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      case 'accion_btl': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+      case 'material_pop': return 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30';
+      default: return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+    }
+  };
+
+  const getCategoryIcon = (cat: string) => {
+    switch (cat) {
+      case 'general': return '🎫 ';
+      case 'capacitacion': return '🎓 ';
+      case 'accion_btl': return '🚀 ';
+      case 'material_pop': return '📦 ';
+      default: return '📋 ';
+    }
+  };
+
   const getStatusLabel = (s: string) => {
     switch (s) {
       case 'abierto': return t('tickets.status_open');
@@ -195,11 +225,9 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${ticket.type === 'ticket'
-                      ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                      : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                    }`}>
-                    {ticket.type === 'ticket' ? '🎫 ' + t('tickets.ticket') : '📋 ' + t('tickets.request')}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryStyle(ticket.category)}`}>
+                    {getCategoryIcon(ticket.category)}
+                    {getCategoryLabel(ticket.category)}
                   </span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(ticket.priority)
                       ? 'bg-red-500/20 text-red-400 border border-red-500/30'
@@ -268,11 +296,9 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                 <div>
                   <h3 className="text-2xl text-white font-semibold mb-2">{selectedTicket.subject}</h3>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedTicket.type === 'ticket'
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                      }`}>
-                      {selectedTicket.type === 'ticket' ? t('tickets.ticket') : t('tickets.request')}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryStyle(selectedTicket.category)}`}>
+                      {getCategoryIcon(selectedTicket.category)}
+                      {getCategoryLabel(selectedTicket.category)}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(selectedTicket.priority)
                         ? 'bg-red-500/20 text-red-400 border border-red-500/30'
