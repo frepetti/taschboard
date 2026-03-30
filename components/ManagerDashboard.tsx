@@ -1328,7 +1328,22 @@ export function ManagerDashboard({
             impact: impact,
             status: getTicketStatus(t.estado),
             rawDate: new Date(t.fecha_activacion_solicitada || t.created_at),
-            numericImpact
+            numericImpact,
+            // Campos enriquecidos desde btl_reportes
+            asunto: t.asunto || null,
+            titulo: t.titulo || null,
+            descripcion: t.descripcion || null,
+            tipo_activacion: t.tipo_activacion || null,
+            notas: null, // btl_reportes no tiene campo notas; se usa descripcion
+            ubicacion: t.btl_puntos_venta?.nombre || null,
+            presupuesto: null, // btl_reportes no tiene presupuesto; viene de btl_acciones
+            // Campos adicionales de activación BTL
+            productos_involucrados: t.productos_involucrados || null,
+            tipo_material: t.tipo_material || null,
+            cantidad_solicitada: t.cantidad_solicitada || null,
+            marca_producto: t.marca_producto || null,
+            fecha_entrega_requerida: t.fecha_entrega_requerida || null,
+            prioridad: t.prioridad || null,
           };
         })
         .sort((a: any, b: any) => b.rawDate.getTime() - a.rawDate.getTime());
