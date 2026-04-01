@@ -63,6 +63,8 @@ export function OpportunityMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  // Ref para acceder al valor actual de filteredLocations dentro del useEffect del mapa (evita closure stale)
+  const filteredLocationsRef = useRef<any[]>([]);
 
   // Inject Leaflet CSS
   useEffect(() => {
@@ -471,8 +473,8 @@ export function OpportunityMap({
 
         mapInstanceRef.current = map;
 
-        // Initial markers render
-        renderMarkers();
+        // Initial markers render — usar ref para obtener el valor actual
+        renderMarkers(filteredLocationsRef.current);
       } catch (error) {
         console.error("Error initializing map:", error);
       }
@@ -487,8 +489,8 @@ export function OpportunityMap({
     };
   }, []);
 
-  // Update Markers
-  const renderMarkers = () => {
+  // Update Markers — recibe locations como parámetro para evitar closure stale
+  const renderMarkers = (locations: typeof filteredLocations) => {
     if (!mapInstanceRef.current) return;
 
     // Clear existing markers
@@ -496,7 +498,7 @@ export function OpportunityMap({
     markersRef.current = [];
 
     // Add new markers
-    filteredLocations.forEach((loc) => {
+    locations.forEach((loc) => {
       const marker = L.marker([loc.lat, loc.lng], {
         icon: createCustomIcon(loc.type),
       });
@@ -511,9 +513,10 @@ export function OpportunityMap({
     });
   };
 
-  // Update markers when filteredLocations changes
+  // Re-renderizar markers cada vez que cambie filteredLocations
   useEffect(() => {
-    renderMarkers();
+    filteredLocationsRef.current = filteredLocations;
+    renderMarkers(filteredLocations);
   }, [filteredLocations]);
 
   return (

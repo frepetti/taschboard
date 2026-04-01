@@ -29,7 +29,11 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
             <Pie data={demoData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
               {demoData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
             </Pie>
-            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }} />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
+              labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+              itemStyle={{ color: '#e2e8f0' }}
+            />
           </PieChart>
         </ResponsiveContainer>
         <div className="space-y-2 mt-4">
@@ -150,6 +154,8 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
               </Pie>
               <Tooltip
                 contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
+                labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                itemStyle={{ color: '#e2e8f0' }}
                 formatter={(value: any, name: any) => [`${value}%`, name]}
               />
             </PieChart>

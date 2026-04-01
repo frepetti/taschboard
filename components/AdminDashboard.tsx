@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Ticket, BarChart3, RefreshCw, Loader2, MapPin, Package, UserCheck, GraduationCap, Map } from 'lucide-react';
+import { Users, Ticket, BarChart3, RefreshCw, Loader2, MapPin, Package, UserCheck, GraduationCap, Map, Settings } from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { TicketManagement } from './TicketManagement';
 import { AdminStats } from './AdminStats';
@@ -9,6 +9,7 @@ import { ProductManagement } from './ProductManagement';
 import { PendingUsersManagement } from './PendingUsersManagement';
 import { TrainingManagement } from './TrainingManagement';
 import { RegionManager } from './RegionManager';
+import { SettingsManagement } from './SettingsManagement';
 import { supabase } from '../utils/supabase/client';
 
 interface AdminDashboardProps {
@@ -18,7 +19,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'tickets' | 'venues' | 'regions' | 'products' | 'pending' | 'trainings'>(
+  const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'tickets' | 'venues' | 'regions' | 'products' | 'pending' | 'trainings' | 'settings'>(
     initialTicketId ? 'tickets' : 'stats'
   );
   const [productSubTab, setProductSubTab] = useState<'catalog' | 'assignment'>('catalog');
@@ -246,6 +247,16 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
               <GraduationCap className="w-5 h-5" />
               <span>Capacitaciones</span>
             </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'settings'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span>Ajustes</span>
+            </button>
           </div>
         </div>
 
@@ -316,6 +327,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
           )}
           {activeTab === 'pending' && <PendingUsersManagement session={session} onUpdate={() => { loadStats(); loadPendingCount(); }} />}
           {activeTab === 'trainings' && <TrainingManagement session={session} />}
+          {activeTab === 'settings' && <SettingsManagement />}
         </>
       )}
     </main>

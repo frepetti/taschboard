@@ -6,8 +6,8 @@ import { supabase } from './utils/supabase/client';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { LanguageProvider } from './utils/LanguageContext';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { Loader2, LogOut } from 'lucide-react';
-import { Toaster } from 'sonner';
+import { Loader2, LogOut, Key, X } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
 
 // ============================================
 // ULTRA-AGGRESSIVE EXTENSION BLOCKING
@@ -548,6 +548,39 @@ function EmailConfirmationHandler() {
 
 // Landing Page Component
 function LandingPage() {
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoKeyword, setDemoKeyword] = useState('');
+  const [isVerifyingDemo, setIsVerifyingDemo] = useState(false);
+
+  const handleDemoAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!demoKeyword.trim()) {
+      toast.error('Por favor, ingresa la palabra clave');
+      return;
+    }
+
+    setIsVerifyingDemo(true);
+    try {
+      // @ts-ignore - Supabase type definition not updated yet with the new RPC
+      const { data, error } = await supabase.rpc('validate_demo_keyword', {
+        keyword_text: demoKeyword.trim()
+      });
+
+      if (error) throw error;
+
+      if (data === true) {
+        window.location.href = '/?mode=demo';
+      } else {
+        toast.error('Acceso denegado. La palabra clave es incorrecta.');
+      }
+    } catch (err: any) {
+      console.error('Error verifying demo keyword:', err);
+      toast.error('Error al verificar el acceso al demo.');
+    } finally {
+      setIsVerifyingDemo(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 relative">
       <div className="absolute top-4 right-4 z-10">
@@ -564,7 +597,7 @@ function LandingPage() {
         {/* Demo Button */}
         <div className="max-w-2xl mx-auto mb-8">
           <button
-            onClick={() => window.location.href = '/?mode=demo'}
+            onClick={() => setShowDemoModal(true)}
             className="w-full block group bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 rounded-xl p-6 shadow-2xl transition-all hover:scale-105"
           >
             <div className="flex items-center justify-between">
@@ -646,6 +679,77 @@ function LandingPage() {
           </button>
         </div>
       </div>
+
+      {/* Demo Access Modal */}
+      {showDemoModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/20 rounded-lg">
+                  <Key className="w-5 h-5 text-amber-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Acceso al Dashboard Demo</h3>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowDemoModal(false);
+                  setDemoKeyword('');
+                }}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleDemoAccess} className="p-6">
+              <p className="text-slate-400 text-sm mb-6">
+                Ingresa la palabra clave proporcionada para acceder a la demostración interactiva del sistema.
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Palabra Clave
+                </label>
+                <input
+                  type="password"
+                  value={demoKeyword}
+                  onChange={(e) => setDemoKeyword(e.target.value)}
+                  placeholder="••••••••"
+                  autoFocus
+                  className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 mt-8">
+                <button
+                  type="button"
+                  onClick={() => setShowDemoModal(false)}
+                  className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isVerifyingDemo || !demoKeyword.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isVerifyingDemo ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Verificando...
+                    </>
+                  ) : (
+                    'Acceder'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

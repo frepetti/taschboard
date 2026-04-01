@@ -797,3 +797,63 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE O
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated;
+
+-- ==============================================================================
+-- 15. RPC: MODO DEMO SECURE KEYWORD
+-- ==============================================================================
+
+-- Función para actualizar la palabra clave del modo demo
+CREATE OR REPLACE FUNCTION set_demo_keyword(new_keyword TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Solo admins pueden hacer esto
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Acceso denegado: Solo admins pueden cambiar la clave del modo demo';
+  END IF;
+
+  -- Upsert configuration en btl_config
+  INSERT INTO btl_config (clave, valor, descripcion)
+  VALUES (
+    'demo_settings', 
+    jsonb_build_object('access_hash', crypt(new_keyword, gen_salt('bf'))),
+    'Configuración de acceso para el dashboard Demo'
+  )
+  ON CONFLICT (clave) 
+  DO UPDATE SET 
+    valor = jsonb_set(
+      btl_config.valor, 
+      '{access_hash}', 
+      to_jsonb(crypt(new_keyword, gen_salt('bf')))
+    ),
+    updated_at = NOW();
+
+  RETURN TRUE;
+END;
+$$;
+
+-- Función para validar la palabra clave usando el hash
+CREATE OR REPLACE FUNCTION validate_demo_keyword(keyword_text TEXT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  stored_hash TEXT;
+BEGIN
+  -- Extraer el hash almacenado en btl_config bajo la clave 'demo_settings'
+  SELECT valor->>'access_hash' INTO stored_hash
+  FROM btl_config
+  WHERE clave = 'demo_settings';
+
+  IF stored_hash IS NULL THEN
+    -- Si no hay hash configurado, por defecto denegado por seguridad
+    RETURN FALSE;
+  END IF;
+
+  -- Comparamos el hash usando pgcrypto
+  RETURN stored_hash = crypt(keyword_text, stored_hash);
+END;
+$$;
