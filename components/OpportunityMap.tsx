@@ -462,7 +462,7 @@ export function OpportunityMap({
           .getContainer()
           ?.style.setProperty(
             "filter",
-            "brightness(0.9) sepia(0.1) contrast(0.7)",
+            "brightness(0.82) sepia(0.12) contrast(1.15)",
           );
 
         L.control

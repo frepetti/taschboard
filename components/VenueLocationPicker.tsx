@@ -107,7 +107,7 @@ export function VenueLocationPicker({
         // Mismo filtro que OpportunityMap
         tileLayer
           .getContainer()
-          ?.style.setProperty('filter', 'brightness(0.9) sepia(0.1) contrast(0.7)');
+          ?.style.setProperty('filter', 'brightness(0.82) sepia(0.12) contrast(1.15)');
 
         // Pin arrastrable
         const icon = L.divIcon({
