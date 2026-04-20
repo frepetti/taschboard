@@ -694,7 +694,7 @@ const DEMO_DATA = {
     },
     {
         "id": "act-5",
-        "venue": "Bodeg├│n del Sur",
+        "venue": "Bodegón del Sur",
         "date": "2025-04-11",
         "type": "Completed",
         "impact": "+34%",
@@ -1003,7 +1003,7 @@ export function ManagerDashboard({
             onClick={() => setDateFilter('6M')}
           />
           <FilterChip
-            label="1 A├▒o"
+            label="1 Año"
             active={dateFilter === '1Y'}
             onClick={() => setDateFilter('1Y')}
           />
@@ -1048,7 +1048,7 @@ export function ManagerDashboard({
               icon={<Store className="w-6 h-6" />}
               trend={{
                 value: kpis.visitedVenuesTrend,
-                label: `${Math.abs(kpis.visitedVenuesTrend)}% vs per├¡odo anterior`,
+                label: `${Math.abs(kpis.visitedVenuesTrend)}% vs período anterior`,
                 color: getTrendColor(kpis.visitedVenuesTrend),
                 icon: getTrendIcon(kpis.visitedVenuesTrend),
               }}
@@ -1060,7 +1060,7 @@ export function ManagerDashboard({
               icon={<Target className="w-6 h-6" />}
               trend={{
                 value: kpis.complianceTrend,
-                label: `${Math.abs(kpis.complianceTrend)}% vs per├¡odo anterior`,
+                label: `${Math.abs(kpis.complianceTrend)}% vs período anterior`,
                 color: getTrendColor(kpis.complianceTrend),
                 icon: getTrendIcon(kpis.complianceTrend),
               }}
@@ -1072,7 +1072,7 @@ export function ManagerDashboard({
               icon={<Users className="w-6 h-6" />}
               trend={{
                 value: kpis.activationsTrend,
-                label: kpis.activationsTrend !== 0 ? `${Math.abs(kpis.activationsTrend)}% vs per├¡odo anterior` : 'Sin datos anteriores',
+                label: kpis.activationsTrend !== 0 ? `${Math.abs(kpis.activationsTrend)}% vs período anterior` : 'Sin datos anteriores',
                 color: getTrendColor(kpis.activationsTrend),
                 icon: getTrendIcon(kpis.activationsTrend),
               }}
@@ -1086,7 +1086,7 @@ export function ManagerDashboard({
                 icon={<DollarSign className="w-6 h-6" />}
                 trend={{
                   value: kpis.roiTrend,
-                  label: `${Math.abs(kpis.roiTrend)}% vs per├¡odo anterior`,
+                  label: `${Math.abs(kpis.roiTrend)}% vs período anterior`,
                   color: getTrendColor(kpis.roiTrend),
                   icon: getTrendIcon(kpis.roiTrend),
                 }}

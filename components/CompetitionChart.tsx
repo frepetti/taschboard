@@ -47,35 +47,57 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
   const competitorMap = new Map<string, number>();
 
   for (const insp of inspections) {
-    // Try competitor_presence field (from DEMO_DATA structure) or new JSONB structure
-    let comp = insp.competitor_presence || insp.competidor_principal || insp.main_competitor;
+    if (insp.detalles?.competitors && Array.isArray(insp.detalles.competitors) && insp.detalles.competitors.length > 0) {
+      insp.detalles.competitors.forEach((c: any) => {
+        const comp = c.name;
+        if (comp && typeof comp === 'string' && comp.trim() && comp.trim() !== 'Ninguno' && comp.trim() !== 'N/A') {
+          const key = comp.trim();
+          competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
+        }
+      });
+    } else {
+      // Try competitor_presence field (from DEMO_DATA structure) or new JSONB structure
+      let comp = insp.competitor_presence || insp.competidor_principal || insp.main_competitor;
 
-    // Check in detalles (new structure)
-    if (!comp && insp.detalles?.mainCompetitor) {
-      comp = insp.detalles.mainCompetitor;
-    }
+      // Check in detalles (new structure)
+      if (!comp && insp.detalles?.mainCompetitor) {
+        comp = insp.detalles.mainCompetitor;
+      }
 
-    if (comp && typeof comp === 'string' && comp.trim() && comp !== 'Ninguno' && comp !== 'N/A') {
-      const key = comp.trim();
-      competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
+      if (comp && typeof comp === 'string' && comp.trim() && comp !== 'Ninguno' && comp !== 'N/A') {
+        const key = comp.trim();
+        competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
+      }
     }
   }
 
   // Also aggregate by competitor visibility level if no named competitors
   const visibilityMap = { Alta: 0, Media: 0, Baja: 0 };
   for (const insp of inspections) {
-    let vis = insp.presencia_competencia || insp.competitor_visibility;
+    if (insp.detalles?.competitors && Array.isArray(insp.detalles.competitors) && insp.detalles.competitors.length > 0) {
+      insp.detalles.competitors.forEach((c: any) => {
+        const vis = c.visibility;
+        if (vis) {
+          const v = vis.toLowerCase();
+          if (v === 'alta' || v === 'high') visibilityMap.Alta++;
+          else if (v === 'media' || v === 'medium') visibilityMap.Media++;
+          else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
+        }
+      });
+    } else {
+      let vis = insp.presencia_competencia || insp.competitor_visibility;
 
-    // Check in detalles
-    if (!vis && insp.detalles?.competitorVisibility) {
-      vis = insp.detalles.competitorVisibility;
-    }
+      // Check in detalles
+      if (!vis && insp.detalles?.competitorVisibility) {
+        vis = insp.detalles.competitorVisibility;
+      }
 
-    if (vis) {
-      const v = vis.toLowerCase();
-      if (v === 'alta' || v === 'high') visibilityMap.Alta++;
-      else if (v === 'media' || v === 'medium') visibilityMap.Media++;
-      else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
+      if (vis) {
+        const v = vis.toLowerCase();
+        if (v === 'alta' || v === 'high') visibilityMap.Alta++;
+        else if (v === 'media' || v === 'medium') visibilityMap.Media++;
+        else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
+      }
     }
   }
 
