@@ -94,15 +94,20 @@ export function VenueLocationPicker({
           scrollWheelZoom: true,
         }).setView(initialCenter, initialZoom);
 
-        // CartoDB Dark Tiles — igual que OpportunityMap
-        L.tileLayer(
-          'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        // CartoDB Light Tiles + CSS filter — igual que OpportunityMap
+        const tileLayer = L.tileLayer(
+          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
           {
             attribution: '© OpenStreetMap © CARTO',
             subdomains: 'abcd',
             maxZoom: 20,
           }
         ).addTo(map);
+
+        // Mismo filtro que OpportunityMap
+        tileLayer
+          .getContainer()
+          ?.style.setProperty('filter', 'brightness(0.9) sepia(0.1) contrast(0.7)');
 
         // Pin arrastrable
         const icon = L.divIcon({

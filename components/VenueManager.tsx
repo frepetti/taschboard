@@ -361,7 +361,7 @@ export function VenueManager({ session }: VenueManagerProps) {
       {/* Edit Modal */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden">
+        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-slate-800">
               <h3 className="text-xl text-white font-bold">{currentVenue.id ? 'Editar Venue' : 'Nuevo Venue'}</h3>
               <button
@@ -372,7 +372,7 @@ export function VenueManager({ session }: VenueManagerProps) {
               </button>
             </div>
 
-            <div className="p-6 space-y-5 max-h-[85vh] overflow-y-auto">
+            <div className="flex-1 min-h-0 p-6 space-y-5 overflow-y-auto">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-2">
