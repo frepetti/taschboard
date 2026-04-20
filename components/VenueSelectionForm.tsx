@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, MapPin, Plus } from 'lucide-react';
 import { getVenues, createVenue } from '../utils/api-direct';
 import { useLanguage } from '../utils/LanguageContext';
+import { VenueLocationPicker } from './VenueLocationPicker';
 
 interface VenueSelectionFormProps {
   onVenueSelect: (venue: any) => void;
@@ -14,6 +15,8 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
   const [newVenueName, setNewVenueName] = useState('');
   const [newVenueAddress, setNewVenueAddress] = useState('');
   const [newVenueChannel, setNewVenueChannel] = useState('Bar');
+  const [newVenueLatitud, setNewVenueLatitud] = useState<number | null>(null);
+  const [newVenueLongitud, setNewVenueLongitud] = useState<number | null>(null);
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingVenue, setCreatingVenue] = useState(false);
@@ -77,7 +80,9 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
           nombre: newVenueName,
           direccion: newVenueAddress,
           tipo: newVenueChannel,
-          ciudad: 'New York',
+          ciudad: 'Sin especificar',
+          latitud: newVenueLatitud ?? undefined,
+          longitud: newVenueLongitud ?? undefined,
         };
         const createdVenue = await createVenue(newVenue);
         onVenueSelect({
@@ -115,13 +120,19 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">{t('map.address')} *</label>
-              <input
-                type="text"
-                value={newVenueAddress}
-                onChange={(e) => setNewVenueAddress(e.target.value)}
+              <VenueLocationPicker
+                address={newVenueAddress}
+                latitud={newVenueLatitud}
+                longitud={newVenueLongitud}
+                showCoordinateInputs={false}
+                collapsible={true}
+                mapHeight={180}
                 placeholder={t('inspector.enter_address')}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                onChange={(field, value) => {
+                  if (field === 'direccion') setNewVenueAddress(value as string);
+                  else if (field === 'latitud') setNewVenueLatitud(value as number | null);
+                  else if (field === 'longitud') setNewVenueLongitud(value as number | null);
+                }}
               />
             </div>
 

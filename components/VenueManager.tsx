@@ -4,6 +4,7 @@ import { MapPin, Edit2, Trash2, Loader2, Plus, Save, X, Map } from 'lucide-react
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { VenueLocationPicker } from './VenueLocationPicker';
 
 interface VenueManagerProps {
   session: any;
@@ -153,34 +154,44 @@ export function VenueManager({ session }: VenueManagerProps) {
 
   const handleUpdate = async () => {
     try {
-      const updates: any = {
+      const payload: any = {
         nombre: currentVenue.nombre,
         direccion: currentVenue.direccion,
-        ciudad: currentVenue.ciudad, // Antes 'zona'
-        tipo: currentVenue.tipo, // Antes 'canal'
+        ciudad: currentVenue.ciudad,
+        tipo: currentVenue.tipo,
         segmento: currentVenue.segmento,
         potencial_ventas: currentVenue.potencial_ventas,
         contacto_nombre: currentVenue.contacto_nombre,
         contacto_telefono: currentVenue.contacto_telefono,
-
-        // Guardamos solo el ID
-        region_id: currentVenue.region_id || null
+        region_id: currentVenue.region_id || null,
+        latitud: currentVenue.latitud != null && currentVenue.latitud !== '' ? parseFloat(String(currentVenue.latitud)) : null,
+        longitud: currentVenue.longitud != null && currentVenue.longitud !== '' ? parseFloat(String(currentVenue.longitud)) : null,
       };
 
-      const { error } = await supabase
-        .from('btl_puntos_venta')
-        // @ts-ignore
-        .update(updates)
-        .eq('id', currentVenue.id);
+      if (currentVenue.id) {
+        // Update existing
+        const { error } = await supabase
+          .from('btl_puntos_venta')
+          .update(payload)
+          .eq('id', currentVenue.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success('Punto de venta actualizado');
+      } else {
+        // Create new
+        const { error } = await supabase
+          .from('btl_puntos_venta')
+          .insert([payload]);
 
-      toast.success('Punto de venta actualizado');
+        if (error) throw error;
+        toast.success('Punto de venta creado exitosamente');
+      }
+
       setShowEditModal(false);
       loadVenues();
     } catch (error: any) {
-      console.error('Error updating venue:', error);
-      toast.error('Error al actualizar el punto de venta');
+      console.error('Error saving venue:', error);
+      toast.error('Error al guardar el punto de venta');
     }
   };
 
@@ -211,22 +222,34 @@ export function VenueManager({ session }: VenueManagerProps) {
             {venues.length} venues registrados
           </p>
         </div>
-        <button
-          onClick={() => setShowImporter(!showImporter)}
-          className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2 rounded-lg transition-all"
-        >
-          {showImporter ? (
-            <>
-              <MapPin className="w-4 h-4" />
-              Ver Lista de Venues
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4" />
-              Importar desde Excel
-            </>
-          )}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              setCurrentVenue({});
+              setShowEditModal(true);
+            }}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-all border border-slate-700"
+          >
+            <Plus className="w-4 h-4" />
+            Agregar Nuevo
+          </button>
+          <button
+            onClick={() => setShowImporter(!showImporter)}
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2 rounded-lg transition-all"
+          >
+            {showImporter ? (
+              <>
+                <MapPin className="w-4 h-4" />
+                Ver Lista de Venues
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Importar
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Importer */}
@@ -338,9 +361,9 @@ export function VenueManager({ session }: VenueManagerProps) {
       {/* Edit Modal */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden">
+        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <h3 className="text-xl text-white font-bold">Editar Venue</h3>
+              <h3 className="text-xl text-white font-bold">{currentVenue.id ? 'Editar Venue' : 'Nuevo Venue'}</h3>
               <button
                 onClick={() => setShowEditModal(false)}
                 className="text-slate-400 hover:text-white transition-colors"
@@ -349,7 +372,7 @@ export function VenueManager({ session }: VenueManagerProps) {
               </button>
             </div>
 
-            <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            <div className="p-6 space-y-5 max-h-[85vh] overflow-y-auto">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-2">
@@ -387,16 +410,16 @@ export function VenueManager({ session }: VenueManagerProps) {
                 </div>
               </div>
 
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Dirección Completa</label>
-                <input
-                  type="text"
-                  value={currentVenue.direccion || ''}
-                  onChange={(e) => setCurrentVenue({ ...currentVenue, direccion: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
+              {/* Location + Mini-Map */}
+              <VenueLocationPicker
+                address={currentVenue.direccion || ''}
+                latitud={currentVenue.latitud}
+                longitud={currentVenue.longitud}
+                showCoordinateInputs={true}
+                collapsible={false}
+                mapHeight={260}
+                onChange={(field, value) => setCurrentVenue({ ...currentVenue, [field]: value })}
+              />
 
               {/* Classification */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

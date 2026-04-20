@@ -450,7 +450,9 @@ export async function createVenue(venueData: {
   direccion: string;
   tipo: string;
   ciudad?: string;
-  region?: string;
+  region_id?: string;
+  latitud?: number;
+  longitud?: number;
 }): Promise<Venue> {
   console.log('📡 [API Direct] Creating venue...');
 
@@ -463,7 +465,9 @@ export async function createVenue(venueData: {
           direccion: venueData.direccion,
           tipo: venueData.tipo,
           ciudad: venueData.ciudad || 'Sin especificar',
-          region: venueData.region || 'Sin especificar',
+          region_id: venueData.region_id || null,
+          latitud: venueData.latitud ?? null,
+          longitud: venueData.longitud ?? null,
         }] as any)
         .select()
         .single();
