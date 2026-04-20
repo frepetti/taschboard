@@ -177,7 +177,7 @@ export const translations = {
       bottles_month: 'botellas/mes',
       // Checklist items
       staff_knowledge: 'Conocimiento del Staff',
-      certified_bartenders: 'Bartenders Certificados',
+      certified_bartenders: 'Bartenders Capacitados',
       pop_visible: 'Material POP Visible',
       adequate_stock: 'Stock Adecuado',
       shelf_position: 'Posición en Back Bar',

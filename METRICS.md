@@ -47,7 +47,7 @@ Basado en el nivel cualitativo reportado por el inspector.
 #### D. Conocimiento & Advocacy (10%) — `calculateKnowledgeScore()`
 Evalúa la capacitación y predisposición del staff.
 *   **Conocimiento del Staff (40% de este componente):** Nivel 1-10 escalado a 10-100.
-*   **Capacitación (40%):** % de bartenders certificados sobre el total de bartenders.
+*   **Capacitación (40%):** % de bartenders capacitados sobre el total de bartenders.
 *   **Brand Advocacy (20%):**
     *   `Alta / High`: 100 pts
     *   `Media / Medium`: 50 pts

@@ -19,6 +19,43 @@ interface InspectionData {
     stockLevel?: string; // adequate, low, critical
 }
 
+// Perfect Serve answer type: true = cumple, false = no cumple, 'na' = no aplica
+export type PerfectServeAnswer = boolean | 'na';
+
+export interface PerfectServeQuestion {
+    id: string;
+    question: string;
+    required?: boolean;
+}
+
+/**
+ * Calcula el puntaje del checklist Perfect Serve excluyendo ítems marcados como "N/A".
+ *
+ * Regla: Los ítems con respuesta 'na' NO cuentan en el denominador.
+ * Solo se promedian los ítems con respuesta true (cumple) o false (no cumple).
+ *
+ * @param answers - Mapa de id → respuesta (true/false/'na')
+ * @param questions - Array de preguntas configuradas para el producto
+ * @returns Puntaje 0-100. Retorna 100 si todos los ítems son N/A (sin ítems evaluables).
+ *
+ * NOTA: Este score es un indicador adicional mostrado en el formulario de inspección.
+ * NO afecta el Global Score existente (Visibilidad×0.4 + POP×0.3 + Stock×0.2 + Conocimiento×0.1).
+ */
+export const calculatePerfectServeScore = (
+    answers: Record<string, PerfectServeAnswer>,
+    questions: PerfectServeQuestion[]
+): number => {
+    // Ítems aplicables: los que NO están marcados como 'na'
+    const applicable = questions.filter(q => answers[q.id] !== 'na');
+    const denominator = applicable.length;
+
+    // Sin ítems evaluables → puntaje perfecto (no penalizar si no aplica)
+    if (denominator === 0) return 100;
+
+    const numerator = applicable.filter(q => answers[q.id] === true).length;
+    return Math.round((numerator / denominator) * 100);
+};
+
 export const calculateKnowledgeScore = (data: InspectionData): number => {
     // K1: Nivel de Conocimiento (1-10 -> 10-100)
     const k1 = (data.staffKnowledge || 0) * 10;

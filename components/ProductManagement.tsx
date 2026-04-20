@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Plus, Edit2, Trash2, Search, X, Check, Upload, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, Upload, Package, Wine } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { ProductImporter } from './ProductImporter';
@@ -28,6 +28,8 @@ interface Product {
       id: string;
       required: boolean;
     }[];
+    perfect_serve_enabled?: boolean; // undefined = true (backward-compatible)
+    cocktails?: { name: string }[];
   } | null;
   competidores?: string[];
 }
@@ -40,11 +42,13 @@ export function ProductManagement() {
   const [showImporter, setShowImporter] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  // Categorías cargadas dinámicamente desde la DB
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
 
   const emptyProduct: Product = {
     nombre: '',
     marca: '',
-    categoria: 'Cerveza',
+    categoria: '',
     subcategoria: 'Premium',
     sku: '',
     codigo_barras: '',
@@ -57,7 +61,7 @@ export function ProductManagement() {
     descripcion: '',
     activo: true,
     orden_visualizacion: 0,
-    configuracion: { perfect_serve: [] },
+    configuracion: { perfect_serve: [], perfect_serve_enabled: true, cocktails: [] },
     competidores: []
   };
 
@@ -75,6 +79,10 @@ export function ProductManagement() {
 
       if (error) throw error;
       setProducts(data || []);
+
+      // Extraer categorías únicas existentes
+      const cats = [...new Set((data || []).map((p: Product) => p.categoria).filter(Boolean))] as string[];
+      setExistingCategories(cats.sort());
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
@@ -85,19 +93,15 @@ export function ProductManagement() {
   const handleSaveProduct = async (product: Product) => {
     try {
       if (product.id) {
-        // Update
         const { error } = await supabase
           .from('btl_productos')
           .update(product)
           .eq('id', product.id);
-
         if (error) throw error;
       } else {
-        // Insert
         const { error } = await supabase
           .from('btl_productos')
           .insert([product]);
-
         if (error) throw error;
       }
 
@@ -305,6 +309,7 @@ export function ProductManagement() {
       {showForm && editingProduct && (
         <ProductForm
           product={editingProduct}
+          existingCategories={existingCategories}
           onSave={handleSaveProduct}
           onClose={() => {
             setShowForm(false);
@@ -316,58 +321,61 @@ export function ProductManagement() {
   );
 }
 
-// Product Form Component
+// ─── Product Form Component ────────────────────────────────────────────────────
 function ProductForm({
   product,
+  existingCategories,
   onSave,
   onClose
 }: {
   product: Product;
+  existingCategories: string[];
   onSave: (product: Product) => void;
   onClose: () => void;
 }) {
   const [formData, setFormData] = useState<Product>(product);
-  const [activeTab, setActiveTab] = useState<'general' | 'perfect-serve'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'perfect-serve' | 'cocktails'>('general');
   const [newCompetitor, setNewCompetitor] = useState('');
+
+  // Categoría dinámica
+  const [isCustomCategory, setIsCustomCategory] = useState(
+    !!product.categoria && !existingCategories.includes(product.categoria)
+  );
+  const [customCategoryInput, setCustomCategoryInput] = useState(
+    isCustomCategory ? (product.categoria || '') : ''
+  );
+
+  // Cocktail input
+  const [newCocktailName, setNewCocktailName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
 
+  // ─── Competitors ────────────────────────────────────────────────────────────
   const addCompetitor = () => {
     if (!newCompetitor.trim()) return;
     const currentCompetitors = formData.competidores || [];
     if (!currentCompetitors.includes(newCompetitor.trim())) {
-      setFormData({
-        ...formData,
-        competidores: [...currentCompetitors, newCompetitor.trim()]
-      });
+      setFormData({ ...formData, competidores: [...currentCompetitors, newCompetitor.trim()] });
     }
     setNewCompetitor('');
   };
 
   const removeCompetitor = (competitor: string) => {
-    setFormData({
-      ...formData,
-      competidores: (formData.competidores || []).filter(c => c !== competitor)
-    });
+    setFormData({ ...formData, competidores: (formData.competidores || []).filter(c => c !== competitor) });
   };
 
+  // ─── Perfect Serve Questions ────────────────────────────────────────────────
   const addQuestion = () => {
-    const currentConfig = formData.configuracion || { perfect_serve: [] };
+    const currentConfig = formData.configuracion || { perfect_serve: [], perfect_serve_enabled: true, cocktails: [] };
     const currentQuestions = currentConfig.perfect_serve || [];
-    const newQuestion = {
-      id: crypto.randomUUID(),
-      question: '',
-      required: true
-    };
-
     setFormData({
       ...formData,
       configuracion: {
         ...currentConfig,
-        perfect_serve: [...currentQuestions, newQuestion]
+        perfect_serve: [...currentQuestions, { id: crypto.randomUUID(), question: '', required: true }]
       }
     });
   };
@@ -375,30 +383,82 @@ function ProductForm({
   const updateQuestion = (id: string, field: 'question' | 'required', value: string | boolean) => {
     const currentConfig = formData.configuracion || { perfect_serve: [] };
     const currentQuestions = currentConfig.perfect_serve || [];
-
     setFormData({
       ...formData,
       configuracion: {
         ...currentConfig,
-        perfect_serve: currentQuestions.map(q =>
-          q.id === id ? { ...q, [field]: value } : q
-        )
+        perfect_serve: currentQuestions.map(q => q.id === id ? { ...q, [field]: value } : q)
       }
     });
   };
 
   const removeQuestion = (id: string) => {
     const currentConfig = formData.configuracion || { perfect_serve: [] };
-    const currentQuestions = currentConfig.perfect_serve || [];
-
     setFormData({
       ...formData,
       configuracion: {
         ...currentConfig,
-        perfect_serve: currentQuestions.filter(q => q.id !== id)
+        perfect_serve: (currentConfig.perfect_serve || []).filter(q => q.id !== id)
       }
     });
   };
+
+  // Toggle habilitado/deshabilitado del checklist
+  const togglePerfectServeEnabled = (enabled: boolean) => {
+    const currentConfig = formData.configuracion || { perfect_serve: [], cocktails: [] };
+    setFormData({
+      ...formData,
+      configuracion: { ...currentConfig, perfect_serve_enabled: enabled }
+    });
+  };
+
+  const perfectServeEnabled = formData.configuracion?.perfect_serve_enabled !== false;
+
+  // ─── Cocktails ───────────────────────────────────────────────────────────────
+  const addCocktail = () => {
+    if (!newCocktailName.trim()) return;
+    const currentConfig = formData.configuracion || { perfect_serve: [], cocktails: [] };
+    const currentCocktails = currentConfig.cocktails || [];
+    if (currentCocktails.some(c => c.name.toLowerCase() === newCocktailName.trim().toLowerCase())) {
+      toast.error('Este cocktail ya está en la lista');
+      return;
+    }
+    setFormData({
+      ...formData,
+      configuracion: { ...currentConfig, cocktails: [...currentCocktails, { name: newCocktailName.trim() }] }
+    });
+    setNewCocktailName('');
+  };
+
+  const removeCocktail = (name: string) => {
+    const currentConfig = formData.configuracion || { cocktails: [] };
+    setFormData({
+      ...formData,
+      configuracion: { ...currentConfig, cocktails: (currentConfig.cocktails || []).filter(c => c.name !== name) }
+    });
+  };
+
+  // ─── Categoría dinámica ──────────────────────────────────────────────────────
+  const handleCategoryChange = (value: string) => {
+    if (value === '__new__') {
+      setIsCustomCategory(true);
+      setCustomCategoryInput('');
+      setFormData({ ...formData, categoria: '' });
+    } else {
+      setIsCustomCategory(false);
+      setFormData({ ...formData, categoria: value });
+    }
+  };
+
+  const confirmCustomCategory = () => {
+    if (customCategoryInput.trim()) {
+      setFormData({ ...formData, categoria: customCategoryInput.trim() });
+      setIsCustomCategory(false);
+    }
+  };
+
+  // All categories including the current one (so it shows up in the dropdown)
+  const allCategories = [...new Set([...existingCategories, formData.categoria || ''].filter(Boolean))].sort();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -410,53 +470,44 @@ function ProductForm({
               <h2 className="text-2xl text-white font-bold">
                 {formData.id ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
+              <button type="button" onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Tabs */}
             <div className="flex gap-4 border-b border-slate-700/50">
-              <button
-                type="button"
-                onClick={() => setActiveTab('general')}
-                className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === 'general' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'
-                  }`}
-              >
-                Información General
-                {activeTab === 'general' && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('perfect-serve')}
-                className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === 'perfect-serve' ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'
-                  }`}
-              >
-                Perfect Serve
-                {activeTab === 'perfect-serve' && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
-                )}
-              </button>
+              {([
+                { key: 'general', label: 'Información General' },
+                { key: 'perfect-serve', label: 'Perfect Serve' },
+                { key: 'cocktails', label: 'Cocktails' },
+              ] as const).map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === tab.key ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'}`}
+                >
+                  {tab.label}
+                  {activeTab === tab.key && (
+                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Form Content */}
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-            {activeTab === 'general' ? (
+
+            {/* ──── TAB: General ──── */}
+            {activeTab === 'general' && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Marca *</label>
                     <input
-                      type="text"
-                      required
-                      value={formData.marca}
+                      type="text" required value={formData.marca}
                       onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
@@ -464,9 +515,7 @@ function ProductForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">SKU *</label>
                     <input
-                      type="text"
-                      required
-                      value={formData.sku || ''}
+                      type="text" required value={formData.sku || ''}
                       onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                     />
@@ -476,30 +525,55 @@ function ProductForm({
                 <div>
                   <label className="block text-slate-300 text-sm mb-2">Nombre del Producto *</label>
                   <input
-                    type="text"
-                    required
-                    value={formData.nombre}
+                    type="text" required value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                     className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
+                  {/* Categoría dinámica */}
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Categoría</label>
-                    <select
-                      value={formData.categoria || ''}
-                      onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    >
-                      <option>Cerveza</option>
-                      <option>Whisky</option>
-                      <option>Vodka</option>
-                      <option>Ron</option>
-                      <option>Tequila</option>
-                      <option>Gin</option>
-                      <option>Vino</option>
-                    </select>
+                    {isCustomCategory ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          autoFocus
+                          value={customCategoryInput}
+                          onChange={(e) => setCustomCategoryInput(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), confirmCustomCategory())}
+                          placeholder="Nueva categoría..."
+                          className="flex-1 px-3 py-2 bg-slate-800/50 border border-amber-500/50 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={confirmCustomCategory}
+                          className="px-2 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setIsCustomCategory(false); setCustomCategoryInput(''); }}
+                          className="px-2 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={formData.categoria || ''}
+                        onChange={(e) => handleCategoryChange(e.target.value)}
+                        className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      >
+                        <option value="">Seleccionar...</option>
+                        {allCategories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                        <option value="__new__">+ Nueva categoría...</option>
+                      </select>
+                    )}
                   </div>
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Subcategoría</label>
@@ -516,8 +590,7 @@ function ProductForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Presentación</label>
                     <input
-                      type="text"
-                      value={formData.presentacion || ''}
+                      type="text" value={formData.presentacion || ''}
                       onChange={(e) => setFormData({ ...formData, presentacion: e.target.value })}
                       placeholder="355ml, 750ml..."
                       className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
@@ -529,8 +602,7 @@ function ProductForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Color Primario</label>
                     <input
-                      type="color"
-                      value={formData.color_primario || '#000000'}
+                      type="color" value={formData.color_primario || '#000000'}
                       onChange={(e) => setFormData({ ...formData, color_primario: e.target.value })}
                       className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
                     />
@@ -538,8 +610,7 @@ function ProductForm({
                   <div>
                     <label className="block text-slate-300 text-sm mb-2">Color Secundario</label>
                     <input
-                      type="color"
-                      value={formData.color_secundario || '#000000'}
+                      type="color" value={formData.color_secundario || '#000000'}
                       onChange={(e) => setFormData({ ...formData, color_secundario: e.target.value })}
                       className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
                     />
@@ -547,39 +618,21 @@ function ProductForm({
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Objetivo Presencia (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.objetivo_presencia ?? 0}
-                      onChange={(e) => setFormData({ ...formData, objetivo_presencia: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Objetivo Stock (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.objetivo_stock ?? 0}
-                      onChange={(e) => setFormData({ ...formData, objetivo_stock: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-300 text-sm mb-2">Objetivo POP (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.objetivo_pop ?? 0}
-                      onChange={(e) => setFormData({ ...formData, objetivo_pop: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
-                    />
-                  </div>
+                  {[
+                    { label: 'Objetivo Presencia (%)', field: 'objetivo_presencia' },
+                    { label: 'Objetivo Stock (%)', field: 'objetivo_stock' },
+                    { label: 'Objetivo POP (%)', field: 'objetivo_pop' },
+                  ].map(item => (
+                    <div key={item.field}>
+                      <label className="block text-slate-300 text-sm mb-2">{item.label}</label>
+                      <input
+                        type="number" min="0" max="100"
+                        value={(formData as any)[item.field] ?? 0}
+                        onChange={(e) => setFormData({ ...formData, [item.field]: Number(e.target.value) })}
+                        className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 {/* Competitors Section */}
@@ -587,16 +640,14 @@ function ProductForm({
                   <label className="block text-slate-300 text-sm mb-2">Competidores Directos</label>
                   <div className="flex gap-2 mb-3">
                     <input
-                      type="text"
-                      value={newCompetitor}
+                      type="text" value={newCompetitor}
                       onChange={(e) => setNewCompetitor(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCompetitor())}
                       placeholder="Agregar competidor..."
                       className="flex-1 bg-slate-800/50 border border-slate-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500/50"
                     />
                     <button
-                      type="button"
-                      onClick={addCompetitor}
+                      type="button" onClick={addCompetitor}
                       className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
                     >
                       <Plus className="w-5 h-5" />
@@ -607,11 +658,7 @@ function ProductForm({
                     {(formData.competidores || []).map((comp, idx) => (
                       <div key={idx} className="flex items-center gap-1 bg-slate-800 text-slate-300 text-sm px-3 py-1 rounded-full border border-slate-600/50">
                         <span>{comp}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeCompetitor(comp)}
-                          className="text-slate-500 hover:text-red-400 focus:outline-none ml-1"
-                        >
+                        <button type="button" onClick={() => removeCompetitor(comp)} className="text-slate-500 hover:text-red-400 focus:outline-none ml-1">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -622,63 +669,142 @@ function ProductForm({
                   </div>
                 </div>
               </>
-            ) : (
-              // Perfect Serve Tab
+            )}
+
+            {/* ──── TAB: Perfect Serve ──── */}
+            {activeTab === 'perfect-serve' && (
               <div className="space-y-4">
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                  <p className="text-sm text-blue-300">
-                    Define las preguntas de verificación para el Perfect Serve.
-                    Estas aparecerán en el formulario de inspección para este producto.
+                {/* Toggle habilitado/deshabilitado */}
+                <div className="flex items-center justify-between p-4 bg-slate-800/30 border border-slate-700/40 rounded-xl">
+                  <div>
+                    <p className="text-white font-medium text-sm">Habilitar checklist de Perfect Serve</p>
+                    <p className="text-slate-400 text-xs mt-0.5">Si se deshabilita, la sección no aparecerá en el formulario de inspección.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => togglePerfectServeEnabled(!perfectServeEnabled)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${perfectServeEnabled ? 'bg-amber-500' : 'bg-slate-600'}`}
+                  >
+                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${perfectServeEnabled ? 'left-7' : 'left-1'}`} />
+                  </button>
+                </div>
+
+                {perfectServeEnabled ? (
+                  <>
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                      <p className="text-sm text-blue-300">
+                        Define las preguntas de verificación para el Perfect Serve.
+                        Estas aparecerán en el formulario de inspección para este producto.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {(formData.configuracion?.perfect_serve || []).map((q, idx) => (
+                        <div key={q.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 flex gap-3 items-start group">
+                          <div className="pt-3 text-slate-500 text-xs font-mono">{idx + 1}</div>
+                          <div className="flex-1 space-y-2">
+                            <input
+                              type="text" value={q.question}
+                              onChange={(e) => updateQuestion(q.id, 'question', e.target.value)}
+                              placeholder="Ej: ¿Se sirve en copa balón?"
+                              className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-md text-white text-sm focus:outline-none focus:border-amber-500/50"
+                            />
+                            <label className="flex items-center gap-2 cursor-pointer w-fit">
+                              <input
+                                type="checkbox" checked={q.required}
+                                onChange={(e) => updateQuestion(q.id, 'required', e.target.checked)}
+                                className="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500/50"
+                              />
+                              <span className="text-xs text-slate-400">Requerido (cuenta para el puntaje)</span>
+                            </label>
+                          </div>
+                          <button
+                            type="button" onClick={() => removeQuestion(q.id)}
+                            className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+
+                      {(formData.configuracion?.perfect_serve || []).length === 0 && (
+                        <div className="text-center py-8 text-slate-500 text-sm italic border border-dashed border-slate-700/50 rounded-lg">
+                          No hay preguntas configuradas. Se usarán las preguntas por defecto.
+                        </div>
+                      )}
+
+                      <button
+                        type="button" onClick={addQuestion}
+                        className="w-full py-2 border-2 border-dashed border-slate-700 hover:border-amber-500/50 text-slate-400 hover:text-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Agregar Pregunta
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-10 text-slate-500 flex flex-col items-center gap-3">
+                    <Package className="w-10 h-10 text-slate-600" />
+                    <p className="text-sm">El checklist de Perfect Serve está deshabilitado para este producto.</p>
+                    <p className="text-xs text-slate-600">Activalo con el toggle de arriba para configurar preguntas.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ──── TAB: Cocktails ──── */}
+            {activeTab === 'cocktails' && (
+              <div className="space-y-4">
+                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                  <p className="text-sm text-purple-300">
+                    Listá los cocktails disponibles para este producto. Estos se mostrarán como referencia en el formulario de inspección.
                   </p>
                 </div>
 
-                <div className="space-y-3">
-                  {(formData.configuracion?.perfect_serve || []).map((q, idx) => (
-                    <div key={q.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 flex gap-3 items-start group">
-                      <div className="pt-3 text-slate-500 text-xs font-mono">{idx + 1}</div>
-                      <div className="flex-1 space-y-2">
-                        <input
-                          type="text"
-                          value={q.question}
-                          onChange={(e) => updateQuestion(q.id, 'question', e.target.value)}
-                          placeholder="Ej: ¿Se sirve en copa balón?"
-                          className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-md text-white text-sm focus:outline-none focus:border-amber-500/50"
-                        />
-                        <label className="flex items-center gap-2 cursor-pointer w-fit">
-                          <input
-                            type="checkbox"
-                            checked={q.required}
-                            onChange={(e) => updateQuestion(q.id, 'required', e.target.checked)}
-                            className="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500/50"
-                          />
-                          <span className="text-xs text-slate-400">Requerido (cuenta para el puntaje)</span>
-                        </label>
+                {/* Input agregar cocktail */}
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Wine className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text" value={newCocktailName}
+                      onChange={(e) => setNewCocktailName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCocktail())}
+                      placeholder="Nombre del cocktail..."
+                      className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-purple-500/50 text-sm"
+                    />
+                  </div>
+                  <button
+                    type="button" onClick={addCocktail}
+                    className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Lista de cocktails */}
+                <div className="space-y-2">
+                  {(formData.configuracion?.cocktails || []).map((cocktail, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700/40 rounded-lg group">
+                      <div className="flex items-center gap-3">
+                        <Wine className="w-4 h-4 text-purple-400" />
+                        <span className="text-white text-sm">{cocktail.name}</span>
                       </div>
                       <button
-                        type="button"
-                        onClick={() => removeQuestion(q.id)}
-                        className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                        title="Eliminar pregunta"
+                        type="button" onClick={() => removeCocktail(cocktail.name)}
+                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
 
-                  {(formData.configuracion?.perfect_serve || []).length === 0 && (
-                    <div className="text-center py-8 text-slate-500 text-sm italic border border-dashed border-slate-700/50 rounded-lg">
-                      No hay preguntas configuradas. Se usarán las preguntas por defecto.
+                  {(formData.configuracion?.cocktails || []).length === 0 && (
+                    <div className="text-center py-10 text-slate-500 flex flex-col items-center gap-3 border border-dashed border-slate-700/50 rounded-lg">
+                      <Wine className="w-8 h-8 text-slate-600" />
+                      <p className="text-sm italic">Sin cocktails configurados.</p>
+                      <p className="text-xs text-slate-600">Agregá cocktails usando el campo de arriba.</p>
                     </div>
                   )}
-
-                  <button
-                    type="button"
-                    onClick={addQuestion}
-                    className="w-full py-2 border-2 border-dashed border-slate-700 hover:border-amber-500/50 text-slate-400 hover:text-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Agregar Pregunta
-                  </button>
                 </div>
               </div>
             )}
@@ -687,8 +813,7 @@ function ProductForm({
           {/* Footer */}
           <div className="p-6 border-t border-slate-700/50 bg-slate-800/30 flex justify-end gap-3 sticky bottom-0 z-10">
             <button
-              type="button"
-              onClick={onClose}
+              type="button" onClick={onClose}
               className="px-6 py-2.5 bg-slate-700/50 text-white rounded-lg hover:bg-slate-700 transition-colors"
             >
               Cancelar

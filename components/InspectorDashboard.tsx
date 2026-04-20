@@ -216,19 +216,47 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         console.error('Error updating venue status:', venueError);
       }
 
+      // ── Auto-update de competidores nuevos en el catálogo del producto ──
+      // Si el inspector registró competidores no conocidos (que pasaron el fuzzy matching),
+      // los agrega al array permanente del producto para futuros dropdowns.
+      if (data.competitors && data.competitors.length > 0 && selectedProduct?.id) {
+        const knownCompetitors: string[] = selectedProduct.competidores || [];
+        const newCompetitorNames = (data.competitors as { name: string }[])
+          .map(c => c.name.trim())
+          .filter(name => name && !knownCompetitors.some(k => k.toLowerCase() === name.toLowerCase()));
+
+        if (newCompetitorNames.length > 0) {
+          console.log('🏷️ Adding new competitors to product catalog:', newCompetitorNames);
+
+          // Construir array único usando spread (la DB tiene TEXT[] con unicidad por diseño)
+          const updatedCompetitors = [...new Set([...knownCompetitors, ...newCompetitorNames])];
+
+          const { error: competitorError } = await (supabase
+            .from('btl_productos') as any)
+            .update({ competidores: updatedCompetitors })
+            .eq('id', selectedProduct.id);
+
+          if (competitorError) {
+            console.error('⚠️ Error updating product competitors:', competitorError);
+            // No bloqueamos el flujo principal — la inspección ya está guardada
+          } else {
+            console.log(`✅ Added ${newCompetitorNames.length} new competitor(s) to product catalog`);
+          }
+        }
+      }
+
       // Reload inspections
       await loadInspections();
 
       // Reset state
+      const wasEditing = !!editingInspectionId;
       setSelectedVenue(null);
       setSelectedClient(null);
       setSelectedProduct(null);
       setEditingInspectionId(null);
       setInitialFormData(null);
 
-      // If was editing, go back to history? No, flow usually returns to start.
-      // But if we want to see the result, history is better.
-      if (editingInspectionId) {
+      if (wasEditing) {
         setCurrentView('history');
       }
 
