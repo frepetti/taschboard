@@ -309,7 +309,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-amber-600/20 to-amber-500/20 border-b border-amber-500/30 p-4 sm:p-6">
+              <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md border-b border-amber-500/30 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl sm:text-2xl text-white font-bold">
