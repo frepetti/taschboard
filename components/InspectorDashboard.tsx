@@ -245,6 +245,33 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         }
       }
 
+      // ── Auto-update de cocktails nuevos en el catálogo del producto ──
+      if (data.selectedCocktails && data.selectedCocktails.length > 0 && selectedProduct?.id) {
+        const knownCocktails = selectedProduct.configuracion?.cocktails || [];
+        const newCocktails = data.selectedCocktails
+          .map((name: string) => name.trim())
+          .filter((name: string) => name && !knownCocktails.some((k: any) => k.name.toLowerCase() === name.toLowerCase()));
+
+        if (newCocktails.length > 0) {
+          console.log('🍹 Adding new cocktails to product catalog:', newCocktails);
+          
+          const newCocktailsObj = newCocktails.map((name: string) => ({ name }));
+          const updatedCocktails = [...knownCocktails, ...newCocktailsObj];
+          const updatedConfig = { ...selectedProduct.configuracion, cocktails: updatedCocktails };
+
+          const { error: cocktailError } = await (supabase
+            .from('btl_productos') as any)
+            .update({ configuracion: updatedConfig })
+            .eq('id', selectedProduct.id);
+
+          if (cocktailError) {
+             console.error('⚠️ Error updating product cocktails:', cocktailError);
+          } else {
+             console.log(`✅ Added ${newCocktails.length} new cocktail(s) to product catalog`);
+          }
+        }
+      }
+
       // Reload inspections
       await loadInspections();
 

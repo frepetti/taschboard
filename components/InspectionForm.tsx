@@ -22,8 +22,10 @@ interface InspectionFormProps {
 export function InspectionForm({ venue, product, initialData, onBack, onSubmit }: InspectionFormProps) {
   const [activeSection, setActiveSection] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [newCocktailInput, setNewCocktailInput] = useState('');
 
   // Competitor input state
+  const [selectedCompetitorOption, setSelectedCompetitorOption] = useState('');
   const [competitorInput, setCompetitorInput] = useState('');
   const [competitorVisibility, setCompetitorVisibility] = useState('medium');
   const [competitorPrice, setCompetitorPrice] = useState('premium');
@@ -33,7 +35,8 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
   const [formData, setFormData] = useState({
     // Brand Presence
     brandOnMenu: true,
-    numberOfCocktails: 3,
+    numberOfCocktails: 0, // Legacy/scoring compat
+    selectedCocktails: [] as string[],
     backBarVisibility: 'prominent',
     shelfPosition: 'top',
 
@@ -98,6 +101,7 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
           (initialData.detalles.mainCompetitor
             ? [{ name: initialData.detalles.mainCompetitor, visibility: initialData.detalles.competitorVisibility || 'medium', priceComparison: initialData.detalles.priceComparison || 'premium' }]
             : []),
+        selectedCocktails: initialData.detalles.selectedCocktails || [],
         photos: initialData.fotos_urls || [],
         notes: initialData.observaciones?.split('[RECOMENDACIONES]')[0]?.trim() || '',
         recommendedActions: initialData.observaciones?.split('[RECOMENDACIONES]')[1]?.trim() || '',
@@ -117,6 +121,33 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
 
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const toggleCocktail = (name: string) => {
+    const isSelected = formData.selectedCocktails.includes(name);
+    const updated = isSelected 
+      ? formData.selectedCocktails.filter(c => c !== name)
+      : [...formData.selectedCocktails, name];
+    
+    setFormData({ 
+      ...formData, 
+      selectedCocktails: updated,
+      numberOfCocktails: updated.length
+    });
+  };
+
+  const tryAddCocktail = () => {
+    if (!newCocktailInput.trim()) return;
+    const name = newCocktailInput.trim();
+    if (!formData.selectedCocktails.includes(name)) {
+      const updated = [...formData.selectedCocktails, name];
+      setFormData({ 
+        ...formData, 
+        selectedCocktails: updated,
+        numberOfCocktails: updated.length
+      });
+    }
+    setNewCocktailInput('');
   };
 
   // ─── Perfect Serve: triple state cycle ─────────────────────────────────────
@@ -205,6 +236,7 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
       mainCompetitor: updated[0]?.name || '',
     });
     setCompetitorInput('');
+    setSelectedCompetitorOption('');
     setSimilarWarning(null);
     setPendingCompetitor(null);
   };
@@ -367,24 +399,67 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Cantidad de Cocteles con la Marca</label>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => updateField('numberOfCocktails', Math.max(0, formData.numberOfCocktails - 1))}
-                  className="w-10 h-10 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <div className="flex-1 text-center">
-                  <div className="text-3xl text-white font-bold">{formData.numberOfCocktails}</div>
+              <label className="block text-sm text-slate-300 mb-2">Cocteles de la Marca en el Menú</label>
+              
+              {/* Product's Known Cocktails */}
+              {product?.configuracion?.cocktails && product.configuracion.cocktails.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {product.configuracion.cocktails.map((c: any, idx: number) => {
+                    const isSelected = formData.selectedCocktails.includes(c.name);
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => toggleCocktail(c.name)}
+                        className={`px-3 py-1.5 rounded-lg text-sm transition-all border ${
+                          isSelected 
+                            ? 'bg-amber-600/20 text-amber-400 border-amber-500/50' 
+                            : 'bg-slate-800/50 text-slate-400 border-slate-700/50 hover:bg-slate-800'
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
                 </div>
+              )}
+              
+              {/* Custom Cocktail Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Otro cocktail sugerido o encontrado..."
+                  value={newCocktailInput}
+                  onChange={(e) => setNewCocktailInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), tryAddCocktail())}
+                  className="flex-1 bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                />
                 <button
-                  onClick={() => updateField('numberOfCocktails', formData.numberOfCocktails + 1)}
-                  className="w-10 h-10 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-white flex items-center justify-center"
+                  onClick={tryAddCocktail}
+                  className="px-4 py-3 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white rounded-lg transition-colors flex items-center justify-center"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Added custom cocktails that are not in product profile */}
+              {formData.selectedCocktails
+                .filter(name => !product?.configuracion?.cocktails?.some((pc: any) => pc.name === name))
+                .length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3 p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
+                  <div className="w-full text-xs text-slate-500 mb-1">Cocktails agregados:</div>
+                  {formData.selectedCocktails
+                    .filter(name => !product?.configuracion?.cocktails?.some((pc: any) => pc.name === name))
+                    .map((name, idx) => (
+                      <div key={idx} className="flex items-center gap-1 bg-slate-700/50 text-slate-300 text-xs px-2 py-1 rounded-md">
+                        <span>{name}</span>
+                        <button onClick={() => toggleCocktail(name)} className="text-slate-400 hover:text-red-400 ml-1">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))
+                  }
+                </div>
+              )}
             </div>
 
             <div>
@@ -692,14 +767,15 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
                 <div className="space-y-2">
                   <label className="block text-xs text-slate-500">Nombre del competidor</label>
                   <select
-                    value={product.competidores.includes(competitorInput) ? competitorInput : (competitorInput ? '__other__' : '')}
+                    value={selectedCompetitorOption}
                     onChange={(e) => {
-                      if (e.target.value === '__other__') {
-                        setCompetitorInput('');
-                      } else {
+                      setSelectedCompetitorOption(e.target.value);
+                      if (e.target.value !== '__other__') {
                         setCompetitorInput(e.target.value);
-                        setSimilarWarning(null);
+                      } else {
+                        setCompetitorInput('');
                       }
+                      setSimilarWarning(null);
                     }}
                     className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
                   >
@@ -712,16 +788,17 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
                     <option value="__other__">✏️ Otro (escribir manualmente)</option>
                   </select>
 
-                  {(!product.competidores.includes(competitorInput) || competitorInput === '') && (
+                  {selectedCompetitorOption === '__other__' && (
                     <input
                       type="text"
                       placeholder="Nombre del competidor..."
-                      value={!product.competidores.includes(competitorInput) ? competitorInput : ''}
+                      value={competitorInput}
                       onChange={(e) => {
                         setCompetitorInput(e.target.value);
                         setSimilarWarning(null);
                       }}
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm animate-in fade-in slide-in-from-top-1"
+                      autoFocus
                     />
                   )}
                 </div>
