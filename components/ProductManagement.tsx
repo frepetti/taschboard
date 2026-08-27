@@ -19,6 +19,7 @@ interface Product {
   objetivo_presencia: number | null;
   objetivo_stock: number | null;
   objetivo_pop: number | null;
+  precio_referencia?: number | null;
   descripcion: string | null;
   activo: boolean | null;
   orden_visualizacion: number | null;
@@ -58,6 +59,7 @@ export function ProductManagement() {
     objetivo_presencia: 80,
     objetivo_stock: 75,
     objetivo_pop: 60,
+    precio_referencia: null,
     descripcion: '',
     activo: true,
     orden_visualizacion: 0,
@@ -287,6 +289,11 @@ export function ProductManagement() {
                         <div className="text-white font-semibold">{product.objetivo_pop}%</div>
                       </div>
                     </div>
+                    {product.precio_referencia != null && (
+                      <div className="text-xs text-slate-400 mt-1">
+                        Precio Ref: <span className="text-amber-400 font-semibold">{new Intl.NumberFormat(undefined, { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(product.precio_referencia)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -633,6 +640,19 @@ function ProductForm({
                       />
                     </div>
                   ))}
+                </div>
+
+                {/* Precio de Referencia */}
+                <div>
+                  <label className="block text-slate-300 text-sm mb-2">Precio de Referencia</label>
+                  <input
+                    type="number" min="0" step="0.01"
+                    value={formData.precio_referencia ?? ''}
+                    onChange={(e) => setFormData({ ...formData, precio_referencia: e.target.value === '' ? null : Number(e.target.value) })}
+                    placeholder="Ej: 350.00"
+                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Precio sugerido del producto. Se usa para calcular desviación vs precio de carta.</p>
                 </div>
 
                 {/* Competitors Section */}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Package, TrendingUp, TrendingDown, AlertCircle, ChevronDown } from 'lucide-react';
+import { Package, TrendingUp, TrendingDown, AlertCircle, ChevronDown, DollarSign } from 'lucide-react';
 
 interface ProductMetric {
   id: string;
@@ -17,6 +17,13 @@ interface ProductMetric {
   puntos_venta_con_producto: number;
   total_puntos_venta: number;
   tendencia: 'up' | 'down' | 'stable';
+  // Pricing
+  precio_referencia: number | null;
+  precio_carta_promedio: number | null;
+  desviacion_precio: number | null; // percentage
+  precio_min: number | null;
+  precio_max: number | null;
+  inspecciones_con_precio: number;
 }
 
 interface Product {
@@ -133,8 +140,33 @@ export function ProductMetrics({
         pop_objetivo: p.objetivo_pop,
         puntos_venta_con_producto: uniqueVenues.size,
         total_puntos_venta: totalInspections,
-        tendencia: presenciaActual >= (p.objetivo_presencia || 0) ? 'up' : 'down'
+        tendencia: presenciaActual >= (p.objetivo_presencia || 0) ? 'up' : 'down',
+        // Pricing calculations
+        precio_referencia: p.precio_referencia ?? null,
+        precio_carta_promedio: null,
+        desviacion_precio: null,
+        precio_min: null,
+        precio_max: null,
+        inspecciones_con_precio: 0,
       };
+
+      // Calculate pricing deviation if precio_referencia is set
+      const inspWithPrice = (inspectionProducts || []).filter(
+        (ip: any) => ip.precio_venta != null && ip.precio_venta > 0
+      );
+      if (inspWithPrice.length > 0) {
+        const prices = inspWithPrice.map((ip: any) => Number(ip.precio_venta));
+        const avgPrice = prices.reduce((sum: number, p: number) => sum + p, 0) / prices.length;
+        calculatedMetric.precio_carta_promedio = Math.round(avgPrice * 100) / 100;
+        calculatedMetric.precio_min = Math.min(...prices);
+        calculatedMetric.precio_max = Math.max(...prices);
+        calculatedMetric.inspecciones_con_precio = inspWithPrice.length;
+
+        if (p.precio_referencia != null && p.precio_referencia > 0) {
+          calculatedMetric.desviacion_precio =
+            Math.round(((avgPrice - p.precio_referencia) / p.precio_referencia) * 1000) / 10;
+        }
+      }
 
       setMetric(calculatedMetric);
     } catch (error) {
@@ -320,6 +352,69 @@ export function ProductMetrics({
               </div>
             </div>
           </div>
+
+          {/* Pricing Deviation Card */}
+          {metric.precio_referencia != null && (
+            <div className="mt-6 bg-slate-800/30 rounded-xl p-5 border border-slate-700/30">
+              <div className="flex items-center gap-2 mb-4">
+                <DollarSign className="w-5 h-5 text-amber-400" />
+                <span className="text-white font-semibold">Análisis de Precio</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Reference Price */}
+                <div className="text-center">
+                  <div className="text-xs text-slate-500 mb-1">Precio Referencia</div>
+                  <div className="text-lg text-white font-bold">
+                    {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(metric.precio_referencia)}
+                  </div>
+                </div>
+                {/* Avg Observed Price */}
+                <div className="text-center">
+                  <div className="text-xs text-slate-500 mb-1">Precio Carta Prom.</div>
+                  <div className="text-lg text-white font-bold">
+                    {metric.precio_carta_promedio != null
+                      ? new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(metric.precio_carta_promedio)
+                      : '—'}
+                  </div>
+                  {metric.precio_min != null && metric.precio_max != null && metric.precio_min !== metric.precio_max && (
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      Rango: {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(metric.precio_min)} – {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(metric.precio_max)}
+                    </div>
+                  )}
+                </div>
+                {/* Deviation */}
+                <div className="text-center">
+                  <div className="text-xs text-slate-500 mb-1">Desviación</div>
+                  {metric.desviacion_precio != null ? (
+                    <>
+                      <div className={`text-lg font-bold ${
+                        Math.abs(metric.desviacion_precio) <= 5 ? 'text-green-400' :
+                        Math.abs(metric.desviacion_precio) <= 15 ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>
+                        {metric.desviacion_precio > 0 ? '+' : ''}{metric.desviacion_precio}%
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${
+                        Math.abs(metric.desviacion_precio) <= 5 ? 'text-green-400/70' :
+                        Math.abs(metric.desviacion_precio) <= 15 ? 'text-yellow-400/70' :
+                        'text-red-400/70'
+                      }`}>
+                        {Math.abs(metric.desviacion_precio) <= 5 ? 'En rango' :
+                         Math.abs(metric.desviacion_precio) <= 15 ? 'Alerta' : 'Fuera de rango'}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-lg text-slate-500">—</div>
+                  )}
+                  {metric.inspecciones_con_precio > 0 && (
+                    <div className="text-[10px] text-slate-600 mt-1">
+                      {metric.inspecciones_con_precio} inspección(es) con precio
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Status Alert */}
           {(metric.presencia_actual < metric.presencia_objetivo * 0.75 ||

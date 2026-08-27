@@ -107,6 +107,7 @@ CREATE TABLE btl_productos (
   objetivo_presencia DECIMAL(5,2) DEFAULT 0,
   objetivo_stock DECIMAL(5,2) DEFAULT 0,
   objetivo_pop DECIMAL(5,2) DEFAULT 0,
+  precio_referencia DECIMAL(10,2), -- Precio sugerido/referencia del producto (nullable)
   descripcion TEXT,
   activo BOOLEAN DEFAULT TRUE,
   orden_visualizacion INTEGER DEFAULT 0,
@@ -168,7 +169,7 @@ CREATE TABLE btl_inspecciones (
   tiene_producto BOOLEAN DEFAULT false,
   stock_nivel VARCHAR(50), -- 'Alto', 'Medio', 'Bajo', 'Agotado'
   stock_unidades INTEGER,
-  precio_venta DECIMAL(10,2),
+  precio_venta DECIMAL(10,2), -- Precio de carta/menú observado en el punto de venta durante la inspección
   en_promocion BOOLEAN DEFAULT FALSE,
   visibilidad_score DECIMAL(5,2),
   global_score NUMERIC DEFAULT 0,
@@ -857,3 +858,14 @@ BEGIN
   RETURN stored_hash = crypt(keyword_text, stored_hash);
 END;
 $$;
+
+-- ==========================================
+-- SUPABASE DATA API EXPLICIT GRANTS
+-- ==========================================
+-- A partir de mayo 2026, Supabase requiere explícitamente otorgar permisos
+-- a los roles para exponer las tablas a la Data API.
+-- Estos GRANTs restauran el comportamiento por defecto anterior donde
+-- todas las tablas estaban expuestas, delegando la seguridad real al RLS.
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;

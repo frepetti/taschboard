@@ -179,5 +179,27 @@ Esto garantiza que el score del venue en la tabla de venues siempre refleje la *
 | `objetivo_presencia` | DECIMAL | Meta de presencia (%) |
 | `objetivo_stock` | DECIMAL | Meta de stock (%) |
 | `objetivo_pop` | DECIMAL | Meta de material POP (%) |
+| `precio_referencia` | DECIMAL(10,2) | Precio sugerido/referencia del producto (nullable) |
 | `competidores` | TEXT[] | Lista de marcas competidoras |
 | `configuracion` | JSONB | Configuración de perfect serve checklist |
+
+---
+
+## 9. Métricas de Pricing
+
+### 9.1 Desviación de Precio
+*   **Definición:** Porcentaje de desviación entre el precio promedio observado en carta y el precio de referencia del producto.
+*   **Fórmula:** `((precio_carta_promedio - precio_referencia) / precio_referencia) × 100`
+*   **Fuente:** `btl_inspecciones.precio_venta` (precio de carta) vs `btl_productos.precio_referencia`.
+*   **Sanitización:** Solo se calcula cuando `precio_referencia > 0` y existen inspecciones con `precio_venta > 0`.
+*   **Rangos visuales:**
+    *   🟢 Verde: desviación ≤ ±5% (En rango)
+    *   🟡 Ámbar: desviación entre ±5% y ±15% (Alerta)
+    *   🔴 Rojo: desviación > ±15% (Fuera de rango)
+*   **Componente:** `ProductMetrics.tsx` — sección "Análisis de Precio".
+
+### 9.2 Posicionamiento de Precio vs Competencia
+*   **Definición:** Distribución cualitativa del posicionamiento de precio de nuestro producto respecto a competidores observados.
+*   **Fuente:** `btl_inspecciones.detalles.competitors[].priceComparison` — valores posibles: `premium` (más caro), `equal` (similar), `lower` (más barato).
+*   **Visualización:** Gráfico Donut/Pie en `PricePositioningChart.tsx`.
+*   **Umbral mínimo:** Se requieren al menos 3 registros de comparación para mostrar el gráfico.

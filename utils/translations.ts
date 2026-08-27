@@ -189,6 +189,17 @@ export const translations = {
       rec_social: 'Alianza en Redes Sociales',
       rec_social_desc: 'Co-crear contenido de cócteles de autor para Instagram. Aprovechar los 85K seguidores del lugar.',
       investment: 'Inversión'
+    },
+    pricing: {
+      reference_price: 'Precio de Referencia',
+      card_price: 'Precio de Carta',
+      avg_card_price: 'Precio Carta Prom.',
+      deviation: 'Desviación',
+      price_analysis: 'Análisis de Precio',
+      in_range: 'En rango',
+      alert: 'Alerta',
+      out_of_range: 'Fuera de rango',
+      positioning_title: 'Posicionamiento de Precio vs Competencia'
     }
   },
   en: {

@@ -68,6 +68,7 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
     priceComparison: 'premium',
 
     // Sales & Rotation
+    precioCartaObservado: null as number | null,
     estimatedMonthlyRotation: 120,
     stockLevel: 'adequate',
     outOfStock: false,
@@ -902,6 +903,20 @@ export function InspectionForm({ venue, product, initialData, onBack, onSubmit }
         {activeSection === 5 && (
           <div className="space-y-6">
             <h3 className="text-lg text-white font-semibold">Ventas y Rotación</h3>
+
+            <div>
+              <label className="block text-sm text-slate-300 mb-2">Precio de Carta ($)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.precioCartaObservado ?? ''}
+                onChange={(e) => updateField('precioCartaObservado', e.target.value === '' ? null : parseFloat(e.target.value))}
+                placeholder="Precio observado en menú/carta"
+                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+              />
+              <p className="text-xs text-slate-500 mt-1">Precio real del producto en la carta/menú del punto de venta.</p>
+            </div>
 
             <div>
               <label className="block text-sm text-slate-300 mb-2">Rotación Mensual Est. (Botellas)</label>

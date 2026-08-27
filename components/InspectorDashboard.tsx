@@ -184,7 +184,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         visibilidad_score: scores.globalScore,
         compliance_score: scores.globalScore,
 
-        precio_venta: 0,
+        precio_venta: data.precioCartaObservado ?? 0,
         en_promocion: false,
       };
 

@@ -6,6 +6,7 @@ import { PerformanceChart } from './PerformanceChart';
 import { OpportunityMap } from './OpportunityMap';
 import { VenueTable } from './VenueTable';
 import { CompetitionChart } from './CompetitionChart';
+import { PricePositioningChart } from './PricePositioningChart';
 import { OpportunityBreakdown } from './OpportunityBreakdown';
 import { ActivationTimeline } from './ActivationTimeline';
 import { VenueDetail } from './VenueDetail';
@@ -986,57 +987,93 @@ export function ManagerDashboard({
       <div className={`max-w-[1600px] mx-auto py-6 space-y-6 ${readOnly ? '' : 'px-4 sm:px-8'}`}>
 
         {/* Filters Section */}
-        <div className="flex flex-wrap gap-3">
-          <FilterChip
-            label="1 Mes"
-            active={dateFilter === '1M'}
-            onClick={() => setDateFilter('1M')}
-          />
-          <FilterChip
-            label="3 Meses"
-            active={dateFilter === '3M'}
-            onClick={() => setDateFilter('3M')}
-          />
-          <FilterChip
-            label="6 Meses"
-            active={dateFilter === '6M'}
-            onClick={() => setDateFilter('6M')}
-          />
-          <FilterChip
-            label="1 Año"
-            active={dateFilter === '1Y'}
-            onClick={() => setDateFilter('1Y')}
-          />
-          <FilterChip
-            label="YTD"
-            active={dateFilter === 'YTD'}
-            onClick={() => setDateFilter('YTD')}
-          />
+        {/* ── Mobile Filters (< lg) ── */}
+        <div className="flex lg:hidden gap-3">
+          <div className="flex-1">
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500/50 appearance-none"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+            >
+              <option value="1M">1 Mes</option>
+              <option value="3M">3 Meses</option>
+              <option value="6M">6 Meses</option>
+              <option value="1Y">1 Año</option>
+              <option value="YTD">YTD</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <select
+              value={regionFilter}
+              onChange={(e) => setRegionFilter(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500/50 appearance-none"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
+            >
+              <option value="all">Todas las regiones</option>
+              {regions.map((region) => (
+                <option key={region.id} value={region.id}>{region.nombre}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-          <div className="border-l border-slate-700 mx-2"></div>
-
-          {/* Dynamic Region Filters */}
-          <FilterChip
-            label="Todas las regiones"
-            active={regionFilter === 'all'}
-            onClick={() => setRegionFilter('all')}
-          />
-
-          {regions.map((region) => (
+        {/* ── Desktop Filters (≥ lg) ── */}
+        <div className="hidden lg:flex items-center gap-3">
+          {/* Time Filters */}
+          <div className="flex gap-2 flex-shrink-0">
             <FilterChip
-              key={region.id}
-              label={region.nombre}
-              active={regionFilter === region.id}
-              onClick={() => setRegionFilter(region.id)}
+              label="1 Mes"
+              active={dateFilter === '1M'}
+              onClick={() => setDateFilter('1M')}
             />
-          ))}
+            <FilterChip
+              label="3 Meses"
+              active={dateFilter === '3M'}
+              onClick={() => setDateFilter('3M')}
+            />
+            <FilterChip
+              label="6 Meses"
+              active={dateFilter === '6M'}
+              onClick={() => setDateFilter('6M')}
+            />
+            <FilterChip
+              label="1 Año"
+              active={dateFilter === '1Y'}
+              onClick={() => setDateFilter('1Y')}
+            />
+            <FilterChip
+              label="YTD"
+              active={dateFilter === 'YTD'}
+              onClick={() => setDateFilter('YTD')}
+            />
+          </div>
 
-          {/* Fallback if no regions loaded and no filters active */}
-          {regions.length === 0 && (
-            <span className="text-xs text-slate-500 flex items-center px-2">
-              Cargando regiones...
-            </span>
-          )}
+          <div className="border-l border-slate-700 h-8 mx-1 flex-shrink-0"></div>
+
+          {/* Region Filters — single row with horizontal scroll */}
+          <div className="flex gap-2 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pb-1 min-w-0">
+            <FilterChip
+              label="Todas las regiones"
+              active={regionFilter === 'all'}
+              onClick={() => setRegionFilter('all')}
+            />
+
+            {regions.map((region) => (
+              <FilterChip
+                key={region.id}
+                label={region.nombre}
+                active={regionFilter === region.id}
+                onClick={() => setRegionFilter(region.id)}
+              />
+            ))}
+
+            {regions.length === 0 && (
+              <span className="text-xs text-slate-500 flex items-center px-2 whitespace-nowrap">
+                Cargando regiones...
+              </span>
+            )}
+          </div>
         </div>
 
         {/* KPI Cards */}
@@ -1101,6 +1138,9 @@ export function ManagerDashboard({
           <PerformanceChart inspections={inspections} />
           <CompetitionChart inspections={inspections} isDemo={isDemo} />
         </div>
+
+        {/* Price Positioning Chart — only rendered when there's sufficient data */}
+        <PricePositioningChart inspections={inspections} />
 
         {/* Map Section */}
         <OpportunityMap

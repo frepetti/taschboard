@@ -16,7 +16,7 @@ export function FilterChip({ label, active, onClick, color = 'amber' }: FilterCh
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${colorClasses[color]} hover:opacity-80`}
+      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${colorClasses[color]} hover:opacity-80`}
     >
       {label}
     </button>
