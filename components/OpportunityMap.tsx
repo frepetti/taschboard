@@ -443,26 +443,24 @@ export function OpportunityMap({
           attributionControl: false,
         }).setView(BA_CENTER, 13);
 
-        // CartoDB Positron (Light Minimalist) with custom styling
+        // OpenStreetMap free tile layer with dark CSS filter
         const tileLayer = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
           {
             attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: "abcd",
-            maxZoom: 20,
+              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
           },
         );
 
         tileLayer.addTo(map);
 
-        // Apply CSS filter to tone down the brightness and blend with dashboard
-        // Brightness 0.9 (slightly dim), Sepia 0.1 (slight warmth), Contrast 0.9 (softer)
+        // Apply dark CSS filter to blend with dark dashboard theme
         tileLayer
           .getContainer()
           ?.style.setProperty(
             "filter",
-            "brightness(0.82) sepia(0.12) contrast(1.15)",
+            "brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)",
           );
 
         L.control

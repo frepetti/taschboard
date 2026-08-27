@@ -64,10 +64,12 @@ export function PerformanceChart({ inspections = [] }: PerformanceChartProps) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl h-full">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl h-full min-w-0 overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h3 className="text-lg text-white font-semibold">{t('charts.brand_execution')}</h3>
-        <div className="flex gap-2 flex-wrap">
+
+        {/* Desktop Chips (≥ lg) */}
+        <div className="hidden lg:flex gap-2 flex-wrap">
           {metrics.map((m) => (
             <FilterChip
               key={m.id}
@@ -76,6 +78,27 @@ export function PerformanceChart({ inspections = [] }: PerformanceChartProps) {
               onClick={() => setMetric(m.id)}
             />
           ))}
+        </div>
+
+        {/* Mobile Select (< lg) */}
+        <div className="flex lg:hidden w-full sm:w-auto">
+          <select
+            value={metric}
+            onChange={(e) => setMetric(e.target.value)}
+            className="w-full sm:w-48 px-3 py-2 bg-slate-800/80 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500/50 appearance-none pr-8 cursor-pointer"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'right 10px center',
+            }}
+            aria-label="Seleccionar métrica de rendimiento"
+          >
+            {metrics.map((m) => (
+              <option key={m.id} value={m.id} className="bg-slate-800 text-white">
+                {m.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

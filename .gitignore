@@ -7,3 +7,5 @@ tsc_output.txt
 .vercel
 .env*.local
 extract_data
+sync-data.cjs
+supabase\migrations\sync-data.cjs

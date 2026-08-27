@@ -33,3 +33,10 @@
 - [x] Actualización de `translations.ts` con llaves de pricing
 - [x] Verificación de tipos con `npx tsc --noEmit`
 - [x] Generación y actualización de `walkthrough.md`
+
+## Fase 8: UI/UX, Filtros Móviles y TileLayer Libre
+- [x] Fix de layout y overflow en `PricePositioningChart.tsx` (remover labels exteriores, innerRadius=50/outerRadius=75, formatear legend y tooltip, min-w-0)
+- [x] Estandarización de filtros móviles en `PerformanceChart.tsx` (`hidden lg:flex` vs `flex lg:hidden` con select estilizado)
+- [x] Migración de TileLayer a OpenStreetMap libre con filtro CSS dark en `OpportunityMap.tsx` y `VenueLocationPicker.tsx`
+- [x] Validación estática `npx tsc --noEmit` y actualización de `walkthrough.md`
+

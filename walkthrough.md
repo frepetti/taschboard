@@ -51,3 +51,34 @@ COMMENT ON COLUMN btl_inspecciones.precio_venta IS 'Precio de carta/menú observ
 - **TypeScript Check:** Se ejecutó `npx tsc --noEmit` resultando en **0 errores de compilación** (verificación exitosa).
 - **Formateo de Moneda:** Uso de `Intl.NumberFormat` para garantizar ausencia de monedas hardcodeadas.
 - **Sanitización de Operaciones:** Control de división por cero y valores nulos en el cálculo de desviaciones de precio.
+
+---
+
+# Sprint 8 — Optimización UI/UX, Filtros Móviles y Migración de Mapas (Testing)
+
+## Resumen Ejecutivo del Sprint
+Este sprint abordó tres mejoras prioritarias de usabilidad y estabilidad de servicios identificadas en las pruebas funcionales:
+1. **Ergonomía de Visualización de Precios:** Corrección del desbordamiento visual y ajuste de escala en el gráfico de comparación de precios frente a la competencia.
+2. **Estandarización Móvil de Rendimiento de Marca:** Reemplazo de botones apilados por un selector desplegable unificado en dispositivos móviles.
+3. **Estabilidad del Mapa Territorial:** Migración integral del proveedor de mapas a OpenStreetMap libre con preservación de la identidad visual oscura.
+
+---
+
+## Detalle de Tareas y Componentes Modificados
+
+| Componente / Archivo | Tipo de Cambio | Impacto Funcional / Técnico |
+|---|---|---|
+| [`PricePositioningChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PricePositioningChart.tsx) | Optimización UI | Se removieron etiquetas y conectores exteriores que desbordaban la tarjeta. Se ajustaron los radios a `innerRadius={50}` y `outerRadius={75}` dentro de `<ResponsiveContainer width="100%" height={260}>`. Se integraron porcentajes y conteos directamente en la leyenda y el tooltip. Se agregó `min-w-0 overflow-hidden` al contenedor principal. |
+| [`PerformanceChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PerformanceChart.tsx) | Responsividad | Implementación del patrón adaptativo estándar: selector desplegable estilizado (`<select>`) en mobile (`< lg`) y chips interactivos (`FilterChip`) en desktop (`≥ lg`) para alternar entre "Índice Ejecución", "Visibilidad", "Material POP" y "Visitas". |
+| [`OpportunityMap.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/OpportunityMap.tsx) | Servicio de Mapas | Reemplazo de la capa CartoDB por OpenStreetMap libre (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`) con atribución actualizada y filtro CSS oscuro (`brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)`), eliminando marcas de agua de API key. |
+| [`VenueLocationPicker.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueLocationPicker.tsx) | Servicio de Mapas | Estandarización de la capa Leaflet con OpenStreetMap y filtro CSS oscuro para coherencia visual en la selección de ubicación de puntos de venta. |
+
+---
+
+## Verificación de Calidad
+
+- **Compilación TypeScript:** Ejecución de `npx tsc --noEmit` completada exitosamente con **0 errores de tipado**.
+- **Validación Responsiva:**
+  - Desktop (> 1024px): Chips horizontales y gráficos Recharts contenidos sin desbordes.
+  - Mobile (< 768px): Selectores compactos y mapas dark renderizados sin marcas de agua.
+

@@ -51,13 +51,8 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
     { name: labels.lower, value: counts.lower, key: 'lower' },
   ].filter(d => d.value > 0);
 
-  const renderLabel = ({ name, percent }: { name: string; percent: number }) => {
-    if (percent < 0.05) return '';
-    return `${name} (${(percent * 100).toFixed(0)}%)`;
-  };
-
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl min-w-0 overflow-hidden">
       <h3 className="text-lg text-white font-semibold mb-1">
         {language === 'es' ? 'Posicionamiento de Precio vs Competencia' : 'Price Positioning vs Competition'}
       </h3>
@@ -73,12 +68,10 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={100}
+            innerRadius={50}
+            outerRadius={75}
             paddingAngle={3}
             dataKey="value"
-            label={renderLabel}
-            labelLine={{ stroke: '#64748b', strokeWidth: 1 }}
           >
             {data.map((entry) => (
               <Cell
@@ -95,16 +88,23 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
               borderRadius: '8px',
               color: '#fff',
             }}
-            formatter={(value: number) => [
-              `${value} ${language === 'es' ? 'registros' : 'records'}`,
+            formatter={(value: number, name: string) => [
+              `${value} ${language === 'es' ? 'registros' : 'records'} (${total > 0 ? Math.round((value / total) * 100) : 0}%)`,
+              name,
             ]}
           />
           <Legend
             verticalAlign="bottom"
             iconType="circle"
-            formatter={(value: string) => (
-              <span className="text-slate-300 text-sm">{value}</span>
-            )}
+            formatter={(value: string) => {
+              const item = data.find((d) => d.name === value);
+              const pct = item && total > 0 ? Math.round((item.value / total) * 100) : 0;
+              return (
+                <span className="text-slate-300 text-xs sm:text-sm">
+                  {value} ({pct}%)
+                </span>
+              );
+            }}
           />
         </PieChart>
       </ResponsiveContainer>
