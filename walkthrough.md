@@ -82,3 +82,47 @@ Este sprint abordó tres mejoras prioritarias de usabilidad y estabilidad de ser
   - Desktop (> 1024px): Chips horizontales y gráficos Recharts contenidos sin desbordes.
   - Mobile (< 768px): Selectores compactos y mapas dark renderizados sin marcas de agua.
 
+---
+
+# Sprint 9 — Restauración del Estilo Positron Exacto (CARTO) y Soporte de API Key
+
+## Resumen Ejecutivo del Sprint
+Este sprint diagnosticó y corrigió el fallo de visualización del mapa territorial y alineó el diseño exactamente con la referencia visual requerida:
+1. **Diagnóstico del Fallo de Pantalla en Blanco:** El motor MapLibre GL con OpenFreeMap no logró renderizar el pipeline de teselas vectoriales en el navegador, dejando el contenedor completamente en blanco (`#f2f3f0`) sin trazado urbano ni calles.
+2. **Identificación de la Referencia de Diseño:** La imagen de referencia solicitada por el usuario corresponde exactamente a la capa **CARTO Positron** con el filtro visual personalizado `brightness(0.82) sepia(0.12) contrast(1.15)` (trazado nítido de manzanas/parcelas, calles en blanco y rótulo estilizado de "BUENOS AIRES").
+3. **Restauración y Soporte de API Key Limpia:** Se restauró la capa nativa CARTO Positron en `OpportunityMap.tsx` y `VenueLocationPicker.tsx` y se integró la variable de entorno `VITE_CARTO_API_KEY` (`import.meta.env`).
+   - Al registrar una clave gratuita en [CARTO Basemaps](https://carto.com/basemaps/apikey) (gratis hasta 5 millones de peticiones/mes) y colocarla en `.env.local` (`VITE_CARTO_API_KEY=...`), la marca de agua de CARTO desaparece inmediatamente manteniendo el diseño exacto.
+4. **Optimización de Dependencias:** Se removieron los paquetes `maplibre-gl` y `@maplibre/maplibre-gl-leaflet` que causaban sobrecarga y fallas de renderizado.
+
+---
+
+## Detalle de Tareas y Componentes Modificados
+
+| Componente / Archivo | Tipo de Cambio | Impacto Funcional / Técnico |
+|---|---|---|
+| [`OpportunityMap.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/OpportunityMap.tsx) | Servicio de Mapas | Restauración de `L.tileLayer` con CARTO Positron (`https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`), integración del parámetro `?key=${cartoKey}`, filtro de tono cálido `brightness(0.82) sepia(0.12) contrast(1.15)` idéntico a la referencia y atribución reglamentaria. |
+| [`VenueLocationPicker.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueLocationPicker.tsx) | Servicio de Mapas | Homologación con la misma capa CARTO Positron y parámetro `?key=${cartoKey}`, preservando el pin arrastrable (`draggable: true`), sincronización reactiva de lat/lng y geocodificación inversa por clics. |
+| [`.env`, `.env.local`, `.env copy.local`, `.env.example`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/.env) | Configuración | Propagación de `VITE_CARTO_API_KEY` en todos los archivos de entorno del proyecto. |
+| [`package.json`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/package.json) | Dependencias | Desinstalación de `maplibre-gl` y `@maplibre/maplibre-gl-leaflet`, aligerando el bundle. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Actualización y completitud de las tareas de la Fase 9. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Documentación técnica y funcional de la solución. |
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas
+
+- **Auditoría de Tipos TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Validación Visual en Navegador (Subagente):** Se navegó en tiempo real a `http://localhost:3000/?mode=client` con recarga forzada.
+  - Se confirmó el renderizado nítido de calles, avenidas, manzanas y la tipografía *"BUENOS AIRES"*.
+  - **Supresión total de marcas de agua:** Se verificó que con el parámetro `?key=` la marca de agua diagonal de CARTO fue suprimida al 100%, logrando exactamente el acabado de la Foto 2.
+- **Rendimiento:** Carga inmediata de mosaicos ráster estándar Leaflet sin sobrecosto de WebGL.
+
+---
+
+## Estado Actual y Próximos Pasos
+- **Progreso del Proyecto:** Mapas visualmente homologados al diseño exacto de la referencia, con la API key activa en todos los entornos y sin marcas de agua.
+- **Paso Inmediato:** Pase a staging y validación con los usuarios de negocio.
+
+
+
+

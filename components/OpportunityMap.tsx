@@ -443,25 +443,39 @@ export function OpportunityMap({
           attributionControl: false,
         }).setView(BA_CENTER, 13);
 
-        // OpenStreetMap free tile layer with dark CSS filter
-        const tileLayer = L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution:
-              '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-          },
-        );
+        const cartoKey = (import.meta as any).env?.VITE_CARTO_API_KEY;
+        const tileUrl = cartoKey
+          ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+          : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+        // CartoDB Positron (Minimalist urban layout with custom tuning)
+        const tileLayer = L.tileLayer(tileUrl, {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 20,
+        });
 
         tileLayer.addTo(map);
 
-        // Apply dark CSS filter to blend with dark dashboard theme
+        // Apply custom CSS filter to achieve the exact minimalist look:
+        // Brightness 0.82, subtle warm sepia 0.12, contrast 1.15
         tileLayer
           .getContainer()
           ?.style.setProperty(
             "filter",
-            "brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)",
+            "brightness(0.82) sepia(0.12) contrast(1.15)",
           );
+
+        L.control
+          .attribution({
+            position: "bottomleft",
+            prefix: false,
+          })
+          .addAttribution(
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+          )
+          .addTo(map);
 
         L.control
           .zoom({

@@ -94,19 +94,31 @@ export function VenueLocationPicker({
           scrollWheelZoom: true,
         }).setView(initialCenter, initialZoom);
 
-        // OpenStreetMap free tile layer with dark CSS filter
-        const tileLayer = L.tileLayer(
-          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19,
-          }
-        ).addTo(map);
+        const cartoKey = (import.meta as any).env?.VITE_CARTO_API_KEY;
+        const tileUrl = cartoKey
+          ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${cartoKey}`
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
-        // Apply dark CSS filter to blend with dark dashboard theme
+        const tileLayer = L.tileLayer(tileUrl, {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20,
+        }).addTo(map);
+
         tileLayer
           .getContainer()
-          ?.style.setProperty('filter', 'brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3)');
+          ?.style.setProperty('filter', 'brightness(0.82) sepia(0.12) contrast(1.15)');
+
+        L.control
+          .attribution({
+            position: 'bottomright',
+            prefix: false,
+          })
+          .addAttribution(
+            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+          )
+          .addTo(map);
 
         // Pin arrastrable
         const icon = L.divIcon({

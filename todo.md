@@ -40,3 +40,13 @@
 - [x] Migración de TileLayer a OpenStreetMap libre con filtro CSS dark en `OpportunityMap.tsx` y `VenueLocationPicker.tsx`
 - [x] Validación estática `npx tsc --noEmit` y actualización de `walkthrough.md`
 
+## Fase 9: Restauración del Estilo Positron Exacto (CARTO) y Soporte de API Key
+- [x] Diagnóstico visual: identificación del fallo en renderizado de MapLibre y coincidencia visual de la referencia con CARTO Positron
+- [x] Restauración de capa nativa CARTO Positron en `OpportunityMap.tsx` con filtro `brightness(0.82) sepia(0.12) contrast(1.15)` idéntico a la referencia
+- [x] Homologación de capa en `VenueLocationPicker.tsx` con pin arrastrable e interactividad nativa
+- [x] Integración de `VITE_CARTO_API_KEY` (`import.meta.env`) para consumo limpio sin marca de agua
+- [x] Remoción de paquetes innecesarios `maplibre-gl` y `@maplibre/maplibre-gl-leaflet`
+- [x] Actualización de `.env.example` con la clave opcional de CARTO
+- [x] Verificación de tipos `npx tsc --noEmit` (0 errores)
+- [x] Actualización de `walkthrough.md`
+
