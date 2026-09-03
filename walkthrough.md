@@ -123,6 +123,83 @@ Este sprint diagnosticó y corrigió el fallo de visualización del mapa territo
 - **Progreso del Proyecto:** Mapas visualmente homologados al diseño exacto de la referencia, con la API key activa en todos los entornos y sin marcas de agua.
 - **Paso Inmediato:** Pase a staging y validación con los usuarios de negocio.
 
+---
+
+# Sprint 10 — Estandarización de Modo Demo y Corrección de Error HTTP 400
+
+## Resumen Ejecutivo del Sprint
+1. **Neutralización del Error HTTP 400 en Modo Demo:** Al hacer clic en puntos de venta con identificadores mock (`v1` a `v5`), PostgREST rechazaba las consultas por no tratarse de UUIDs válidos. Se interceptó la petición en `VenueDetail.tsx` para abastecer los datos directamente desde el catálogo en memoria y se añadió el badge visual distintivo *"Modo Demo - Datos Simulados"*.
+2. **Centralización del Dataset Mock:** Se unificó el catálogo a exactamente 5 puntos de venta (`v1` a `v5`) en `utils/demoData.ts` con coordenadas geográficas, métricas de auditoría, pricing, fotos e historial de inspecciones.
+3. **Mitigación en Tickets:** Se adaptó `TicketModal.tsx` para prevenir inserciones inválidas de puntos de venta mock en base de datos.
+
+---
+
+# Sprint 11 — Reactividad de Filtros y Expansión Histórica en Rendimiento de Marca
+
+## Resumen Ejecutivo del Sprint
+Este sprint implementó la funcionalidad completa y reactiva de los filtros de Tiempo y Regiones sobre el gráfico **"Rendimiento de Ejecución de Marca"** (`PerformanceChart.tsx`), expandiendo la ventana temporal a los últimos 12 meses móviles (`sep 25` a `ago 26`) al seleccionar la opción "1 Año" y recalculando dinámicamente tanto la serie como los KPIs del pie del componente:
+
+1. **Extensión del Dataset Histórico (`utils/demoData.ts`):**
+   - Se construyó el dataset `DEMO_PERFORMANCE_HISTORY` con 24 meses continuos (`sep 24` a `ago 26`), garantizando que la ventana de los últimos 12 meses móviles (`sep 25` a `ago 26`) y su período inmediatamente anterior equivalente (`sep 24` a `ago 25`) cuenten con datos consistentes.
+   - Datos numéricos coherentes para las 4 métricas conmutables: `Índice Ejecución` (`compliance`), `Visibilidad` (`presencia`), `Material POP` (`material`) y `Visitas` (`visitas`).
+   - Desglose y segmentación regional exacta (`all`, `norte`, `sur`, `centro`) con coherencia matemática aditiva (`norte.visitas + sur.visitas + centro.visitas = all.visitas`).
+   - Helper modular `getDemoPerformanceData(dateFilter, regionFilter)` para rebanar la serie activa y la serie precedente con normalización segura de regiones.
+
+2. **Reactividad de Filtros en `PerformanceChart.tsx`:**
+   - Conexión de los props `dateFilter`, `regionFilter` e `isDemo` al componente.
+   - **Mapeo temporal estricto:**
+     - `1 Mes` (`1M`): `ago 26` (1 punto continuo).
+     - `3 Meses` (`3M`): `jun 26` a `ago 26` (3 puntos continuos).
+     - `6 Meses` (`6M`): `mar 26` a `ago 26` (6 puntos continuos).
+     - `1 Año` (`1Y`): `sep 25` a `ago 26` (12 puntos continuos en el eje X).
+     - `YTD`: `ene 26` a `ago 26` (8 puntos continuos).
+   - Renderizado con puntos visibles (`dot={{ r: 4, fill: '#DA407C', stroke: '#ffffff', strokeWidth: 1 }}` y `activeDot={{ r: 6 }}`) garantizando visibilidad clara incluso con 1 punto activo (`1 Mes`).
+   - Tooltip dinámico formateando con unidad (`%` o `visitas`) y label traducido.
+
+3. **Recálculo Dinámico de KPIs Inferiores:**
+   - `Actual`: Valor de la métrica activa en el mes de corte (`ago 26`), formateado dinámicamente con `%` para métricas porcentuales y entero para visitas.
+   - `vs Periodo Anterior`: Variación porcentual calculada contra el período equivalente inmediatamente anterior de idéntica longitud:
+     $$\Delta\% = \frac{\bar{V}_{\text{actual}} - \bar{V}_{\text{anterior}}}{\bar{V}_{\text{anterior}}} \times 100$$
+     Protección matemática estricta contra división por cero, valores nulos y `NaN`, con colorización semántica (+ verde, - rojo, neutro slate).
+   - `Meses`: Conteo exacto de meses representados en el rango activo (`1` para `1M`, `3` para `3M`, `6` para `6M`, `12` para `1Y`, `8` para `YTD`).
+
+4. **Integración en Dashboards (`ManagerDashboard.tsx` & `ClientDashboard.tsx`):**
+   - Transmisión de props `dateFilter`, `regionFilter` e `isDemo` hacia `<PerformanceChart />`.
+   - Reemplazo de 672 líneas de mock data inline en `ManagerDashboard.tsx` por la importación limpia y centralizada desde `utils/demoData.ts`.
+
+---
+
+## Detalle de Componentes Modificados y Creados
+
+| Archivo / Componente | Tipo de Cambio | Impacto Funcional / Arquitectónico |
+|---|---|---|
+| [`utils/demoData.ts`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/demoData.ts) | Dataset Centralizado | Modelado de interfaces `DemoPerformanceMonthMetric` y `DemoPerformanceMonth`, creación de serie de 24 meses (`sep 24` a `ago 26`) con segmentación regional (`all`, `norte`, `sur`, `centro`) y función de corte `getDemoPerformanceData`. |
+| [`components/PerformanceChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PerformanceChart.tsx) | Componente UI / Lógica | Soporte de props `dateFilter`, `regionFilter`, `isDemo`; cálculo dinámico de `currentData`, `previousData`, `currentValue`, `change` y `monthsCount`; renderizado responsivo con `dot` y `domain` adaptativo. |
+| [`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx) | Componente UI / Contenedor | Propagación de props reactivos `dateFilter`, `regionFilter`, `isDemo` a `<PerformanceChart />` y remoción de 672 líneas de mock data inline en favor del módulo centralizado. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Actualización de Fase 10 y registro y completitud de las tareas de la Fase 11. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Registro histórico de los Sprints 10 y 11 con fórmulas y detalles de implementación. |
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación TypeScript:** Ejecución de `npx tsc --noEmit` completada exitosamente con **0 errores de compilación**.
+- **Validación de Slices Temporales:** Comprobación lógica de las ventanas temporales en motor Node:
+  - `1M`: 1 mes (`ago 26`), vs `jul 26`.
+  - `3M`: 3 meses (`jun 26` a `ago 26`), vs `mar 26` a `may 26`.
+  - `6M`: 6 meses (`mar 26` a `ago 26`), vs `sep 25` a `feb 26`.
+  - `1Y`: 12 meses (`sep 25` a `ago 26`), vs `sep 24` a `ago 25`.
+  - `YTD`: 8 meses (`ene 26` a `ago 26`), vs `may 25` a `dic 25`.
+- **Validación Regional:** Comprobación de consistencia numérica aditiva entre regiones para todas las métricas.
+- **Restricción Cumplida:** No se ejecutaron pruebas de emulación de navegador, DOM ni capturas de pantalla, reservadas para validación del usuario.
+
+---
+
+## Estado Actual y Próximos Pasos
+- **Progreso del Proyecto:** Filtros de tiempo y regiones 100% reactivos y funcionales en el gráfico de Rendimiento de Ejecución de Marca, con serie de 12 meses continuos para la opción "1 Año" y cálculo matemático exacto de KPIs.
+- **Paso Inmediato:** Validación de interfaz y experiencia de usuario por parte del cliente.
+
+
 
 
 

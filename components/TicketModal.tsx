@@ -3,6 +3,7 @@ import { X, Send, Loader2, GraduationCap, Zap, Package, MessageSquare, Plus, Tra
 import { supabase } from '../utils/supabase/client';
 import { sendAdminNotification } from '../utils/notifications';
 import { toast } from 'sonner';
+import { DEMO_VENUES } from '../utils/demoData';
 
 interface TicketModalProps {
   session: any;
@@ -39,7 +40,7 @@ interface MaterialItem {
   cantidad: number;
 }
 
-export function TicketModal({ session: _session, onClose, preselectedVenueId }: TicketModalProps) {
+export function TicketModal({ session, onClose, preselectedVenueId }: TicketModalProps) {
   const [category, setCategory] = useState<TicketCategory>(preselectedVenueId ? 'accion_btl' : 'general');
   const [loading, setLoading] = useState(false);
 
@@ -95,12 +96,16 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
 
       // Cargar puntos de venta si es necesario
       if (category === 'accion_btl' || preselectedVenueId) {
-        const { data } = await supabase
-          .from('btl_puntos_venta')
-          .select('id, nombre, ciudad, tipo')
-          .order('nombre');
+        if (preselectedVenueId?.startsWith('v') || !session) {
+          setVenues(DEMO_VENUES.map(v => ({ id: v.id, nombre: v.nombre, ciudad: v.ciudad, tipo: v.tipo })));
+        } else {
+          const { data } = await supabase
+            .from('btl_puntos_venta')
+            .select('id, nombre, ciudad, tipo')
+            .order('nombre');
 
-        if (data) setVenues(data);
+          if (data) setVenues(data);
+        }
       }
 
       // Cargar productos del cliente si es necesario
@@ -261,6 +266,15 @@ export function TicketModal({ session: _session, onClose, preselectedVenueId }: 
         if (extraPop) {
           ticketData.descripcion = `${ticketData.descripcion}\n\n${extraPop}`;
         }
+      }
+
+      // 🚨 DEMO MODE / MOCK VENUE BYPASS
+      if (preselectedVenueId?.startsWith('v') || !session) {
+        toast.success(category === 'general' ? 'Ticket Creado (Simulado)' : 'Solicitud Enviada (Simulada)', {
+          description: `Modo Demo: Tu solicitud para ${ticketData.titulo || 'el punto de venta'} ha sido registrada en memoria.`
+        });
+        onClose();
+        return;
       }
 
       const { data: newTicket, error } = await supabase

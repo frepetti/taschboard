@@ -50,3 +50,20 @@
 - [x] Verificación de tipos `npx tsc --noEmit` (0 errores)
 - [x] Actualización de `walkthrough.md`
 
+## Fase 10: Estandarización de Modo Demo y Corrección de Error HTTP 400
+- [x] Creación del módulo centralizado `utils/demoData.ts` con exactamente 5 venues (`v1`-`v5`) y función `getDemoVenueDetail`
+- [x] Intercepción en `VenueDetail.tsx` para neutralizar llamadas a PostgREST con IDs mock y añadir badge visual de modo demo
+- [x] Sincronización de dataset mock en `ManagerDashboard.tsx` y mitigación en `TicketModal.tsx`
+- [x] Validación estática con `npx tsc --noEmit`
+- [x] Pruebas en navegador y actualización de `walkthrough.md`
+
+## Fase 11: Reactividad de Filtros y Expansión Histórica en Rendimiento de Marca
+- [x] Extensión del dataset histórico mock a 12 meses móviles (sep 25 - ago 26) con desglose regional en `utils/demoData.ts`
+- [x] Conexión y reactividad de props `dateFilter` y `regionFilter` en `PerformanceChart.tsx`
+- [x] Recálculo dinámico de KPIs inferiores (`Actual`, `vs Periodo Anterior` y conteo de `Meses`)
+- [x] Integración de props en `ManagerDashboard.tsx` y `ClientDashboard.tsx`
+- [x] Verificación técnica exclusiva con `npx tsc --noEmit` (sin pruebas de DOM ni screenshots)
+- [x] Actualización y completitud de `walkthrough.md` (Sprint 11)
+
+
+

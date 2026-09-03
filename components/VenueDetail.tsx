@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { supabase } from '../utils/supabase/client';
 import { useLanguage } from '../utils/LanguageContext';
 import { TicketModal } from './TicketModal';
+import { getDemoVenueDetail } from '../utils/demoData';
 
 interface Venue {
   id: string;
@@ -25,9 +26,10 @@ interface VenueDetailProps {
   venueId: string;
   selectedProductId?: string | null;
   onBack: () => void;
+  isDemo?: boolean;
 }
 
-export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailProps) {
+export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false }: VenueDetailProps) {
   const { t } = useLanguage();
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,21 +39,33 @@ export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailP
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [avgProductScore, setAvgProductScore] = useState<number | null>(null);
 
+  const isMock = isDemo || (typeof venueId === 'string' && (venueId.startsWith('v') || !venueId.includes('-')));
+
   // Fallback images if no photos are found
   const fallbackImages = [
     'https://images.unsplash.com/photo-1617524455280-327a0ffc561b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDF8fHx8MTc2NzY4NTc0Nnww&ixlib=rb-4.1.0&q=80&w=1080',
-    'https://images.unsplash.com/photo-1739203852867-87038459791a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYXJ0ZW5kZXIlMjBwb3VyaW5nJTIwY29ja3RhaWx8ZW58MXx8fHwxNzY3NzMwODA4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    'https://images.unsplash.com/photo-1739203852867-87038459791a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxiYXJ0ZW5kZXIlMjBwb3VyaW5nJTIwY29ja3RhaWx8ZW58MXx8fHwxNzY3NzMwODA4fDA&ixlib=rb-4.1.0&q=80&w=1080',
   ];
 
   useEffect(() => {
     loadVenueData();
   }, [venueId, selectedProductId]);
 
-
-
   const loadVenueData = async () => {
     try {
       setLoading(true);
+
+      // 🚨 DEMO MODE / MOCK ID BYPASS — Evita HTTP 400 por sintaxis no-UUID en Supabase
+      if (isMock) {
+        const demoDetail = getDemoVenueDetail(venueId);
+        setVenue(demoDetail.venue);
+        setPhotos(demoDetail.photos);
+        setPerfectServeChecklist(demoDetail.perfectServeChecklist);
+        setPerfectServeScore(demoDetail.perfectServeScore);
+        setAvgProductScore(demoDetail.avgProductScore);
+        setLoading(false);
+        return;
+      }
 
       // 1. Fetch Venue Details
       const { data: venueResult, error: venueError } = await supabase
@@ -246,6 +260,12 @@ export function VenueDetail({ venueId, selectedProductId, onBack }: VenueDetailP
 
               {/* Badges */}
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                {isMock && (
+                  <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-purple-500/20 text-purple-300 border border-purple-500/40 font-semibold shadow-sm flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                    Modo Demo - Datos Simulados
+                  </span>
+                )}
                 <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-slate-700/50 text-slate-300 border border-slate-600/50">
                   {venue.tipo}
                 </span>
