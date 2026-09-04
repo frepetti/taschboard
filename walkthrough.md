@@ -199,6 +199,31 @@ Este sprint implementó la funcionalidad completa y reactiva de los filtros de T
 - **Progreso del Proyecto:** Filtros de tiempo y regiones 100% reactivos y funcionales en el gráfico de Rendimiento de Ejecución de Marca, con serie de 12 meses continuos para la opción "1 Año" y cálculo matemático exacto de KPIs.
 - **Paso Inmediato:** Validación de interfaz y experiencia de usuario por parte del cliente.
 
+---
+
+# Sprint 12 — Despliegue en Producción (PD)
+
+## Resumen Ejecutivo del Sprint
+Se ejecutó la publicación integral a Producción (**PD**) integrando los desarrollos validados de los Sprints 10 y 11:
+1. **Compilación de Producción:** Ejecución de `npm run build` (`vite build`) verificando la generación limpia de todos los bundles y chunks en `dist/` (0 errores).
+2. **Versionado de Assets:** Registro del commit `21207e2` (`build: update production bundle with demo mode and performance chart filters`) en la rama `develop`.
+3. **Merge a Producción:** Fusión por avance rápido (*Fast-Forward*) de `develop` hacia `main` (commit `21207e2`).
+4. **Despliegue en Vercel:** Push a `origin/main` para disparar el pipeline automatizado de producción.
+5. **Aislamiento de Entorno:** Retorno a la rama activa de desarrollo `develop`.
+
+---
+
+## Verificación de Calidad
+- **Pipeline Git:** `origin/main` y `origin/develop` sincronizados en el commit `21207e2`.
+- **Integridad del Árbol de Trabajo:** `nothing to commit, working tree clean` en `develop`.
+
+---
+
+## Estado Actual y Próximos Pasos
+- **Progreso del Proyecto:** Todos los cambios desplegados en Producción (**PD**).
+- **Paso Inmediato:** Monitoreo del deployment en el dashboard de Vercel y verificación en el entorno productivo.
+
+
 
 
 

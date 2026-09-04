@@ -65,5 +65,14 @@
 - [x] Verificación técnica exclusiva con `npx tsc --noEmit` (sin pruebas de DOM ni screenshots)
 - [x] Actualización y completitud de `walkthrough.md` (Sprint 11)
 
+## Fase 12: Despliegue en Producción (PD)
+- [x] Generación y verificación del build de producción (`npm run build`)
+- [x] Commit de assets compilados en `dist/` sobre rama `develop`
+- [x] Sincronización y push de `develop` a `origin/develop`
+- [x] Merge fast-forward de `develop` hacia `main` (rama de producción)
+- [x] Push a `origin/main` para disparo del pipeline CI/CD en Vercel
+- [x] Retorno seguro al entorno de trabajo en `develop`
+
+
 
 
