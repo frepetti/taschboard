@@ -299,9 +299,91 @@ En el modelo relacional del sistema (`master_schema.sql`), no existe una relaci�
 
 ---
 
-## Estado Actual y Próximos Pasos
+## Estado Actual y Próximos Pasos (Sprint 13)
 - **Progreso del Proyecto:** Alcance relacional de datos en "Análisis de Capacitación" 100% corregido y reactivo a los filtros de producto, cliente y región, con protecciones numéricas y soporte en memoria para modo Demo.
-- **Paso Inmediato:** Validación funcional y visual en la interfaz por parte del usuario y Process Owners.
+- **Paso Inmediato:** Implementación del visor ampliado interactivo (Lightbox) en la galería de fotos de `VenueDetail.tsx`.
+
+---
+
+# Sprint 14 — Visor Ampliado (Lightbox) de Fotografías en VenueDetail
+
+## Objetivo del Sprint
+Proporcionar una experiencia interactiva y accesible de visualización para las fotografías de auditoría en la sección **"Galería del Venue"** dentro de [`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx). Las miniaturas, previamente estáticas, ahora actúan como disparadores de un modal Lightbox de pantalla completa, permitiendo a supervisores, clientes y process owners examinar el material fotográfico de auditoría en alta resolución con proporción respetada.
+
+---
+
+## Alcance Técnico y Arquitectura de la Solución
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 Galería del Venue (Thumbnails)              │
+│       [Miniatura 1]    [Miniatura 2]    [Miniatura N]       │
+│             │                                               │
+│       onClick(url) ──> setSelectedImage(url)                │
+└─────────────────────────────┬───────────────────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Lightbox Modal (Overlay Fijo)               │
+│                                                             │
+│   Backdrop: fixed inset-0 z-50 bg-black/80 backdrop-blur-sm │
+│   - onClick: setSelectedImage(null)                         │
+│   - Teclado: Listener 'Escape' en useEffect                 │
+│                                                             │
+│   [X] Botón accesible (aria-label="Cerrar vista previa")    │
+│                                                             │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │ Contenedor de Imagen (e.stopPropagation())          │   │
+│   │   max-h-[85vh] max-w-[90vw] object-contain          │   │
+│   │   rounded-lg shadow-2xl                             │   │
+│   └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+1. **Gestión de Estado Centralizada:**
+   - Estado reactivo local: `const [selectedImage, setSelectedImage] = useState<string | null>(null)`.
+   - Inicializado en `null`. Compatible de forma idéntica con URLs provenientes de Supabase Storage (`btl_inspecciones.fotos_urls`) y con URLs mock en modo demo provistas por [`utils/demoData.ts`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/demoData.ts).
+
+2. **Feedback Visual en Miniaturas:**
+   - Adición de `cursor-pointer hover:opacity-85 transition-opacity` a las miniaturas para comunicar interactividad inmediata al usuario.
+
+3. **Mecanismos de Cierre Ergonómicos (3 Vías):**
+   - **Backdrop Exterior:** Clic sobre el overlay oscuro fuera del contenedor de la imagen ejecuta `setSelectedImage(null)`.
+   - **Aislamiento de Evento:** El contenedor interior de la imagen intercepta clics con `e.stopPropagation()`, evitando cierres no deseados al interactuar con la imagen.
+   - **Botón Explícito de Cierre:** Botón `X` en la esquina superior derecha (`aria-label="Cerrar vista previa"`) accesible y visible sobre fondos oscuros o claros.
+   - **Atajo de Teclado:** Listener global en `useEffect` que intercepta la tecla `Escape` y se remueve de forma determinista en la fase de desmontaje (`cleanup function`).
+
+4. **Escalado y Proporción Responsiva:**
+   - Estilos `max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl` que garantizan que fotografías de cualquier aspecto (horizontal, vertical o panorámico) se visualicen sin deformaciones ni scrollbars secundarios.
+
+---
+
+## Detalle de Componentes Modificados
+
+| Componente / Archivo | Tipo de Cambio | Impacto Funcional / Técnico |
+|---|---|---|
+| [`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx) | Interfaz & UX | Inclusión de estado `selectedImage`, listener de tecla `Escape`, interactividad en miniaturas de galería y renderizado condicional del modal Lightbox con aislamiento de eventos. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Registro y completitud de las tareas de la Fase 14. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 14 para Analistas Funcionales y Process Owners. |
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación TypeScript:** Ejecución de `npx tsc --noEmit` completada exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida:** No se ejecutaron pruebas sobre el DOM, emulaciones de navegador ni capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+- **Accesibilidad:** Cumplimiento de atributo semántico `aria-label="Cerrar vista previa"` en el disparador de cierre.
+
+---
+
+## Project Walkthrough
+
+- **Progreso Actual del Proyecto:** El componente de detalle de venue (`VenueDetail.tsx`) cuenta ahora con una galería de inspección interactiva y accesible, complementando el soporte ya implementado para modo Demo y producción.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Definición del estado `selectedImage` y suscripción al listener de teclado (`Escape`).
+  2. Asignación de interactividad `onClick` y estilo cursor/hover a las miniaturas de la galería.
+  3. Renderizado del modal Lightbox con backdrop desenfocado, botón de cierre explícito accesible, parada de propagación y dimensionamiento proporcional adaptativo.
+  4. Verificación estática con TypeScript (`0 errores`).
+- **Paso Inmediato:** Validación funcional y visual en navegador por parte del usuario y Process Owners.
 
 
 

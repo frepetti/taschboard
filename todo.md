@@ -81,3 +81,10 @@
 - [x] Validación de compilación estática con `npx tsc --noEmit` (cero errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 13)
 
+## Fase 14: Visor Ampliado (Lightbox) de Fotos en VenueDetail
+- [x] Declarar estado `selectedImage` y listener para la tecla `Escape` en `components/VenueDetail.tsx`
+- [x] Asignar manejador `onClick` y feedback visual en miniaturas de galería
+- [x] Implementar contenedor Modal Lightbox con backdrop desenfocado, botón de cierre accesible y stopPropagation
+- [x] Validación estática de código y tipado con `npx tsc --noEmit`
+- [x] Actualización y completitud de `walkthrough.md` (Sprint 14)
+

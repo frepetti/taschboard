@@ -34,6 +34,7 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [perfectServeScore, setPerfectServeScore] = useState(0);
   const [perfectServeChecklist, setPerfectServeChecklist] = useState<{ item: string; status: boolean }[]>([]);
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -46,6 +47,21 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
     'https://images.unsplash.com/photo-1617524455280-327a0ffc561b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2NrdGFpbCUyMGJhciUyMGludGVyaW9yfGVufDF8fHx8MTc2NzY4NTc0Nnww&ixlib=rb-4.1.0&q=80&w=1080',
     'https://images.unsplash.com/photo-1739203852867-87038459791a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxiYXJ0ZW5kZXIlMjBwb3VyaW5nJTIwY29ja3RhaWx8ZW58MXx8fHwxNzY3NzMwODA4fDA&ixlib=rb-4.1.0&q=80&w=1080',
   ];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedImage(null);
+      }
+    };
+
+    if (selectedImage) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedImage]);
 
   useEffect(() => {
     loadVenueData();
@@ -317,7 +333,8 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
                       key={i}
                       src={img}
                       alt={`Foto ${i + 1}`}
-                      className="w-full h-24 sm:h-40 object-cover rounded-lg border border-slate-700/50 hover:border-amber-500/50 transition-colors cursor-pointer"
+                      onClick={() => setSelectedImage(img)}
+                      className="w-full h-24 sm:h-40 object-cover rounded-lg border border-slate-700/50 hover:border-amber-500/50 cursor-pointer hover:opacity-85 transition-opacity"
                     />
                   ))}
                 </div>
@@ -436,6 +453,36 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
           onClose={() => setShowTicketModal(false)}
           preselectedVenueId={venueId}
         />
+      )}
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* Botón de cierre explícito */}
+          <button
+            type="button"
+            onClick={() => setSelectedImage(null)}
+            aria-label="Cerrar vista previa"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition-colors shadow-lg focus:outline-none"
+          >
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+
+          {/* Contenedor de imagen aislado con stopPropagation */}
+          <div
+            className="relative max-h-[85vh] max-w-[90vw] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage}
+              alt="Vista previa ampliada"
+              className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
       )}
     </div >
   );
