@@ -73,6 +73,11 @@
 - [x] Push a `origin/main` para disparo del pipeline CI/CD en Vercel
 - [x] Retorno seguro al entorno de trabajo en `develop`
 
-
-
+## Fase 13: Alcance Relacional en Análisis de Capacitación
+- [x] Enriquecer `utils/demoData.ts` con dataset simulado de capacitación para venues `v1` a `v5`
+- [x] Implementar soporte seguro de "Todos los productos" en `components/ProductMetrics.tsx`
+- [x] Adaptar `components/ClientDashboard.tsx` para propagar filtros y habilitar visualización en modo Demo
+- [x] Reescribir resolución relacional de venues y guardas defensivas en `components/VenueTrainingAnalytics.tsx`
+- [x] Validación de compilación estática con `npx tsc --noEmit` (cero errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 13)
 

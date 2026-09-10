@@ -223,6 +223,86 @@ Se ejecutó la publicación integral a Producción (**PD**) integrando los desar
 - **Progreso del Proyecto:** Todos los cambios desplegados en Producción (**PD**).
 - **Paso Inmediato:** Monitoreo del deployment en el dashboard de Vercel y verificación en el entorno productivo.
 
+---
+
+# Sprint 13 — Alcance Relacional de Datos en Análisis de Capacitación
+
+## Resumen Ejecutivo del Sprint
+Este sprint corrigió el alcance de datos en la sección **"Análisis de Capacitación"** (`VenueTrainingAnalytics.tsx`) del Dashboard de Cliente. Anteriormente, el módulo contabilizaba la totalidad de puntos de venta registrados en la base de datos de manera global; se implementó una resolución relacional indirecta basada en el producto y cliente activo en los filtros superiores, con protecciones numéricas contra divisiones por cero y soporte coherente para el modo Demo en memoria.
+
+---
+
+## Análisis de Dependencias Relacionales
+En el modelo relacional del sistema (`master_schema.sql`), no existe una relación directa entre productos y puntos de venta (PDV). La pertenencia se articula de manera indirecta a través de dos entidades intermedias:
+
+```
+[btl_productos] (producto_id)
+        │
+        ▼ (1:N)
+[btl_cliente_productos] ──(resuelve cliente)──> [btl_usuarios] (usuario_id)
+                                                       │
+                                                       ▼ (1:N)
+                                            [btl_clientes_venues] ──(resuelve venues)──> [btl_puntos_venta]
+```
+
+### Reglas de Resolución Implementadas:
+1. **Producto Específico Seleccionado:**
+   - Se consulta `btl_cliente_productos` para obtener el/los cliente(s) (`usuario_id`) propietarios del `selectedProductId` (acotado al cliente de la sesión si no es administrador).
+   - Con los identificadores de cliente obtenidos, se consulta `btl_clientes_venues` para obtener los `venue_id` asignados.
+   - El resultado define el **universo cerrado de venues** para el producto activo.
+2. **"Todos los productos" o Selección Nula:**
+   - El universo se delimita directamente por el cliente activo en la sesión mediante `btl_clientes_venues` (`cliente_id = activeClientId`).
+   - En el caso de un Administrador sin filtro de cliente, se consideran los venues asignados en `btl_clientes_venues`.
+3. **Modo Demo (`isDemo === true`):**
+   - Se suprime la interacción con Supabase PostgREST para evitar llamadas HTTP o bloqueos RLS.
+   - Se abastece el universo cerrado directamente desde el catálogo de 5 venues estandarizados (`v1` a `v5`) configurados en memoria en `utils/demoData.ts`.
+
+---
+
+## Detalle de Componentes Modificados
+
+| Componente / Archivo | Tipo de Cambio | Impacto Funcional / Técnico |
+|---|---|---|
+| [`components/VenueTrainingAnalytics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueTrainingAnalytics.tsx) | Lógica Relacional & UI | Extensión de props (`selectedProductId`, `isDemo`, `isAdmin`, `regionFilter`). Sustitución del query global por la resolución `btl_cliente_productos` $\to$ `btl_clientes_venues`. Filtro de inspecciones acotado a los venues del universo. Guardas defensivas contra `totalVenues === 0` (retornando `0.0%` en tarjetas de capacitado y sin capacitar). Modal de Detalle restringido exclusivamente a los venues activos. |
+| [`components/ClientDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientDashboard.tsx) | Orquestador UI | Propagación reactiva de `selectedProductId`, `isDemo`, `isAdmin` y `regionFilter` a `<VenueTrainingAnalytics />`. Habilitación de `<VenueTrainingAnalytics />` en modo Demo. Aislamiento de llamadas Supabase cuando `isDemo === true`. |
+| [`components/ProductMetrics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ProductMetrics.tsx) | Selector & KPIs | Incorporación de la opción `<option value="all">Todos los productos</option>`. Manejo defensivo en `loadMetricsForProduct('all')` para consolidar métricas de catálogo y evitar queries con UUIDs inválidos. |
+| [`utils/demoData.ts`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/demoData.ts) | Dataset Centralizado | Modelado de interfaces `DemoVenueTraining`, definición del dataset `DEMO_VENUE_TRAININGS` (5 venues con 3 capacitados y 2 sin capacitar) y función `getDemoTrainingData` reactiva al filtro regional. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Registro y completitud de las tareas de la Fase 13. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 13 para Analistas Funcionales y Process Owners. |
+
+---
+
+## Recálculo Dinámico y Manejo Defensivo de Métricas
+
+1. **Total de Venues:**
+   - Refleja la cantidad real de venues en el universo cerrado activo ($N$).
+2. **Porcentajes de Capacitación:**
+   - **Manejo defensivo ante universo vacío ($N = 0$):**
+     $$\% \text{ Capacitado} = 0.0\%$$
+     $$\% \text{ Sin Capacitar} = 0.0\%$$
+     Evita división por cero, `NaN` y el valor anómalo `100 - 0 = 100%` cuando no existen venues asignados.
+   - **Con venues asignados ($N > 0$):**
+     $$\% \text{ Con Personal Capacitado} = \left(\frac{\text{venuesWithTraining}}{N}\right) \times 100$$
+     $$\% \text{ Sin Personal Capacitado} = \left(\frac{\text{venuesWithoutTraining}}{N}\right) \times 100$$
+3. **Barra de Progreso y Detalle:**
+   - Etiqueta dinámica: `X de N venues`.
+   - Ancho visual sincronizado con el porcentaje defensivo.
+   - El modal "Ver Detalle" enumera única y exclusivamente los puntos de venta filtrados para la selección vigente.
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación TypeScript:** Ejecución de `npx tsc --noEmit` completada exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida:** No se realizaron pruebas sobre el DOM, emulación de navegador ni capturas de pantalla, preservando el entorno para la inspección del usuario.
+- **Integridad de Modelos:** Nombres de tablas y columnas contrastados contra `supabase/migrations/master_schema.sql` (`btl_cliente_productos`, `btl_clientes_venues`, `btl_puntos_venta`, `btl_usuarios`, `btl_capacitaciones`, `btl_capacitacion_asistentes`).
+
+---
+
+## Estado Actual y Próximos Pasos
+- **Progreso del Proyecto:** Alcance relacional de datos en "Análisis de Capacitación" 100% corregido y reactivo a los filtros de producto, cliente y región, con protecciones numéricas y soporte en memoria para modo Demo.
+- **Paso Inmediato:** Validación funcional y visual en la interfaz por parte del usuario y Process Owners.
+
 
 
 

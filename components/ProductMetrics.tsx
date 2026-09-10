@@ -69,6 +69,96 @@ export function ProductMetrics({
     try {
       setLoadingMetrics(true);
 
+      if (productId === 'all') {
+        let query = supabase
+          .from('btl_inspecciones')
+          .select(`
+            *,
+            btl_puntos_venta!inner(id, region_id)
+          `);
+
+        const validProductIds = products.map(p => p.id).filter(id => id && id !== 'all');
+        if (validProductIds.length > 0) {
+          query = query.in('producto_id', validProductIds);
+        }
+
+        // Apply Date Filter
+        const now = new Date();
+        let startDate = new Date();
+        if (dateFilter === '1M') startDate.setDate(now.getDate() - 30);
+        else if (dateFilter === '3M') startDate.setDate(now.getDate() - 90);
+        else if (dateFilter === '6M') startDate.setDate(now.getDate() - 180);
+        else if (dateFilter === '1Y') startDate.setDate(now.getDate() - 365);
+        else if (dateFilter === 'YTD') startDate.setMonth(0, 1);
+
+        if (dateFilter !== 'all') {
+          query = query.gte('fecha_inspeccion', startDate.toISOString());
+        }
+
+        // Apply Region Filter
+        if (regionFilter && regionFilter !== 'all') {
+          query = query.eq('btl_puntos_venta.region_id', regionFilter);
+        }
+
+        const { data: inspectionProducts, error: inspError } = await query;
+        if (inspError) throw inspError;
+
+        const uniqueVenues = new Set(
+          inspectionProducts?.map((ip: any) => ip.punto_venta_id) || []
+        );
+
+        const totalInspections = inspectionProducts?.length || 0;
+        const withProduct = inspectionProducts?.filter((ip: any) => ip.tiene_producto).length || 0;
+        const withStock = inspectionProducts?.filter((ip: any) =>
+          ip.tiene_producto && ip.stock_nivel && ip.stock_nivel !== 'agotado'
+        ).length || 0;
+        const withPOP = inspectionProducts?.filter((ip: any) => ip.tiene_material_pop).length || 0;
+
+        const presenciaActual = totalInspections > 0 ? (withProduct / totalInspections) * 100 : 0;
+        const stockActual = totalInspections > 0 ? (withStock / totalInspections) * 100 : 0;
+        const popActual = totalInspections > 0 ? (withPOP / totalInspections) * 100 : 0;
+
+        const inspWithPrice = (inspectionProducts || []).filter(
+          (ip: any) => ip.precio_venta != null && ip.precio_venta > 0
+        );
+
+        let avgPrice: number | null = null;
+        let minPrice: number | null = null;
+        let maxPrice: number | null = null;
+        if (inspWithPrice.length > 0) {
+          const prices = inspWithPrice.map((ip: any) => Number(ip.precio_venta));
+          avgPrice = Math.round((prices.reduce((sum: number, p: number) => sum + p, 0) / prices.length) * 100) / 100;
+          minPrice = Math.min(...prices);
+          maxPrice = Math.max(...prices);
+        }
+
+        const consolidatedMetric: ProductMetric = {
+          id: 'all',
+          nombre: 'Catálogo Consolidado',
+          marca: 'Todos los Productos',
+          categoria: 'Consolidado',
+          color_primario: '#F59E0B',
+          presencia_actual: Math.round(presenciaActual * 10) / 10,
+          presencia_objetivo: 80,
+          stock_actual: Math.round(stockActual * 10) / 10,
+          stock_objetivo: 75,
+          pop_actual: Math.round(popActual * 10) / 10,
+          pop_objetivo: 60,
+          puntos_venta_con_producto: uniqueVenues.size,
+          total_puntos_venta: totalInspections,
+          tendencia: presenciaActual >= 80 ? 'up' : 'down',
+          precio_referencia: null,
+          precio_carta_promedio: avgPrice,
+          desviacion_precio: null,
+          precio_min: minPrice,
+          precio_max: maxPrice,
+          inspecciones_con_precio: inspWithPrice.length
+        };
+
+        setMetric(consolidatedMetric);
+        return;
+      }
+
       const { data: product, error: productError } = await supabase
         .from('btl_productos')
         .select('*')
@@ -224,10 +314,11 @@ export function ProductMetrics({
             <ChevronDown className="w-4 h-4" />
           </div>
           <select
-            value={selectedProductId || ''}
+            value={selectedProductId || 'all'}
             onChange={(e) => onProductSelect && onProductSelect(e.target.value)}
             className="w-full bg-slate-800/80 border border-slate-700 text-white pl-4 pr-10 py-2.5 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer hover:bg-slate-800 transition-colors"
           >
+            <option value="all">Todos los productos</option>
             {products.map((product) => (
               <option key={product.id} value={product.id}>
                 {product.marca} - {product.nombre}

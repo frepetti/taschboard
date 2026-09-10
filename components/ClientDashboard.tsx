@@ -32,10 +32,16 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
 
   useEffect(() => {
     loadProducts();
-  }, [isAdmin]);
+  }, [isAdmin, isDemo]);
 
   const loadProducts = async () => {
     try {
+      if (isDemo) {
+        setProducts([]);
+        setSelectedProductId('all');
+        return;
+      }
+
       if (isAdmin) {
         // Admin: load ALL active products
         const { data: productsData, error } = await supabase
@@ -118,9 +124,13 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
         )}
 
         {/* Training Analytics Section */}
-        {!isDemo && (
-          <VenueTrainingAnalytics session={session} />
-        )}
+        <VenueTrainingAnalytics
+          session={session}
+          selectedProductId={selectedProductId}
+          isDemo={isDemo}
+          isAdmin={isAdmin}
+          regionFilter={regionFilter}
+        />
 
         {/* Read-only Dashboard */}
         <ManagerDashboard

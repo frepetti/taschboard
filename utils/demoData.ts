@@ -819,3 +819,114 @@ export function getDemoVenueDetail(venueId: string): DemoVenueDetailResult {
     inspections: venueInspections
   };
 }
+
+// ─── 8. Dataset de Capacitación por Venue para Modo Demo ──────────────────
+export interface DemoVenueTraining {
+  id: string;
+  nombre: string;
+  direccion: string | null;
+  ciudad: string | null;
+  tipo: string | null;
+  trainedStaff: number;
+  totalStaff: number;
+  lastTrainingDate?: string;
+  hasTrained: boolean;
+  region_id?: string;
+}
+
+export const DEMO_VENUE_TRAININGS: DemoVenueTraining[] = [
+  {
+    id: 'v1',
+    nombre: 'La Terraza Premium',
+    direccion: 'Av. del Libertador 4100, Palermo',
+    ciudad: 'Buenos Aires',
+    tipo: 'Bar Premium',
+    trainedStaff: 3,
+    totalStaff: 3,
+    lastTrainingDate: '2026-03-15T14:00:00Z',
+    hasTrained: true,
+    region_id: 'norte'
+  },
+  {
+    id: 'v2',
+    nombre: 'Bierhaus',
+    direccion: 'Fitz Roy 1650, Palermo',
+    ciudad: 'Buenos Aires',
+    tipo: 'Cervecería',
+    trainedStaff: 2,
+    totalStaff: 4,
+    lastTrainingDate: '2026-02-20T10:00:00Z',
+    hasTrained: true,
+    region_id: 'norte'
+  },
+  {
+    id: 'v3',
+    nombre: 'El Escondite',
+    direccion: 'Defensa 820, San Telmo',
+    ciudad: 'Buenos Aires',
+    tipo: 'Bar',
+    trainedStaff: 0,
+    totalStaff: 2,
+    hasTrained: false,
+    region_id: 'sur'
+  },
+  {
+    id: 'v4',
+    nombre: 'Pub Los Amigos',
+    direccion: 'Av. Cabildo 2100, Belgrano',
+    ciudad: 'Buenos Aires',
+    tipo: 'Bar',
+    trainedStaff: 2,
+    totalStaff: 2,
+    lastTrainingDate: '2026-03-10T16:30:00Z',
+    hasTrained: true,
+    region_id: 'norte'
+  },
+  {
+    id: 'v5',
+    nombre: 'Bar Central',
+    direccion: 'Florida 450, Microcentro',
+    ciudad: 'Buenos Aires',
+    tipo: 'Bar Tradicional',
+    trainedStaff: 0,
+    totalStaff: 3,
+    hasTrained: false,
+    region_id: 'centro'
+  }
+];
+
+export function getDemoTrainingData(regionFilter?: string): {
+  venues: DemoVenueTraining[];
+  stats: {
+    totalVenues: number;
+    venuesWithTraining: number;
+    venuesWithoutTraining: number;
+    percentageTrained: number;
+    totalTrainings: number;
+    totalAttendees: number;
+  };
+} {
+  let filtered = DEMO_VENUE_TRAININGS;
+  if (regionFilter && regionFilter !== 'all') {
+    const regLower = regionFilter.toLowerCase();
+    filtered = filtered.filter(v => v.region_id === regLower || v.direccion?.toLowerCase().includes(regLower));
+  }
+
+  const totalVenues = filtered.length;
+  const venuesWithTraining = filtered.filter(v => v.hasTrained).length;
+  const venuesWithoutTraining = totalVenues - venuesWithTraining;
+  const percentageTrained = totalVenues > 0 ? (venuesWithTraining / totalVenues) * 100 : 0;
+  const totalAttendees = filtered.reduce((acc, v) => acc + v.trainedStaff, 0);
+
+  return {
+    venues: filtered,
+    stats: {
+      totalVenues,
+      venuesWithTraining,
+      venuesWithoutTraining,
+      percentageTrained,
+      totalTrainings: venuesWithTraining > 0 ? 4 : 0,
+      totalAttendees
+    }
+  };
+}

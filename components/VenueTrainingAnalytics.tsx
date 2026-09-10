@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { GraduationCap, X, Search, MapPin, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
+import { getDemoTrainingData } from '../utils/demoData';
 
 interface VenueTrainingAnalyticsProps {
   session: any;
+  selectedProductId?: string | null;
+  isDemo?: boolean;
+  isAdmin?: boolean;
+  regionFilter?: string;
 }
 
 interface TrainingStats {
@@ -27,7 +32,13 @@ interface VenueWithTraining {
   hasTrained: boolean;
 }
 
-export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnalyticsProps) {
+export function VenueTrainingAnalytics({
+  session,
+  selectedProductId = null,
+  isDemo = false,
+  isAdmin = false,
+  regionFilter = 'all'
+}: VenueTrainingAnalyticsProps) {
   const [stats, setStats] = useState<TrainingStats>({
     totalVenues: 0,
     venuesWithTraining: 0,
@@ -44,21 +55,133 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
 
   useEffect(() => {
     loadTrainingData();
-  }, []);
+  }, [selectedProductId, isDemo, isAdmin, regionFilter]);
 
   const loadTrainingData = async () => {
     setLoading(true);
     try {
-      // Get all venues
-      const { data: venuesData, error: venuesError } = await supabase
+      // 1. MODO DEMO: Bypass Supabase con datos en memoria
+      if (isDemo) {
+        const demoResult = getDemoTrainingData(regionFilter);
+        setVenues(demoResult.venues);
+        setStats(demoResult.stats);
+        return;
+      }
+
+      // 2. MODO REAL: Determinar cliente activo en sesión
+      let activeClientId: string | null = null;
+      if (session?.user?.id) {
+        const { data: btlUser } = await supabase
+          .from('btl_usuarios')
+          .select('id')
+          .eq('auth_user_id', session.user.id)
+          .single();
+        if (btlUser) {
+          activeClientId = (btlUser as any).id;
+        }
+      }
+
+      // 3. Resolución relacional del universo cerrado de venues
+      let targetVenueIds: string[] = [];
+
+      if (selectedProductId && selectedProductId !== 'all') {
+        // A. Producto específico seleccionado:
+        // Resolver cliente(s) mediante btl_cliente_productos
+        let cpQuery = supabase
+          .from('btl_cliente_productos')
+          .select('usuario_id')
+          .eq('producto_id', selectedProductId);
+
+        if (!isAdmin && activeClientId) {
+          cpQuery = cpQuery.eq('usuario_id', activeClientId);
+        }
+
+        const { data: clientProdData, error: cpError } = await cpQuery;
+        if (cpError) throw cpError;
+
+        const clientIds = [...new Set((clientProdData || []).map((cp: any) => cp.usuario_id).filter(Boolean))];
+
+        if (clientIds.length > 0) {
+          // Resolver venues asignados al cliente mediante btl_clientes_venues
+          const { data: cvData, error: cvError } = await supabase
+            .from('btl_clientes_venues')
+            .select('venue_id')
+            .in('cliente_id', clientIds);
+
+          if (cvError) throw cvError;
+          targetVenueIds = [...new Set((cvData || []).map((cv: any) => cv.venue_id).filter(Boolean))];
+        } else {
+          targetVenueIds = [];
+        }
+      } else {
+        // B. "Todos los productos":
+        // Delimitar directamente por el cliente activo en sesión
+        if (activeClientId) {
+          const { data: cvData, error: cvError } = await supabase
+            .from('btl_clientes_venues')
+            .select('venue_id')
+            .eq('cliente_id', activeClientId);
+
+          if (cvError) throw cvError;
+          targetVenueIds = [...new Set((cvData || []).map((cv: any) => cv.venue_id).filter(Boolean))];
+        } else if (isAdmin) {
+          // Admin global: considerar todos los venues vinculados a clientes
+          const { data: cvData, error: cvError } = await supabase
+            .from('btl_clientes_venues')
+            .select('venue_id');
+
+          if (cvError) throw cvError;
+          targetVenueIds = [...new Set((cvData || []).map((cv: any) => cv.venue_id).filter(Boolean))];
+        } else {
+          targetVenueIds = [];
+        }
+      }
+
+      // 4. Manejo defensivo ante universo cerrado vacío
+      if (targetVenueIds.length === 0) {
+        setStats({
+          totalVenues: 0,
+          venuesWithTraining: 0,
+          venuesWithoutTraining: 0,
+          percentageTrained: 0,
+          totalTrainings: 0,
+          totalAttendees: 0
+        });
+        setVenues([]);
+        return;
+      }
+
+      // 5. Cargar únicamente los venues en el universo cerrado
+      let venuesQuery = supabase
         .from('btl_puntos_venta')
         .select('*')
+        .in('id', targetVenueIds)
         .order('nombre');
 
+      if (regionFilter && regionFilter !== 'all') {
+        venuesQuery = venuesQuery.eq('region_id', regionFilter);
+      }
+
+      const { data: venuesData, error: venuesError } = await venuesQuery;
       if (venuesError) throw venuesError;
 
-      // Get all training attendees with their venue associations
-      // We'll get inspectors who attended trainings and their assigned venues from visits
+      const finalVenues = venuesData || [];
+      const finalVenueIds = finalVenues.map((v: any) => v.id);
+
+      if (finalVenueIds.length === 0) {
+        setStats({
+          totalVenues: 0,
+          venuesWithTraining: 0,
+          venuesWithoutTraining: 0,
+          percentageTrained: 0,
+          totalTrainings: 0,
+          totalAttendees: 0
+        });
+        setVenues([]);
+        return;
+      }
+
+      // 6. Obtener capacitaciones y asistentes
       const { data: trainingsData, error: trainingsError } = await supabase
         .from('btl_capacitacion_asistentes')
         .select(`
@@ -77,28 +200,33 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
 
       if (trainingsError) throw trainingsError;
 
-      // Get visits to associate venues with trained inspectors
-      const { data: visitsData, error: visitsError } = await supabase
+      // 7. Obtener inspecciones acotadas al universo de venues filtrados
+      let visitsQuery = supabase
         .from('btl_inspecciones')
-        .select('punto_venta_id, usuario_id')
+        .select('punto_venta_id, usuario_id, fecha_inspeccion, detalles')
+        .in('punto_venta_id', finalVenueIds)
         .order('fecha_inspeccion', { ascending: false });
 
+      if (selectedProductId && selectedProductId !== 'all') {
+        visitsQuery = visitsQuery.eq('producto_id', selectedProductId);
+      }
+
+      const { data: visitsData, error: visitsError } = await visitsQuery;
       if (visitsError) throw visitsError;
 
-      // Create a map of trained inspectors
+      // Crear mapa de inspectores capacitados
       const trainedInspectors = new Set(
-        trainingsData?.map(t => t.usuario_id) || []
+        trainingsData?.map((t: any) => t.usuario_id) || []
       );
 
-      // Create a map of venues to trained inspectors
+      // Crear mapa de venues a personal capacitado
       const venueTrainingMap = new Map<string, {
         trainedStaff: Set<string>,
         totalStaff: Set<string>,
         lastTrainingDate?: string
       }>();
 
-      // Process visits to associate venues with staff
-      visitsData?.forEach(visit => {
+      visitsData?.forEach((visit: any) => {
         if (!venueTrainingMap.has(visit.punto_venta_id)) {
           venueTrainingMap.set(visit.punto_venta_id, {
             trainedStaff: new Set(),
@@ -107,18 +235,19 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
         }
 
         const venueData = venueTrainingMap.get(visit.punto_venta_id)!;
-        venueData.totalStaff.add(visit.usuario_id);
-
-        if (trainedInspectors.has(visit.usuario_id)) {
-          venueData.trainedStaff.add(visit.usuario_id);
+        if (visit.usuario_id) {
+          venueData.totalStaff.add(visit.usuario_id);
+          if (trainedInspectors.has(visit.usuario_id)) {
+            venueData.trainedStaff.add(visit.usuario_id);
+          }
         }
       });
 
-      // Get latest training dates
+      // Últimas fechas de capacitación
       const latestTrainingDates = new Map<string, string>();
-      trainingsData?.forEach(training => {
-        const date = training.btl_capacitaciones.fecha_inicio;
-        if (date) {
+      trainingsData?.forEach((training: any) => {
+        const date = training.btl_capacitaciones?.fecha_inicio;
+        if (date && training.usuario_id) {
           if (!latestTrainingDates.has(training.usuario_id) ||
             new Date(date) > new Date(latestTrainingDates.get(training.usuario_id)!)) {
             latestTrainingDates.set(training.usuario_id, date);
@@ -126,13 +255,12 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
         }
       });
 
-      // Process venues with training data
-      const processedVenues: VenueWithTraining[] = (venuesData || []).map(venue => {
+      // Procesar venues con métricas individuales
+      const processedVenues: VenueWithTraining[] = finalVenues.map((venue: any) => {
         const trainingData = venueTrainingMap.get(venue.id);
         const trainedCount = trainingData?.trainedStaff.size || 0;
         const totalCount = trainingData?.totalStaff.size || 0;
 
-        // Get most recent training date from staff
         let lastTrainingDate: string | undefined;
         if (trainingData?.trainedStaff) {
           for (const inspectorId of trainingData.trainedStaff) {
@@ -156,22 +284,42 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
         };
       });
 
-      // Calculate stats
-      const venuesWithTraining = processedVenues.filter(v => v.hasTrained).length;
+      // Calcular estadísticas con protección estricta contra división por cero
       const totalVenues = processedVenues.length;
+      const venuesWithTraining = processedVenues.filter(v => v.hasTrained).length;
+      const venuesWithoutTraining = totalVenues - venuesWithTraining;
+      const percentageTrained = totalVenues > 0 ? (venuesWithTraining / totalVenues) * 100 : 0;
+
+      // Capacitaciones y asistentes relevantes al universo filtrado
+      const relevantStaffIds = new Set<string>();
+      processedVenues.forEach(v => {
+        const tData = venueTrainingMap.get(v.id);
+        tData?.trainedStaff.forEach(id => relevantStaffIds.add(id));
+      });
+
+      const relevantTrainings = (trainingsData || []).filter((t: any) => relevantStaffIds.has(t.usuario_id));
 
       setStats({
         totalVenues,
         venuesWithTraining,
-        venuesWithoutTraining: totalVenues - venuesWithTraining,
-        percentageTrained: totalVenues > 0 ? (venuesWithTraining / totalVenues) * 100 : 0,
-        totalTrainings: trainingsData?.length || 0,
-        totalAttendees: trainedInspectors.size
+        venuesWithoutTraining,
+        percentageTrained,
+        totalTrainings: relevantTrainings.length,
+        totalAttendees: relevantStaffIds.size
       });
 
       setVenues(processedVenues);
     } catch (error) {
       console.error('Error loading training data:', error);
+      setStats({
+        totalVenues: 0,
+        venuesWithTraining: 0,
+        venuesWithoutTraining: 0,
+        percentageTrained: 0,
+        totalTrainings: 0,
+        totalAttendees: 0
+      });
+      setVenues([]);
     } finally {
       setLoading(false);
     }
@@ -235,7 +383,7 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
               <CheckCircle className="w-6 h-6 text-green-400" />
             </div>
             <span className="text-green-400 text-sm font-medium">
-              {stats.percentageTrained.toFixed(1)}%
+              {(stats.percentageTrained || 0).toFixed(1)}%
             </span>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.venuesWithTraining}</div>
@@ -249,7 +397,7 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
               <XCircle className="w-6 h-6 text-red-400" />
             </div>
             <span className="text-red-400 text-sm font-medium">
-              {(100 - stats.percentageTrained).toFixed(1)}%
+              {stats.totalVenues > 0 ? (100 - stats.percentageTrained).toFixed(1) : '0.0'}%
             </span>
           </div>
           <div className="text-3xl font-bold text-white mb-1">{stats.venuesWithoutTraining}</div>
@@ -279,7 +427,7 @@ export function VenueTrainingAnalytics({ session: _session }: VenueTrainingAnaly
         <div className="w-full h-4 bg-slate-700/50 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-500"
-            style={{ width: `${stats.percentageTrained}%` }}
+            style={{ width: `${stats.totalVenues > 0 ? stats.percentageTrained : 0}%` }}
           />
         </div>
       </div>
