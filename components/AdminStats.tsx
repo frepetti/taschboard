@@ -50,7 +50,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
     },
     amber: {
       bg: 'bg-amber-600/20',
-      text: 'text-amber-50',
+      text: 'text-amber-400',
       border: 'border-amber-500/30'
     },
     red: {
@@ -59,9 +59,9 @@ export function AdminStats({ stats }: AdminStatsProps) {
       border: 'border-red-500/30'
     },
     purple: {
-      bg: 'bg-purple-600/20',
-      text: 'text-purple-400',
-      border: 'border-purple-500/30'
+      bg: 'bg-theme-primary/20',
+      text: 'text-theme-primary',
+      border: 'border-theme-primary/30'
     }
   };
 
@@ -76,15 +76,15 @@ export function AdminStats({ stats }: AdminStatsProps) {
           return (
             <div
               key={index}
-              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl"
+              className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-12 h-12 rounded-lg ${colors.bg} flex items-center justify-center`}>
                   <Icon className={`w-6 h-6 ${colors.text}`} />
                 </div>
               </div>
-              <div className="text-3xl text-white font-bold mb-1">{stat.value}</div>
-              <div className="text-sm text-slate-400 mb-2">{stat.label}</div>
+              <div className="text-3xl text-content-main font-bold mb-1">{stat.value}</div>
+              <div className="text-sm text-content-muted mb-2">{stat.label}</div>
               <div className={`text-xs ${colors.text}`}>{stat.detail}</div>
             </div>
           );
@@ -92,8 +92,8 @@ export function AdminStats({ stats }: AdminStatsProps) {
       </div>
 
       {/* Breakdown by Role */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-        <h3 className="text-lg text-white font-semibold mb-6">Distribución de Usuarios por Rol</h3>
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+        <h3 className="text-lg text-content-main font-semibold mb-6">Distribución de Usuarios por Rol</h3>
         <div className="space-y-4">
           {[
             { role: 'inspector', label: 'Inspectores', count: stats?.usersByRole?.inspector || 0, color: 'blue' },
@@ -106,12 +106,12 @@ export function AdminStats({ stats }: AdminStatsProps) {
             return (
               <div key={item.role}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-slate-300 text-sm">{item.label}</span>
+                  <span className="text-content-muted text-sm">{item.label}</span>
                   <span className={`text-sm font-semibold ${colors.text}`}>
                     {item.count} ({percentage}%)
                   </span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="w-full bg-surface-card-subtle rounded-full h-2">
                   <div
                     className={`${colors.bg} h-2 rounded-full transition-all`}
                     style={{ width: `${percentage}%` }}
@@ -124,8 +124,8 @@ export function AdminStats({ stats }: AdminStatsProps) {
       </div>
 
       {/* Ticket Status */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-        <h3 className="text-lg text-white font-semibold mb-6">Estado de Tickets</h3>
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+        <h3 className="text-lg text-content-main font-semibold mb-6">Estado de Tickets</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { status: 'open', label: 'Abiertos', count: stats?.ticketsByStatus?.open || 0, color: 'red' },
@@ -136,7 +136,7 @@ export function AdminStats({ stats }: AdminStatsProps) {
 
             return (
               <div key={item.status} className={`p-4 rounded-lg border ${colors.border} ${colors.bg}`}>
-                <div className="text-sm text-slate-400 mb-1">{item.label}</div>
+                <div className="text-sm text-content-muted mb-1">{item.label}</div>
                 <div className={`text-2xl font-bold ${colors.text}`}>{item.count}</div>
               </div>
             );
@@ -145,23 +145,23 @@ export function AdminStats({ stats }: AdminStatsProps) {
       </div>
 
       {/* System Info */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-        <h3 className="text-lg text-white font-semibold mb-4">Información del Sistema</h3>
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+        <h3 className="text-lg text-content-main font-semibold mb-4">Información del Sistema</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-slate-400">Versión:</span>
-            <span className="ml-2 text-white">1.0.0</span>
+            <span className="text-content-muted">Versión:</span>
+            <span className="ml-2 text-content-main">1.0.0</span>
           </div>
           <div>
-            <span className="text-slate-400">Última actualización:</span>
-            <span className="ml-2 text-white">Enero 2026</span>
+            <span className="text-content-muted">Última actualización:</span>
+            <span className="ml-2 text-content-main">Enero 2026</span>
           </div>
           <div>
-            <span className="text-slate-400">Base de datos:</span>
-            <span className="ml-2 text-white">Supabase PostgreSQL</span>
+            <span className="text-content-muted">Base de datos:</span>
+            <span className="ml-2 text-content-main">Supabase PostgreSQL</span>
           </div>
           <div>
-            <span className="text-slate-400">Estado:</span>
+            <span className="text-content-muted">Estado:</span>
             <span className="ml-2 text-green-400">● Operativo</span>
           </div>
         </div>

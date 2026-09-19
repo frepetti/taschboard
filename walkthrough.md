@@ -385,7 +385,597 @@ Proporcionar una experiencia interactiva y accesible de visualización para las 
   4. Verificación estática con TypeScript (`0 errores`).
 - **Paso Inmediato:** Validación funcional y visual en navegador por parte del usuario y Process Owners.
 
+---
 
+# Sprint 15 — Sistema de Theming Dinámico Multi-Tenant (Fases 1 y 2)
+
+## Resumen Ejecutivo del Sprint
+Este sprint implementó la infraestructura completa de **Theming Dinámico Multi-Tenant** para Taschboard. El sistema permite personalizar la apariencia corporativa del dashboard en tiempo real (colores primario, secundario, acento y borde), persistir paletas en la base de datos Supabase, administrarlas mediante un módulo interactivo en la pestaña **Ajustes** y conmutarlas en caliente desde la barra superior para usuarios administradores. Adicionalmente, se integró la identidad visual de marca de **Heineken**, presentando el puntaje global del punto de venta dentro de una icónica estrella roja de 5 puntas en `VenueDetail.tsx`.
+
+---
+
+## Arquitectura del Sistema de Theming
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│             Base de Datos Supabase (btl_temas)             │
+│  - id (UUID), nombre, slug (UNIQUE), colors, config (JSONB) │
+│  - RLS: lectura pública/autenticada, escritura solo Admin  │
+└─────────────────────────────┬───────────────────────────────┘
+                              │ PostgREST / Fallback en Memoria
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│            ThemeContext (React Provider Global)             │
+│  - Estado reactivo: currentTheme, themes, setTheme()        │
+│  - Inyección en tiempo real en :root (CSS Custom Properties)│
+│    --theme-primary, --theme-secondary, --theme-accent, ... │
+│  - Persistencia en localStorage (taschboard_active_theme)  │
+└──────────────┬──────────────────────────────┬───────────────┘
+               │                              │
+               ▼                              ▼
+┌──────────────────────────────┐ ┌─────────────────────────────┐
+│ Header: ThemeSelector        │ │ Pestaña Ajustes:            │
+│ (Dropdown solo para Admins)  │ │ SettingsManagement          │
+│ - Cambio de tema en caliente │ │ - Listado con swatches HEX  │
+│ - Sin recarga de pantalla    │ │ - Activación & Modal CRUD   │
+└──────────────────────────────┘ └─────────────────────────────┘
+                                              │
+                                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     VenueDetail.tsx                         │
+│  - Scoring temático reactivo:                               │
+│    * Si theme === 'heineken' -> Badge Estrella Roja SVG 5-P │
+│    * Otros temas -> Visualización numérica estándar         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Persistencia y Modelo de Datos (`master_schema.sql`)
+
+### 1. DDL de la Tabla `btl_temas`:
+```sql
+CREATE TABLE IF NOT EXISTS public.btl_temas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    primary_color TEXT NOT NULL,
+    secondary_color TEXT NOT NULL,
+    accent_color TEXT NOT NULL,
+    border_color TEXT NOT NULL,
+    config JSONB DEFAULT '{}'::jsonb,
+    activo BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_btl_temas_slug ON btl_temas(slug);
+CREATE INDEX IF NOT EXISTS idx_btl_temas_activo ON btl_temas(activo);
+```
+
+### 2. Políticas de Seguridad RLS:
+```sql
+ALTER TABLE btl_temas ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "temas_read_all" ON btl_temas;
+CREATE POLICY "temas_read_all" ON btl_temas 
+  FOR SELECT 
+  USING (true);
+
+DROP POLICY IF EXISTS "temas_admin_all" ON btl_temas;
+CREATE POLICY "temas_admin_all" ON btl_temas 
+  FOR ALL 
+  USING (is_admin());
+```
+
+### 3. Semillas Iniciales (Idempotentes):
+```sql
+INSERT INTO btl_temas (nombre, slug, primary_color, secondary_color, accent_color, border_color, config, activo)
+VALUES 
+  ('Default', 'default', '#7c3aed', '#4c1d95', '#ec4899', '#334155', '{"badge_style": "default"}'::jsonb, true),
+  ('Heineken', 'heineken', '#008200', '#205527', '#ff2b00', '#c3c3c3', '{"badge_style": "heineken_star"}'::jsonb, true)
+ON CONFLICT (slug) DO NOTHING;
+```
+
+---
+
+## Componentes y Módulos Desarrollados
+
+| Archivo / Módulo | Tipo | Descripción e Impacto Técnico |
+|---|---|---|
+| [`context/ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/context/ThemeContext.tsx) | Nuevo (Context) | Provider global `ThemeProvider` y hook `useTheme()`. Gestiona temas activos, persistencia en `localStorage` (`taschboard_active_theme`), inyección dinámica en `:root` de variables CSS (`--theme-primary`, `--theme-secondary`, `--theme-accent`, `--theme-border`) y catálogo estático de contingencia (`FALLBACK_THEMES`) para modo Demo u offline. |
+| [`src/context/ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/src/context/ThemeContext.tsx) | Nuevo (Proxy) | Módulo de compatibilidad para asegurar resolución de imports bajo la ruta `src/context/ThemeContext`. |
+| [`components/ThemeSelector.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ThemeSelector.tsx) | Nuevo (UI) | Selector dropdown interactivo situado en la barra superior. Renderizado condicional exclusivo para administradores (`isAdmin === true`). Permite cambio en caliente de temas con previsualización visual de swatches y cierre ergonómico (outside click + Escape). |
+| [`components/SettingsManagement.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/SettingsManagement.tsx) | Modificación (Admin) | Incorporación de la tarjeta "Gestión de Temas Visuales" con catálogo de temas registrados, indicador visual del tema en uso, botón de aplicación inmediata y modal CRUD para crear o editar temas con inputs HEX, validaciones regex y selectores de estilo de badge. |
+| [`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx) | Modificación (Scoring) | Consumo reactivo del hook `useTheme()`. Si la identidad activa es Heineken (`slug === 'heineken'` o `config.badge_style === 'heineken_star'`), el puntaje global se dibuja centrado dentro de una estrella roja vectorial SVG de 5 puntas (`#ff2b00`) con tipografía bold blanca de alto contraste y resplandor temático. |
+| [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx) | Modificación (Orquestador) | Envoltura de la aplicación completa con `<ThemeProvider>` y posicionamiento de `<ThemeSelector />` junto a `<LanguageSwitcher />` en los encabezados de administración e inspección. |
+| [`utils/supabase/database.types.ts`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/supabase/database.types.ts) | Modificación (Tipos) | Incorporación formal de la tabla `btl_temas` en la interfaz TypeScript `Database` de Supabase PostgREST. |
+| [`supabase/migrations/master_schema.sql`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/supabase/migrations/master_schema.sql) | Modificación (DB) | Registro maestro de la tabla `btl_temas`, índices, políticas RLS y datos semilla. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Registro y completitud de las tareas de la Fase 15. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 15 para Analistas Funcionales y Process Owners. |
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación de TypeScript:** Ejecución de `npx tsc --noEmit` completada exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Cero pruebas sobre el DOM, cero emuladores de navegador y cero capturas de pantalla, preservando el entorno para la inspección y validación del usuario.
+- **Tolerancia a Fallos:** En caso de demoras en la red o tablas de Supabase pendientes de ejecución en entornos locales/demo, el `ThemeContext` inicializa limpiamente con los temas semilla preconfigurados sin arrojar excepciones.
+
+---
+
+## Project Walkthrough
+
+- **Progreso Actual del Proyecto:** El sistema de theming dinámico multi-tenant (Fases 1 y 2) está completamente implementado, conectado al estado global, integrado en la cabecera y en el panel de administración, e identificado con la estrella roja de Heineken en los detalles de puntos de venta.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Actualización de `master_schema.sql` con DDL de `btl_temas`, políticas RLS idempotentes y datos semilla.
+  2. Implementación de `context/ThemeContext.tsx` con inyección de variables CSS y persistencia local.
+  3. Creación de `components/ThemeSelector.tsx` integrado en la barra de navegación para administradores.
+  4. Implementación del módulo de gestión de temas en `components/SettingsManagement.tsx`.
+  5. Integración del badge de estrella roja de Heineken en el puntaje de `components/VenueDetail.tsx`.
+  6. Tipado estricto en `utils/supabase/database.types.ts` y comprobación estática con `npx tsc --noEmit` (**0 errores**).
+- **Paso Inmediato:** Diagnóstico y resolución de propagación de variables de tema y rediseño de estrella mate.
+
+---
+
+# Sprint 16 — Propagación Reactiva de Colores de Tema y Acabado Mate de Estrella
+
+## Resumen Ejecutivo del Sprint
+Este sprint resolvió el problema de propagación visual de colores en los componentes clave de la interfaz y perfeccionó la presentación gráfica de la estrella de puntuación de Heineken en `VenueDetail.tsx`. Previamente, los botones y acentos se mantenían violetas independientemente del tema seleccionado debido a clases estáticas de Tailwind (`amber-400/500/600` remapeadas a Baroque violeta `#6422B8`) y a la ausencia del namespace `theme` en la configuración. Se habilitaron utilidades dinámicas conectadas a variables CSS y se transformó la estrella de scoring a un acabado mate plano en rojo corporativo `#d92518`, eliminando todo efecto neón o difuminado.
+
+---
+
+## Diagnóstico Técnico
+
+1. **Colores Violetas Persistentes:**
+   - En `tailwind.config.js`, la paleta `amber` estaba sobreescrita con valores violetas (`400: #DA407C`, `500: #6422B8`, `600: #5412A8`).
+   - Los componentes `VenueDetail.tsx` (botón "Crear Ticket") y `TicketModal.tsx` (categorías y botón de envío) invocaban clases hardcodeadas como `bg-gradient-to-r from-amber-600 to-amber-500` y `bg-purple-600`, ignorando las variables CSS del tema activo.
+   - `tailwind.config.js` carecía del namespace `colors.theme`, impidiendo el uso de utilidades como `bg-theme-primary`, `from-theme-secondary`, etc.
+
+2. **Efecto Neón en la Estrella de Heineken:**
+   - El SVG de scoring en `VenueDetail.tsx` contenía filtros `drop-shadow-[0_4px_14px_rgba(255,43,0,0.45)]` y `drop-shadow-sm` sobre un rojo saturado `#ff2b00`, lo que generaba un resplandor visual luminoso.
+
+---
+
+## Solución Técnica Implementada
+
+### 1. Extensión de Tailwind (`tailwind.config.js` & `globals.css`)
+- Se configuró formalmente la paleta dinámica:
+  ```javascript
+  theme: {
+    primary: 'var(--theme-primary, #7c3aed)',
+    secondary: 'var(--theme-secondary, #4c1d95)',
+    accent: 'var(--theme-accent, #ec4899)',
+    border: 'var(--theme-border, #334155)',
+  }
+  ```
+- Se registraron los valores fallback correspondientes en `:root` dentro de `styles/globals.css`.
+
+### 2. Refactorización de Clases en Componentes
+- **`components/VenueDetail.tsx`:**
+  - Botón "Crear Ticket": migrado a `bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110`.
+  - Badges y acentos: enlazados a `bg-theme-primary/20 text-theme-primary border-theme-primary/40`.
+  - Galería: `hover:border-theme-primary/50`.
+  - Recomendaciones: `border-theme-primary/30` y `text-theme-primary`.
+- **`components/TicketModal.tsx`:**
+  - Botones de categorías (Capacitación, Acción BTL, POP, General): activos con `bg-theme-primary/20 border-theme-primary text-white`.
+  - Botón de envío de solicitud: `bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110`.
+  - Caja informativa: `border-theme-primary/30 text-theme-primary`.
+- **`components/ThemeSelector.tsx`:**
+  - Icono de paleta e indicador de selección activa enlazados a `text-theme-primary` y `bg-theme-primary/20`.
+
+### 3. Rediseño de la Estrella Heineken a Estilo Mate Plano
+- Eliminados todos los filtros `drop-shadow`.
+- Relleno plano mate con rojo corporativo oficial `#d92518`.
+- Puntuación numérica centrada geométricamente en blanco puro (`#ffffff`) con `font-black text-2xl sm:text-3xl tracking-tight` y legibilidad cristalina sin desenfoques.
+
+---
+
+## Detalle de Componentes Modificados
+
+| Archivo | Tipo de Cambio | Impacto |
+|---|---|---|
+| [`tailwind.config.js`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/tailwind.config.js) | Configuración | Adición de utilidades dinámicas `theme.primary`, `theme.secondary`, `theme.accent`, `theme.border`. |
+| [`styles/globals.css`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/styles/globals.css) | Estilos | Declaración de variables CSS `--theme-*` por defecto en `:root`. |
+| [`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx) | UI & UX | Estrella de Heineken mate `#d92518` sin resplandor; botón "Crear Ticket" reactivo al tema activo. |
+| [`components/TicketModal.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/TicketModal.tsx) | UI & Formulario | Categorías, inputs y botón de envío enlazados al gradiente corporativo dinámico. |
+| [`components/ThemeSelector.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ThemeSelector.tsx) | UI & Controles | Selector en cabecera sincronizado con tokens `theme-primary`. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Completitud y registro de las tareas de la Fase 16. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 16 para Analistas Funcionales y Process Owners. |
+
+---
+
+## Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación de TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Sin pruebas sobre el DOM, sin emulación de navegador y sin capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+
+---
+
+## Project Walkthrough
+
+- **Progreso Actual del Proyecto:** Los componentes clave de la aplicación reaccionan en tiempo real a la paleta del tema seleccionado (cambiando instantáneamente a verde Heineken o violeta Default), y la estrella de scoring presenta un acabado mate plano corporativo de alta calidad.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Extensión del sistema de diseño en `tailwind.config.js` y `globals.css` mediante el namespace `theme`.
+  2. Sustitución sistemática de clases hardcodeadas en `VenueDetail.tsx`, `TicketModal.tsx` y `ThemeSelector.tsx`.
+  3. Rediseño de la estrella vectorial en `VenueDetail.tsx` con tono `#d92518` plano y eliminación de sombras neón.
+  4. Verificación estática con TypeScript (`npx tsc --noEmit` = **0 errores**).
+- **Paso Inmediato:** Inspección visual y validación funcional en navegador por parte del usuario y Process Owners.
+
+---
+
+# Sprint 17: Refactor Visual Integral (Fase 1) - Header Corporativo y Desacople de Clases Hardcodeadas
+
+## 📋 Resumen Ejecutivo
+En este sprint se ejecutó la Fase 1 del refactor visual integral de Taschboard. Se eliminaron todas las clases de color violeta, índigo y ámbar hardcodeadas en los módulos principales, conectándolas a las CSS Custom Properties del tema activo. Asimismo, se implementó el Header Corporativo dinámico con fondo verde Heineken Corporate Green (`#205527`), tipografía blanca de alto contraste, controles translúcidos (`bg-white/10 hover:bg-white/20 border-white/20`) y branding corporativo visible mediante badge en la barra superior.
+
+---
+
+## 🏗️ Arquitectura y Modificaciones Técnicas
+
+### 1. Tokenización y Extensión de Variables de Tema
+- **`context/ThemeContext.tsx`:**
+  - En `applyThemeVariables(theme: Theme)`, se inyectan en `:root`:
+    - `--theme-header-bg`: `#205527` para Heineken (y configuraciones con fondo corporativo); `#111318` para Default y temas neutros.
+    - `--theme-header-text`: `#ffffff` para asegurar legibilidad y contraste estricto WCAG AA.
+  - En `FALLBACK_THEMES`, se actualizó la configuración de contingencia de Heineken registrando `header_bg: '#205527'` y `header_text: '#ffffff'`.
+- **`tailwind.config.js`:**
+  - Se extendió el namespace `theme` exponiendo:
+    ```javascript
+    'header-bg': 'var(--theme-header-bg, #111318)',
+    'header-text': 'var(--theme-header-text, #ffffff)',
+    ```
+- **`styles/globals.css`:**
+  - Declaradas las variables por defecto en `:root`: `--theme-header-bg: #111318;` y `--theme-header-text: #ffffff;`.
+
+### 2. Header Corporativo y Branding Dinámico
+- **`App.tsx`:**
+  - En los tres encabezados (`InspectorAppContent`, `ClientAppContent` y `AdminAppContent`), se sustituyeron las clases estáticas `bg-slate-950/90 border-slate-800/50` por `bg-theme-header-bg text-theme-header-text border-b border-white/10 shadow-sm transition-colors duration-200`.
+  - **Identidad de Marca:** Se incorporó un badge corporativo junto al título (`Inspector Dashboard`, `Dashboard Cliente`, `Panel de Administración`):
+    ```tsx
+    {currentTheme.slug === 'heineken' && (
+      <span className="px-2.5 py-0.5 bg-white/15 text-white font-bold text-xs uppercase tracking-wider rounded border border-white/20 flex items-center gap-1.5 shrink-0">
+        <span className="text-red-500 text-sm">★</span>
+        {currentTheme.nombre}
+      </span>
+    )}
+    ```
+  - **Controles Secundarios Translúcidos:** Se rediseñaron los botones "Volver a Admin", "Cerrar Sesión", `ThemeSelector` y `LanguageSwitcher` a `bg-white/10 hover:bg-white/20 border border-white/20 text-white` para garantizar integración armoniosa con el verde Heineken.
+  - Botón selector de rol activo ("Admin"): migrado a `bg-theme-primary text-white shadow-lg`.
+- **`components/VenueDetail.tsx`:**
+  - Cabecera adaptada a `bg-theme-header-bg text-theme-header-text border-b border-white/10`.
+
+### 3. Barrido y Desacople de Clases Hardcodeadas
+- **`components/AdminDashboard.tsx`:**
+  - Las 9 pestañas de navegación activas ("Estadísticas", "Usuarios", "Tickets", "Lugares", "Regiones", "Productos", "Usuarios Pendientes", "Capacitaciones", "Ajustes"): reemplazado `bg-purple-600 text-white shadow-lg shadow-purple-500/20` por `bg-theme-primary text-white shadow-lg shadow-theme-primary/20`.
+  - Spinner `Loader2`: de `text-purple-500` a `text-theme-primary`.
+  - Botón "Reintentar": de `bg-purple-600 hover:bg-purple-500` a `bg-theme-primary hover:bg-theme-secondary`.
+  - Subpestañas de productos ("Catálogo y Objetivos", "Asignación por Cliente"): de `bg-amber-600 text-white shadow-lg` a `bg-theme-primary text-white shadow-lg`.
+- **`components/AdminStats.tsx`:**
+  - En `colorMap.purple`: mapeado a `bg-theme-primary/20`, `text-theme-primary`, `border-theme-primary/30`, impactando la tarjeta de Venues y la barra de Administradores en "Distribución de Usuarios por Rol".
+  - Corrección tipográfica en `colorMap.amber.text` (`text-amber-400`).
+- **`components/InspectorHeader.tsx`:**
+  - Pestañas activas ("Nueva Inspección", "Historial"): de `bg-amber-600 text-white` a `bg-theme-primary text-white shadow-lg shadow-theme-primary/20`.
+- **`components/VenueSelectionForm.tsx`:**
+  - Botón "Agregar Nuevo Punto de Venta": de `bg-amber-600/20 hover:bg-amber-600/30 border-amber-600/50` a `bg-theme-primary/20 hover:bg-theme-primary/30 border-theme-primary/50 text-white`.
+  - Botón "Continuar Inspección" / submit: de `bg-amber-600 hover:bg-amber-500` a `bg-theme-primary hover:bg-theme-secondary`.
+  - Spinner de carga y focos de inputs migrados a tokens `theme-primary`.
+- **`components/FilterChip.tsx`:**
+  - Mapeo por defecto de `amber` migrado de `bg-amber-500/20 text-amber-400 border-amber-500/50` a `bg-theme-primary/20 text-theme-primary border-theme-primary/50`. Con esto, todos los filtros de tiempo ("1M", "3M", "6M", "1Y", "YTD") y de regiones en `ManagerDashboard` y `ClientDashboard` responden dinámicamente al tema.
+- **`components/ClientDashboard.tsx`:**
+  - Botón flotante de tickets: de gradiente ámbar hardcodeado a `bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110`.
+- **`components/PerformanceChart.tsx`:**
+  - Línea principal de SVG (`stroke`), fill de gradiente (`<linearGradient>`), puntos (`dot`) y punto activo (`activeDot`) enlazados dinámicamente a `var(--theme-primary)` y `var(--theme-accent)`.
+  - Focos de selector móvil y valor KPI de "Meses" vinculados a `theme-primary`.
+- **`components/VenueTrainingAnalytics.tsx`:**
+  - Botón "Ver Detalle": migrado de gradiente azul fijo a `bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white`.
+  - Tarjeta "Total de Venues": icono desacoplado de púrpura a `bg-theme-primary/20 text-theme-primary`.
+  - Filtro modal "Todos" e input de búsqueda enlazados a `theme-primary`.
+- **`components/ManagerDashboard.tsx`:**
+  - Spinner inicial y focos de selectores móviles vinculados a `theme-primary`.
+
+---
+
+## 📊 Inventario de Archivos Intervenidos
+
+| Archivo | Tipo | Descripción de la Modificación |
+|---|---|---|
+| [`context/ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/context/ThemeContext.tsx) | Lógica & Estado | Inyección de `--theme-header-bg` (`#205527` para Heineken, `#111318` para Default) y `--theme-header-text` (`#ffffff`) en `:root`. |
+| [`tailwind.config.js`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/tailwind.config.js) | Configuración | Exposición de utilidades `theme.header-bg` y `theme.header-text`. |
+| [`styles/globals.css`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/styles/globals.css) | Estilos | Declaración de variables CSS fallback `--theme-header-bg` y `--theme-header-text` en `:root`. |
+| [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx) | Orquestador | Aplicación de fondo corporativo verde Heineken en los headers de Inspector, Client y Admin; incorporación de badge visible con estrella roja y nombre de marca; botones translúcidos; selector de rol admin con `theme-primary`. |
+| [`components/LanguageSwitcher.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/LanguageSwitcher.tsx) | UI Header | Estilizado translúcido (`bg-white/10 hover:bg-white/20 border-white/20 text-white`). |
+| [`components/ThemeSelector.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ThemeSelector.tsx) | UI Header | Botón disparador con estilo translúcido armonizado con el fondo corporativo. |
+| [`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx) | UI Venue | Cabecera superior adaptada a `bg-theme-header-bg text-theme-header-text border-white/10`. |
+| [`components/AdminDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminDashboard.tsx) | Panel Admin | Desacople de 9 pestañas de navegación, subpestañas de productos, loaders y botón reintentar de clases púrpuras a `theme-primary`. |
+| [`components/AdminStats.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminStats.tsx) | Panel Admin | `colorMap.purple` vinculado a tokens `theme-primary` para tarjetas y distribución de roles. |
+| [`components/InspectorHeader.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/InspectorHeader.tsx) | Rol Inspector | Pestañas activas de inspección ("Nueva Inspección", "Historial") conectadas a `theme-primary`. |
+| [`components/VenueSelectionForm.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueSelectionForm.tsx) | Rol Inspector | Botón "Agregar Nuevo Punto de Venta", botones de confirmación, spinners y focos adaptados a `theme-primary`. |
+| [`components/FilterChip.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/FilterChip.tsx) | Filtros Globales | Chips activos de tiempo y región vinculados a `theme-primary`. |
+| [`components/ClientDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientDashboard.tsx) | Rol Cliente | Botón flotante para creación de tickets vinculado a gradiente dinámico `theme-secondary` / `theme-primary`. |
+| [`components/PerformanceChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PerformanceChart.tsx) | Visualización | Trazos de línea SVG, áreas de gradiente y puntos enlazados a `var(--theme-primary)` y `var(--theme-accent)`. |
+| [`components/VenueTrainingAnalytics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueTrainingAnalytics.tsx) | Visualización | Botón "Ver Detalle", iconos y tabs de modal migrados a tokens `theme-primary`. |
+| [`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx) | Dashboard | Spinners y focos de filtros móviles conectados a `theme-primary`. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Registro y completitud de las tareas de la Fase 17. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 17 para Analistas Funcionales y Process Owners. |
+
+---
+
+## 🛡️ Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación de TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Sin pruebas sobre el DOM, sin emulación de navegador y sin capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+
+---
+
+## 🚀 Project Walkthrough
+
+- **Progreso Actual del Proyecto:** El header de la plataforma cuenta ahora con fondo verde Heineken Corporate Green (`#205527`), branding dinámico con estrella roja y controles translúcidos elegantes. Todas las pantallas principales (Admin, Inspector, Cliente, Gráficos y Filtros) tienen sus componentes interactivos completamente desacoplados de colores estáticos y sincronizados con el tema activo.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Inyección y mapeo de tokens CSS `--theme-header-bg` y `--theme-header-text`.
+  2. Implementación de cabecera corporativa dinámica y branding de marca en `App.tsx` y `VenueDetail.tsx`.
+  3. Sustitución exhaustiva de utilidades fijas en los 12 módulos de componentes principales.
+  4. Verificación estática con TypeScript (`npx tsc --noEmit` = **0 errores**).
+- **Paso Inmediato:** Pase a Sprint 18 para ajuste fino de contraste, layout y branding centrado.
+
+---
+
+# Sprint 18: Corrección Visual de Layout, Header Branding y Contraste de Filtros
+
+## 🎯 Objetivo y Alcance
+Resolver con precisión los cuatro desajustes visuales y de layout identificados tras el despliegue del Sprint 17:
+1. **Botón Activo "Cliente":** Asignar el acento rojo corporativo (`#d92518`) al conmutador de rol cuando la vista seleccionada es "Cliente".
+2. **Branding Dominante Centrado:** Elevar la jerarquía visual de la marca (`★ HEINEKEN`) colocándola en posición absoluta centrada en el header corporativo, eliminando el badge lateral pequeño.
+3. **Normalización de Espaciado Superior en Cliente:** Aplicar el espaciado vertical estándar (`pt-6 space-y-6`) en `ClientDashboard.tsx` para equiparar la separación del layout con la vista de Inspector.
+4. **Contraste en Filtros del Mapa:** Corregir el chip de filtro inactivo "Sin inspección" en el mapa de territorio, eliminando el renderizado negro opaco e ilegible mediante clases neutras estandarizadas.
+
+---
+
+## 🏗️ Modificaciones Técnicas y Arquitectónicas
+
+### 1. Botón Activo "Cliente" (`App.tsx`)
+- **Problema previo:** El botón de rol "Cliente" utilizaba un estilo activo genérico o no alineado al acento de marca.
+- **Solución implementada:** Se actualizó la clase activa del botón "Cliente" a:
+  ```tsx
+  currentView === 'client' ? 'bg-theme-accent text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+  ```
+  Al estar activo el tema Heineken (`--theme-accent: #d92518`), el botón se presenta con el rojo corporativo característico y sombra de elevación.
+
+### 2. Branding de Marca Centrado y Dominante en Header (`App.tsx`)
+- **Problema previo:** La estrella roja y el nombre de marca estaban en un badge lateral pequeño junto al título del dashboard, restando impacto visual a la identidad de marca.
+- **Solución implementada:**
+  - Se eliminó el badge lateral secundario en los encabezados de las tres vistas (`InspectorAppContent`, `ClientAppContent` y `AdminAppContent`).
+  - Se estableció `relative` en la fila flex del encabezado.
+  - Se incorporó un contenedor centrado con posicionamiento absoluto y `pointer-events-none select-none`:
+    ```tsx
+    {currentTheme.slug === 'heineken' && (
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
+        <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
+        <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+          {currentTheme.nombre}
+        </span>
+      </div>
+    )}
+    ```
+  - Esto garantiza protagonismo de marca en el eje central de la pantalla sin desplazar los controles de la izquierda (logo y rol) ni los de la derecha (selector de tema, idioma y cierre de sesión).
+
+### 3. Normalización de Espaciado Superior (`components/ClientDashboard.tsx`)
+- **Problema previo:** En `ClientDashboard.tsx`, el contenedor principal carecía de padding superior, ocasionando que el bloque "Métricas por Producto" quedara inmediatamente pegado a la línea divisoria inferior del header corporativo.
+- **Solución implementada:**
+  - Se auditó el contenedor de `InspectorDashboard.tsx` (`py-6 pb-20`).
+  - Se actualizó el wrapper principal en `ClientDashboard.tsx` incorporando `pt-6 space-y-6`:
+    ```tsx
+    <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 pt-6 space-y-6">
+    ```
+  - Se logra una respiración visual homogénea entre el header corporativo y el contenido funcional en todas las vistas de la plataforma.
+
+### 4. Corrección de Contraste en Filtros del Mapa (`components/FilterChip.tsx` y `OpportunityMap.tsx`)
+- **Problema previo:** El filtro *"Sin inspección"* del mapa de oportunidades pasaba la propiedad `color="slate"`. Al no estar definido `"slate"` en el mapeo de colores de `FilterChip.tsx`, la evaluación resultaba en `undefined`, provocando que el botón se renderizara en negro opaco sin estilos de color de texto (texto negro sobre fondo oscuro, totalmente ilegible).
+- **Solución implementada:**
+  - Se amplió la firma tipada de `FilterChipProps` para admitir `'slate' | 'zinc'`.
+  - Se definió la clase neutra estándar para estado inactivo:
+    `bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 border-zinc-700/50`
+  - Se asignaron estilos activos visibles para `slate`/`zinc`: `bg-zinc-600/50 text-white border-zinc-400/60`.
+  - Ahora todos los chips inactivos presentan contraste consistente con texto legible (`text-zinc-300`) y bordes sutiles.
+
+---
+
+## 📋 Inventario de Archivos Intervenidos
+
+| Archivo | Módulo / Capa | Resumen de la Intervención |
+| :--- | :--- | :--- |
+| [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx) | Enrutador y Layout | Fondo `bg-theme-accent` en botón activo "Cliente" (L1090-1094); branding centrado absoluto (`★ HEINEKEN`) en encabezados de Inspector, Cliente y Admin (L815-822, L909-916, L1041-1048); eliminación de badge lateral previo. |
+| [`components/ClientDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientDashboard.tsx) | Rol Cliente | Agregado de padding superior `pt-6` en contenedor principal (L112) junto a `space-y-6` para separación con header corporativo. |
+| [`components/FilterChip.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/FilterChip.tsx) | Componente UI | Soporte para colores `'slate' | 'zinc'`, estandarización de chips inactivos a `bg-zinc-800/80 text-zinc-300` y eliminación del valor `undefined` que producía el botón negro. |
+| [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md) | Seguimiento | Registro y completitud de las tareas de la Fase 18. |
+| [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md) | Documentación | Bitácora técnica y funcional del Sprint 18 para Analistas Funcionales y Process Owners. |
+
+---
+
+## 🛡️ Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación de TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Sin manipulación del DOM, sin emulación de navegadores ni capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+
+---
+
+## 🚀 Project Walkthrough
+
+- **Progreso Actual del Proyecto:** La plataforma Taschboard cuenta con una experiencia visual depurada y alineada con la identidad corporativa: el header exhibe la marca centralizada y dominante (`★ HEINEKEN`), el rol "Cliente" se resalta con el acento rojo corporativo, la vista de Cliente mantiene una separación armónica con el header, y los filtros del mapa presentan contraste y legibilidad óptimos en todos sus estados.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Vinculación del botón de rol activo "Cliente" a la variable `--theme-accent` (`#d92518`).
+  2. Implementación de contenedor de branding centrado en `App.tsx` en las 3 vistas.
+  3. Ajuste de padding `pt-6` en el layout de `ClientDashboard.tsx`.
+  4. Extensión de variantes de color y normalización de chips inactivos en `FilterChip.tsx`.
+  5. Verificación estática con TypeScript (`npx tsc --noEmit` = **0 errores**).
+- **Paso Inmediato:** Inspección visual directa por parte del usuario y Process Owners en el navegador local (`http://localhost:5173`).
+
+---
+
+# 🚀 Sprint 19: Soporte Integral de Modo Claro y Modo Oscuro (Color Scheme) Desacoplado de Marca
+
+## 📋 Resumen Ejecutivo para Analistas Funcionales y Process Owners
+En este sprint se implementó la arquitectura completa y desacoplada de **Esquema de Color (Color Scheme: Dark / Light Mode)** para la plataforma Taschboard. Esta funcionalidad permite a todos los usuarios (Inspectores, Clientes y Administradores) alternar fluidamente entre una experiencia inmersiva oscura y una estética clara, limpia y corporativa mediante un conmutador interactivo (Sol/Luna) situado en el encabezado corporativo junto al selector de idioma.
+
+La arquitectura garantiza que la paleta de marca multi-tenant (`btl_temas`) y en particular el **Header Corporativo en Verde Heineken Corporate (`#205527`)** permanezcan inalterados en ambos modos, garantizando coherencia de identidad visual y contraste óptimo en textos, tarjetas, formularios y gráficos analíticos.
+
+---
+
+## 🏗️ Arquitectura de Tokens Semánticos y Variables de Superficie
+
+### 1. Variables Dinámicas de Superficie y Contenido (`ThemeContext.tsx` y `globals.css`)
+Se incorporó el estado `colorScheme: 'dark' | 'light'` gestionado en [`ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/context/ThemeContext.tsx) con persistencia local (`taschboard_color_scheme`) e inyección reactiva en el elemento raíz `<html>` a través del atributo `data-color-scheme` y clases utilitarias (`dark` / `light`):
+
+| Variable CSS | Modo Oscuro (`dark`) | Modo Claro (`light`) | Propósito Funcional |
+| :--- | :--- | :--- | :--- |
+| `--bg-app` | `#0f1117` | `#f4f5f7` | Fondo principal de la aplicación |
+| `--bg-card` | `#181b23` | `#ffffff` | Superficie de tarjetas, paneles y contenedores modales |
+| `--bg-card-subtle` | `#222631` | `#f8fafc` | Fondo de inputs, tablas secundarias y elementos anidados |
+| `--text-main` | `#ffffff` | `#0f172a` | Tipografía principal, títulos y valores KPI |
+| `--text-muted` | `#9ca3af` | `#64748b` | Subtítulos, etiquetas y texto secundario |
+| `--border-subtle` | `#2d3342` | `#e2e8f0` | Líneas divisorias, bordes de tarjeta y contornos de inputs |
+| `--theme-header-bg` | `#205527` (Inmutable) | `#205527` (Inmutable) | Header Corporativo Heineken intacto en ambos modos |
+| `--theme-header-text` | `#ffffff` (Inmutable) | `#ffffff` (Inmutable) | Tipografía nítida sobre el header corporativo |
+
+### 2. Extensión del Sistema de Diseño en Tailwind CSS (`tailwind.config.js`)
+Se mapearon las variables semánticas en la configuración de Tailwind:
+- `surface.app` -> `var(--bg-app)`
+- `surface.card` -> `var(--bg-card)`
+- `surface.card-subtle` -> `var(--bg-card-subtle)`
+- `content.main` -> `var(--text-main)`
+- `content.muted` -> `var(--text-muted)`
+- `border.subtle` / `border-subtle` -> `var(--border-subtle)` (manteniendo compatibilidad con `border.DEFAULT`)
+
+---
+
+## 🧩 Componentes Creados y Refactorizados
+
+1. **[`components/ColorSchemeToggle.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ColorSchemeToggle.tsx) [NUEVO]:**
+   - Conmutador accesible que muestra el icono `Sun` en modo oscuro y `Moon` en modo claro (`lucide-react`).
+   - Botón translúcido (`bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg p-2`) adaptado a los tres headers corporativos en [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx).
+2. **Formularios, Modales e Inputs:**
+   - [`TicketModal.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/TicketModal.tsx): Contenedor modal adaptado a `bg-surface-card border-border-subtle`, inputs y áreas de texto con `bg-surface-card-subtle border-border-subtle text-content-main placeholder:text-content-muted`.
+   - [`VenueSelectionForm.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueSelectionForm.tsx): Tarjetas de punto de venta, inputs de búsqueda y formularios de alta tokenizados a superficies dinámicas.
+   - [`ThemeSelector.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ThemeSelector.tsx): Desplegable flotante migrado a `bg-surface-card border-border-subtle text-content-main` con hover `bg-surface-card-subtle`.
+3. **Dashboards y Módulos Analíticos:**
+   - [`ClientDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientDashboard.tsx) & [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx): Fondos de vistas principales adaptados a `bg-surface-app text-content-main`.
+   - [`PerformanceChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PerformanceChart.tsx): Recharts SVG adaptado con fallbacks inline para `CartesianGrid` (`var(--border-subtle, #e2e8f0)`), ejes `XAxis` e `YAxis` (`var(--text-muted, #64748b)`), y `Tooltip` (`backgroundColor: var(--bg-card, #ffffff)`, `borderColor: var(--border-subtle, #e2e8f0)`, `color: var(--text-main, #0f172a)`).
+   - [`KPICard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/KPICard.tsx): Tarjetas de métricas adaptadas a `bg-surface-card border-border-subtle text-content-main text-content-muted`.
+   - [`ProductMetrics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ProductMetrics.tsx): Selectores, cuadros de precios y contenedores de métricas tokenizados.
+   - [`VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx): Ficha técnica, checklists, galería y observaciones migradas a superficies semánticas.
+   - [`VenueTrainingAnalytics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueTrainingAnalytics.tsx): Tarjetas de progreso, filtros y modal de detalle adaptados a tokens de superficie y bordes sutiles.
+   - [`ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx) & [`FilterChip.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/FilterChip.tsx): Selectores de fecha y filtros de región normalizados con `bg-surface-card` y `border-border-subtle`.
+   - [`InspectorHeader.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/InspectorHeader.tsx) & [`AdminDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminDashboard.tsx) & [`AdminStats.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminStats.tsx): Navegación de pestañas secundarias y tarjetas estadísticas adaptadas a tokens de superficie.
+
+---
+
+## 🛡️ Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+
+- **Compilación de TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Sin manipulación del DOM, sin emulación de navegadores ni capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+
+---
+
+## 🚀 Project Walkthrough
+
+- **Progreso Actual del Proyecto:** Taschboard cuenta con soporte completo de Modo Claro y Modo Oscuro plenamente desacoplado del theming corporativo. En Modo Claro, la interfaz adopta una paleta limpia y luminosa (`#f4f5f7` de fondo, tarjetas blancas `#ffffff`, bordes `#e2e8f0`, texto de alto contraste `#0f172a`), preservando en todo momento el encabezado institucional en Verde Heineken (`#205527`) con tipografía blanca pura.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Extensión de `ThemeContext` con `colorScheme: 'dark' | 'light'`, `toggleColorScheme()` y persistencia en `localStorage`.
+  2. Inyección de variables CSS semánticas (`--bg-app`, `--bg-card`, `--bg-card-subtle`, `--text-main`, `--text-muted`, `--border-subtle`) en `:root` y clases `.dark`/`.light`.
+  3. Mapeo en `tailwind.config.js` (`surface.*`, `content.*`, `border.*`).
+  4. Creación del componente `ColorSchemeToggle.tsx` e integración en los 3 encabezados (`InspectorAppContent`, `ClientAppContent`, `AdminAppContent`).
+  5. Refactorización de todos los formularios, inputs, modales, gráficos Recharts y tarjetas a tokens semánticos.
+  6. Validación estática con TypeScript (`npx tsc --noEmit` = **0 errores**).
+- **Paso Inmediato:** Validación visual directa en el navegador por parte del usuario y Process Owners alternando entre el modo Sol y Luna mediante el conmutador del header.
+
+---
+
+# Sprint 20: Refinamiento Visual, Contraste de Alertas, Desacople de Fondos Residuales y Theming Integral de Loaders
+
+## 🎯 Contexto y Objetivos del Sprint
+1. **Atenuación de Luminancia y Calibración de Superficies:** Reducir el encandilamiento visual en Modo Claro ajustando la superficie base a un tono neutro atenuado y delimitando con nitidez las tarjetas blancas e inputs.
+2. **Fallbacks Inmunes a Parpadeos Iniciales:** Prevenir destellos de acento violeta durante la carga inicial alineando `:root` por defecto a los tonos corporativos de Heineken.
+3. **Contraste Accesible en Alertas Críticas:** Reparar la legibilidad de la tarjeta de advertencia en métricas de producto para cumplir con el estándar WCAG en ambos modos de color.
+4. **Erradicación de Fondos Negros Residuales:** Migrar el contenedor raíz de `ManagerDashboard` y todas las tarjetas analíticas secundarias (`CompetitionChart`, `PricePositioningChart`, `OpportunityBreakdown`, `VenueTable`, `OpportunityMap`) a tokens semánticos de superficie (`bg-surface-app`, `bg-surface-card`, `border-border-subtle`).
+5. **Arquitectura Homogénea de Estados de Carga:** Crear `LoadingSpinner.tsx` como componente centralizado y sustituir todos los loaders con colores hardcodeados (`text-purple-*`, `border-amber-*`, etc.) por la animación dinámica vinculada a `theme-primary` y `bg-surface-app`.
+
+---
+
+## 🛠️ Arquitectura y Modificaciones Técnicas
+
+### 1. Calibración de Superficies y Tokens Inmunes a Destellos
+- **[`context/ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/context/ThemeContext.tsx):**
+  - `--bg-app`: Calibrado a `#ebedf0` en modo claro para reducir deslumbramiento y ofrecer un contraste neto con las tarjetas (`#ffffff`).
+  - `--border-subtle`: Calibrado a `#d5d9e2` para bordes de tarjetas y divisores nítidos.
+- **[`styles/globals.css`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/styles/globals.css):**
+  - Variables estáticas en `:root` actualizadas a la identidad Heineken:
+    - `--theme-primary: #008200;`
+    - `--theme-secondary: #205527;`
+    - `--theme-accent: #ff2b00;`
+    - `--theme-header-bg: #205527;`
+  - Clases `.light` y `[data-color-scheme="light"]` sincronizadas con `--bg-app: #ebedf0;` y `--border-subtle: #d5d9e2;`.
+
+### 2. Contraste WCAG en Notificaciones de Producto
+- **[`components/ProductMetrics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ProductMetrics.tsx):**
+  - Banner *"Atención Requerida"*:
+    - **Modo Claro:** `bg-red-50 border border-red-200 text-red-900 font-medium`.
+    - **Modo Oscuro:** `dark:bg-red-950/30 dark:border-red-800/40 dark:text-red-200`.
+  - Icono de alerta y texto secundario sincronizados cromáticamente (`text-red-700 dark:text-red-400` y `text-red-800 dark:text-red-300/80`).
+
+### 3. Eliminación de Fondos Oscuros Residuales en Dashboard de Cliente
+- **[`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx):**
+  - Sustituido el contenedor raíz oscuro `bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950` por `${readOnly ? '' : 'min-h-screen'} bg-surface-app text-content-main`.
+  - La barra de filtros ahora reposa directamente sobre la superficie clara/oscura sin bandas negras.
+- **[`components/CompetitionChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/CompetitionChart.tsx):**
+  - Contenedor principal y estado vacío migrados a `bg-surface-card border border-border-subtle text-content-main`.
+  - Gráficos Recharts adaptados dinámicamente con `CartesianGrid` (`var(--border-subtle, #d5d9e2)`), `XAxis`/`YAxis` (`var(--text-muted, #64748b)`), y `Tooltip` (`backgroundColor: var(--bg-card, #ffffff)`).
+- **[`components/PricePositioningChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PricePositioningChart.tsx):**
+  - Tarjeta de gráfico de torta de precios migrada a `bg-surface-card border border-border-subtle text-content-main text-content-muted`.
+  - Tooltip adaptado a variables de superficie y texto.
+- **[`components/OpportunityBreakdown.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/OpportunityBreakdown.tsx):**
+  - Tarjetas de puntaje de oportunidad y estado vacío tokenizadas a `bg-surface-card border border-border-subtle text-content-main text-content-muted`.
+- **[`components/VenueTable.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueTable.tsx):**
+  - Tabla de puntos de venta y estado vacío migrados a `bg-surface-card border border-border-subtle`.
+  - Cabecera en `bg-surface-card-subtle text-content-muted` y filas con hover dinámico `hover:bg-surface-card-subtle`.
+- **[`components/OpportunityMap.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/OpportunityMap.tsx):**
+  - Contenedor de mapa adaptado a `bg-surface-card border border-border-subtle text-content-main`.
+- **[`components/FilterChip.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/FilterChip.tsx):**
+  - Estado inactivo optimizado para alto contraste: `bg-surface-card text-content-main border border-border-subtle hover:bg-surface-card-subtle shadow-sm`.
+
+### 4. Componente Centralizado y Estandarización de Loaders
+- **[`components/LoadingSpinner.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/LoadingSpinner.tsx) [NUEVO COMPONENTE]:**
+  - Props: `size ('sm' | 'md' | 'lg')`, `className`, `fullScreen`, `text`.
+  - Renderizado en overlay completo: `fixed inset-0 bg-surface-app/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center`.
+  - Anillo con animación de giro dinámico corporativo: `border-theme-primary border-t-transparent rounded-full animate-spin`.
+- **Sustitución Sistemática en Vistas y Módulos:**
+  - **[`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx):** `LoadingScreen` migrado a `LoadingSpinner` a pantalla completa sobre `bg-surface-app`. Pantalla de confirmación de email tokenizada con `text-theme-primary`.
+  - **[`components/UserManagement.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/UserManagement.tsx):** Loader púrpura sustituido por `<LoadingSpinner size="lg" text="Cargando usuarios..." />`.
+  - **[`components/TicketManagement.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/TicketManagement.tsx):** Loader púrpura sustituido por `<LoadingSpinner size="lg" text={t('common.loading')} />`.
+  - **[`components/PendingUsersManagement.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PendingUsersManagement.tsx):** Loader púrpura sustituido por `<LoadingSpinner size="lg" text="Cargando solicitudes..." />`.
+  - **[`components/ClientVenueManager.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientVenueManager.tsx):** Spinners ámbar y púrpura sustituidos por `<LoadingSpinner size="sm" />`.
+  - **[`components/VenueDetail.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/VenueDetail.tsx):** Fondo negro `bg-slate-950` y spinner ámbar sustituidos por `<div className="min-h-screen flex items-center justify-center bg-surface-app text-content-main"><LoadingSpinner size="lg" text={t('common.loading')} /></div>`.
+  - **[`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx):** Spinner manual reemplazado por `<LoadingSpinner size="lg" text="Cargando dashboard..." />` sobre `bg-surface-app`.
+  - **[`components/ProductMetrics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ProductMetrics.tsx):** Loader manual en tarjeta de métricas reemplazado por `<LoadingSpinner size="md" />`.
+
+---
+
+## 🛡️ Verificación de Calidad y Pruebas Técnicas (Exclusivamente Estático)
+- **Compilación de TypeScript:** `npx tsc --noEmit` completado exitosamente con **0 errores de compilación**.
+- **Restricción de Testing Cumplida Estrictamente:** Cero manipulación del DOM, sin herramientas de emulación ni capturas de pantalla, preservando el entorno para la inspección directa del usuario.
+
+---
+
+## 🚀 Project Walkthrough
+
+- **Progreso Actual del Proyecto:** Taschboard ha completado la calibración visual de Modo Claro y la homogenización integral de estados de carga. La aplicación elimina cualquier encandilamiento mediante una base neutra atenuada (`#ebedf0`), bordes nítidos (`#d5d9e2`), tarjetas blancas limpias (`#ffffff`) y contraste accesible (WCAG) en alertas. Todas las pantallas de carga y spinners ahora se adaptan automáticamente a la paleta del tema seleccionado (`theme-primary`) y a la superficie activa (`bg-surface-app`), erradicando parpadeos violetas residuales o fondos negros aislados.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Calibración de luminancia y bordes en `ThemeContext.tsx` y `styles/globals.css`.
+  2. Sustitución de variables de arranque `:root` por los tonos de marca corporativa Heineken.
+  3. Accesibilidad y alto contraste en el banner de advertencia de `ProductMetrics.tsx`.
+  4. Desacople y tokenización de todas las tarjetas analíticas de `ManagerDashboard.tsx` (`CompetitionChart`, `PricePositioningChart`, `OpportunityBreakdown`, `VenueTable`, `OpportunityMap`).
+  5. Creación del componente unificado `LoadingSpinner.tsx`.
+  6. Estandarización de loaders en `App.tsx`, `UserManagement.tsx`, `TicketManagement.tsx`, `PendingUsersManagement.tsx`, `ClientVenueManager.tsx`, `VenueDetail.tsx`, `ManagerDashboard.tsx` y `ProductMetrics.tsx`.
+  7. Validación estática de tipos con TypeScript (`npx tsc --noEmit` = **0 errores**).
+- **Paso Inmediato:** Validación visual en pantalla por parte del usuario en Modo Claro y Modo Oscuro, verificando la ausencia de encandilamiento y la suavidad de las transiciones en los estados de carga.
 
 
 

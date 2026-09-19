@@ -3,6 +3,7 @@ import { Search, Check, X, Loader2, AlertCircle, UserCheck, Clock, Mail, Briefca
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface PendingUsersManagementProps {
   session: any;
@@ -211,7 +212,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+        <LoadingSpinner size="lg" text="Cargando solicitudes..." />
       </div>
     );
   }

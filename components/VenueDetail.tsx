@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '../utils/supabase/client';
 import { useLanguage } from '../utils/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { TicketModal } from './TicketModal';
 import { getDemoVenueDetail } from '../utils/demoData';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface Venue {
   id: string;
@@ -31,6 +33,8 @@ interface VenueDetailProps {
 
 export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false }: VenueDetailProps) {
   const { t } = useLanguage();
+  const { currentTheme } = useTheme();
+  const isHeineken = currentTheme.slug === 'heineken' || currentTheme.config?.badge_style === 'heineken_star';
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -228,8 +232,8 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-surface-app text-content-main">
+        <LoadingSpinner size="lg" text={t('common.loading')} />
       </div>
     );
   }
@@ -237,13 +241,13 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
   if (!venue) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-surface-app text-content-main">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/50">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-theme-header-bg text-theme-header-text border-b border-white/10 shadow-sm transition-colors duration-200">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-3 sm:py-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-sm sm:text-base">{t('venue_detail.back_to_dashboard')}</span>
@@ -253,13 +257,13 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-4 sm:py-8">
         {/* Venue Header */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-8 shadow-xl mb-4 sm:mb-8">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-8 shadow-xl mb-4 sm:mb-8">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-0">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-4xl text-white font-bold mb-3 sm:mb-4">{venue.nombre}</h1>
+              <h1 className="text-2xl sm:text-4xl text-content-main font-bold mb-3 sm:mb-4">{venue.nombre}</h1>
 
               {/* Contact Info */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-slate-300 mb-4 sm:mb-6 text-sm sm:text-base">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-content-muted mb-4 sm:mb-6 text-sm sm:text-base">
                 {venue.ciudad && (
                   <div className="flex items-center gap-2">
                     <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
@@ -277,17 +281,17 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
               {/* Badges */}
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 {isMock && (
-                  <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-purple-500/20 text-purple-300 border border-purple-500/40 font-semibold shadow-sm flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                  <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-theme-primary/20 text-theme-primary border border-theme-primary/40 font-semibold shadow-sm flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-theme-primary animate-pulse"></span>
                     Modo Demo - Datos Simulados
                   </span>
                 )}
-                <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-slate-700/50 text-slate-300 border border-slate-600/50">
+                <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm bg-surface-card-subtle text-content-muted border border-border-subtle">
                   {venue.tipo}
                 </span>
                 <span className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm border ${venue.channel === 'Estratégico' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
                   venue.channel === 'Oportunidad' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-                    'bg-slate-700/50 text-slate-300 border-slate-600/50'
+                    'bg-surface-card-subtle text-content-muted border border-border-subtle'
                   }`}>
                   {venue.channel}
                 </span>
@@ -296,20 +300,31 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
 
             {/* Global Score */}
             <div className="flex items-center gap-4 lg:flex-col lg:text-right lg:items-end">
-              <div className="flex-1 lg:flex-initial">
-                <div className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{t('venue_detail.global_score')}</div>
+              <div className="flex-1 lg:flex-initial flex flex-col items-start lg:items-end">
+                <div className="text-xs sm:text-sm text-content-muted mb-1 sm:mb-2">{t('venue_detail.global_score')}</div>
                 <Tooltip text="Basado en última inspección" position="left">
-                  <div className={`text-4xl sm:text-6xl font-bold ${venue.global_score >= 90 ? 'text-green-400' :
-                    venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
-                    }`}
-                  >
-                    {venue.global_score}
-                  </div>
+                  {isHeineken ? (
+                    <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 my-1 select-none">
+                      <svg viewBox="0 0 100 100" className="w-full h-full" fill="#d92518">
+                        <polygon points="50,0 61.8,36.3 100,36.3 69.1,58.8 80.9,95.1 50,72.5 19.1,95.1 30.9,58.8 0,36.3 38.2,36.3" />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-white font-black text-2xl sm:text-3xl tracking-tight select-none pt-1">
+                        {venue.global_score}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className={`text-4xl sm:text-6xl font-bold ${venue.global_score >= 90 ? 'text-green-400' :
+                      venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
+                      }`}
+                    >
+                      {venue.global_score}
+                    </div>
+                  )}
                 </Tooltip>
-                <div className="text-xs sm:text-sm text-slate-400">{t('venue_detail.out_of_100')}</div>
+                <div className="text-xs sm:text-sm text-content-muted">{t('venue_detail.out_of_100')}</div>
               </div>
               <button
-                className="shrink-0 lg:w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2"
+                className="shrink-0 lg:w-full bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-lg flex items-center justify-center gap-2"
                 onClick={() => setShowTicketModal(true)}
               >
                 <Ticket className="w-4 h-4" />
@@ -324,8 +339,8 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
           {/* Left Column - Photos & Checklist */}
           <div className="space-y-4 sm:space-y-6">
             {/* Photo Gallery */}
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('venue_detail.gallery')}</h3>
+            <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-6 shadow-xl">
+              <h3 className="text-base sm:text-lg text-content-main font-semibold mb-3 sm:mb-4">{t('venue_detail.gallery')}</h3>
               {photos.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   {photos.slice(0, 4).map((img, i) => (
@@ -334,23 +349,23 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
                       src={img}
                       alt={`Foto ${i + 1}`}
                       onClick={() => setSelectedImage(img)}
-                      className="w-full h-24 sm:h-40 object-cover rounded-lg border border-slate-700/50 hover:border-amber-500/50 cursor-pointer hover:opacity-85 transition-opacity"
+                      className="w-full h-24 sm:h-40 object-cover rounded-lg border border-border-subtle hover:border-theme-primary/50 cursor-pointer hover:opacity-85 transition-opacity"
                     />
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-400 italic">{t('venue_detail.no_photos')}</div>
+                <div className="text-center py-8 text-content-muted italic">{t('venue_detail.no_photos')}</div>
               )}
             </div>
 
             {/* Checklist Breakdown */}
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">Cumplimiento de Checklist</h3>
+            <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-6 shadow-xl">
+              <h3 className="text-base sm:text-lg text-content-main font-semibold mb-3 sm:mb-4">Cumplimiento de Checklist</h3>
               <div className="space-y-2 sm:space-y-3">
                 {perfectServeChecklist.length > 0 ? (
                   perfectServeChecklist.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 sm:p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
-                      <span className="text-slate-300 text-xs sm:text-sm flex-1 mr-2">{item.item}</span>
+                    <div key={i} className="flex items-center justify-between p-2 sm:p-3 bg-surface-card-subtle rounded-lg border border-border-subtle">
+                      <span className="text-content-main text-xs sm:text-sm flex-1 mr-2">{item.item}</span>
                       {item.status ? (
                         <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-500/20 flex items-center justify-center border border-green-500/50 shrink-0">
                           <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
@@ -363,12 +378,12 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-4 text-slate-400 italic">{t('venue_detail.no_inspection')}</div>
+                  <div className="text-center py-4 text-content-muted italic">{t('venue_detail.no_inspection')}</div>
                 )}
               </div>
-              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-700/50">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border-subtle">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-slate-400">Cumplimiento Global</span>
+                  <span className="text-xs sm:text-sm text-content-muted">Cumplimiento Global</span>
                   <span className={`text-xl sm:text-2xl font-bold ${perfectServeScore >= 80 ? 'text-green-400' :
                     perfectServeScore >= 50 ? 'text-amber-400' : 'text-red-400'
                     }`}>{perfectServeScore}%</span>
@@ -379,17 +394,17 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
 
           {/* Right Column - KPIs (Simplified based on available data) */}
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3">{t('venue_detail.key_metrics')}</h3>
+            <div className="bg-surface-card border border-border-subtle rounded-xl p-3 sm:p-6 shadow-xl">
+              <h3 className="text-base sm:text-lg text-content-main font-semibold mb-3">{t('venue_detail.key_metrics')}</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-800/30 p-3 rounded-lg">
-                  <div className="text-xs text-slate-400 mb-1">{t('venue_detail.brand_presence')}</div>
-                  <div className="text-xl font-bold text-white">{venue.brandPresence ? t('venue_detail.yes') : t('venue_detail.no')}</div>
+                <div className="bg-surface-card-subtle p-3 rounded-lg border border-border-subtle/50">
+                  <div className="text-xs text-content-muted mb-1">{t('venue_detail.brand_presence')}</div>
+                  <div className="text-xl font-bold text-content-main">{venue.brandPresence ? t('venue_detail.yes') : t('venue_detail.no')}</div>
                 </div>
 
                 {/* Real Perfect Serve Score (Questions Only) */}
-                <div className="bg-slate-800/30 p-3 rounded-lg">
-                  <div className="text-xs text-slate-400 mb-1">Perfect Serve</div>
+                <div className="bg-surface-card-subtle p-3 rounded-lg border border-border-subtle/50">
+                  <div className="text-xs text-content-muted mb-1">Perfect Serve</div>
                   <div className={`text-xl font-bold ${(venue as any).actualPerfectServe >= 80 ? 'text-green-400' : (venue as any).actualPerfectServe >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
                     {(venue as any).actualPerfectServe !== undefined ? `${(venue as any).actualPerfectServe}%` : 'N/A'}
                   </div>
@@ -398,12 +413,12 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
                 {/* Average Score across all inspections for this product */}
                 {avgProductScore !== null && (
                   <Tooltip text="Basado en todas las inspecciones para este producto" position="top">
-                    <div className="bg-slate-800/30 p-3 rounded-lg col-span-2 w-full">
-                      <div className="text-xs text-slate-400 mb-1">Puntaje Global del Producto ⓘ</div>
+                    <div className="bg-surface-card-subtle p-3 rounded-lg border border-border-subtle/50 col-span-2 w-full">
+                      <div className="text-xs text-content-muted mb-1">Puntaje Global del Producto ⓘ</div>
                       <div className={`text-xl font-bold ${avgProductScore !== null && avgProductScore >= 90 ? 'text-green-400' :
                         avgProductScore !== null && avgProductScore >= 70 ? 'text-amber-400' : 'text-red-400'
                         }`}>
-                        {avgProductScore} <span className="text-sm font-normal text-slate-400">/ 100</span>
+                        {avgProductScore} <span className="text-sm font-normal text-content-muted">/ 100</span>
                       </div>
                     </div>
                   </Tooltip>
@@ -411,19 +426,19 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
 
                 {/* Share of Menu - Only show if available */}
                 {venue.shareOfMenu !== undefined && (
-                  <div className="bg-slate-800/30 p-3 rounded-lg">
-                    <div className="text-xs text-slate-400 mb-1">{t('venue_detail.share_of_menu')}</div>
-                    <div className="text-xl font-bold text-slate-200">{venue.shareOfMenu}%</div>
+                  <div className="bg-surface-card-subtle p-3 rounded-lg border border-border-subtle/50">
+                    <div className="text-xs text-content-muted mb-1">{t('venue_detail.share_of_menu')}</div>
+                    <div className="text-xl font-bold text-content-main">{venue.shareOfMenu}%</div>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Qualitative Notes - Real Observation Data */}
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
-              <h3 className="text-base sm:text-lg text-white font-semibold mb-3 sm:mb-4">{t('venue_detail.qualitative_notes')}</h3>
-              <div className="p-4 bg-slate-800/30 rounded-lg border border-slate-700/30">
-                <p className="text-sm text-slate-300 italic whitespace-pre-wrap">
+            <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-6 shadow-xl">
+              <h3 className="text-base sm:text-lg text-content-main font-semibold mb-3 sm:mb-4">{t('venue_detail.qualitative_notes')}</h3>
+              <div className="p-4 bg-surface-card-subtle rounded-lg border border-border-subtle">
+                <p className="text-sm text-content-main italic whitespace-pre-wrap">
                   {(venue as any).observations ? `"${(venue as any).observations}"` : t('venue_detail.qualitative_placeholder')}
                 </p>
               </div>
@@ -432,15 +447,15 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
         </div>
 
         {/* Recommendations - Static examples for MVP */}
-        <div className="bg-gradient-to-br from-amber-950/30 via-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-amber-500/30 rounded-xl p-4 sm:p-8 shadow-2xl">
-          <h2 className="text-xl sm:text-2xl text-white font-semibold mb-4 sm:mb-6">{t('venue_detail.recommended_actions')}</h2>
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-8 shadow-xl">
+          <h2 className="text-xl sm:text-2xl text-content-main font-semibold mb-4 sm:mb-6">{t('venue_detail.recommended_actions')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="p-4 sm:p-6 bg-slate-800/30 rounded-lg border border-slate-700/30">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-500/20 flex items-center justify-center mb-3 sm:mb-4">
-                <Award className="text-amber-400 w-6 h-6" />
+            <div className="p-4 sm:p-6 bg-surface-card-subtle rounded-lg border border-border-subtle">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-theme-primary/20 flex items-center justify-center mb-3 sm:mb-4">
+                <Award className="text-theme-primary w-6 h-6" />
               </div>
-              <h3 className="text-white font-semibold mb-2 text-sm sm:text-base">{t('venue_detail.rec_training')}</h3>
-              <p className="text-xs sm:text-sm text-slate-400 mb-3 sm:mb-4">{t('venue_detail.rec_training_desc')}</p>
+              <h3 className="text-content-main font-semibold mb-2 text-sm sm:text-base">{t('venue_detail.rec_training')}</h3>
+              <p className="text-xs sm:text-sm text-content-muted mb-3 sm:mb-4">{t('venue_detail.rec_training_desc')}</p>
             </div>
           </div>
         </div>

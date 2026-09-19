@@ -532,7 +532,7 @@ export function OpportunityMap({
   }, [filteredLocations]);
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl flex flex-col h-[650px]">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex flex-col h-[650px]">
       <style>{`
         .leaflet-container {
           background: #0f172a;
@@ -564,10 +564,10 @@ export function OpportunityMap({
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-lg text-white font-semibold flex items-center gap-2">
+          <h3 className="text-lg text-content-main font-semibold flex items-center gap-2">
             <Layers className="w-5 h-5 text-amber-500" />
             {t('map.title')}
-            <span className="text-slate-400 text-sm font-normal">
+            <span className="text-content-muted text-sm font-normal">
               ({filteredLocations.length} {language === 'es' ? 'puntos de venta' : 'venues'})
             </span>
           </h3>

@@ -6,6 +6,10 @@ import { supabase } from './utils/supabase/client';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { LanguageProvider } from './utils/LanguageContext';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ThemeSelector } from './components/ThemeSelector';
+import { ColorSchemeToggle } from './components/ColorSchemeToggle';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { Loader2, LogOut, Key, X } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -412,18 +416,8 @@ const UpdatePassword = lazy(() => import('./components/UpdatePassword').then(m =
 // Loading component
 function LoadingScreen({ message = 'Cargando...' }: { message?: string }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-      <div className="text-center">
-        <div className="relative w-20 h-20 mx-auto mb-6">
-          {/* Outer ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-amber-500/20"></div>
-          {/* Spinning ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin"></div>
-          {/* Inner pulse */}
-          <div className="absolute inset-3 rounded-full bg-amber-500/20 animate-pulse"></div>
-        </div>
-        <p className="text-slate-400 animate-pulse">{message}</p>
-      </div>
+    <div className="min-h-screen bg-surface-app text-content-main flex items-center justify-center p-4">
+      <LoadingSpinner size="lg" text={message} />
     </div>
   );
 }
@@ -506,13 +500,13 @@ function EmailConfirmationHandler() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-app text-content-main flex items-center justify-center p-4">
       <div className="text-center max-w-md">
         {status === 'processing' && (
           <>
-            <Loader2 className="w-16 h-16 text-amber-500 animate-spin mx-auto mb-6" />
-            <h2 className="text-2xl text-white font-bold mb-2">Confirmando Email</h2>
-            <p className="text-slate-400">{message}</p>
+            <Loader2 className="w-16 h-16 text-theme-primary animate-spin mx-auto mb-6" />
+            <h2 className="text-2xl text-content-main font-bold mb-2">Confirmando Email</h2>
+            <p className="text-content-muted">{message}</p>
           </>
         )}
 
@@ -521,8 +515,8 @@ function EmailConfirmationHandler() {
             <div className="w-16 h-16 rounded-xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
               <span className="text-5xl">✅</span>
             </div>
-            <h2 className="text-2xl text-white font-bold mb-2">¡Email Confirmado!</h2>
-            <p className="text-slate-400">{message}</p>
+            <h2 className="text-2xl text-content-main font-bold mb-2">¡Email Confirmado!</h2>
+            <p className="text-content-muted">{message}</p>
           </>
         )}
 
@@ -531,11 +525,11 @@ function EmailConfirmationHandler() {
             <div className="w-16 h-16 rounded-xl bg-red-500/20 flex items-center justify-center mx-auto mb-6">
               <span className="text-5xl">❌</span>
             </div>
-            <h2 className="text-2xl text-white font-bold mb-2">Error de Confirmación</h2>
-            <p className="text-slate-400 mb-6">{message}</p>
+            <h2 className="text-2xl text-content-main font-bold mb-2">Error de Confirmación</h2>
+            <p className="text-content-muted mb-6">{message}</p>
             <a
               href="/"
-              className="inline-block bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg transition-colors"
+              className="inline-block bg-theme-primary hover:bg-theme-secondary text-white px-6 py-3 rounded-lg transition-colors"
             >
               Volver al Inicio
             </a>
@@ -757,6 +751,7 @@ function LandingPage() {
 // Inspector App Component - USANDO HOOK
 function InspectorAppContent() {
   const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
+  const { currentTheme } = useTheme();
 
   if (loading) {
     return <LoadingScreen />;
@@ -791,35 +786,47 @@ function InspectorAppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800/50">
+    <div className="min-h-screen bg-surface-app text-content-main">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-theme-header-bg text-theme-header-text border-b border-white/10 shadow-sm transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">📋</span>
               </div>
               <div>
-                <h1 className="text-lg text-white font-semibold">Inspector Dashboard</h1>
-                <p className="text-xs text-slate-400">
+                <h1 className="text-lg text-theme-header-text font-semibold">Inspector Dashboard</h1>
+                <p className="text-xs text-white/70">
                   {dbUser?.nombre || session.user.email}
-                  {isAdmin && <span className="ml-2 px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded text-xs">Admin</span>}
+                  {isAdmin && <span className="ml-2 px-2 py-0.5 bg-white/20 text-white rounded text-xs">Admin</span>}
                 </p>
               </div>
             </div>
+
+            {/* Centered Dominant Branding */}
+            {currentTheme.slug === 'heineken' && (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
+                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+                  {currentTheme.nombre}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
+              {isAdmin && <ThemeSelector />}
+              <ColorSchemeToggle />
               <LanguageSwitcher />
               {isAdmin && (
                 <button
                   onClick={() => window.location.href = '/?mode=admin'}
-                  className="flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-400 px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   <span className="text-sm">Volver a Admin</span>
                 </button>
               )}
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 hover:text-white px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm hidden sm:inline">Cerrar Sesión</span>
@@ -839,6 +846,7 @@ function InspectorAppContent() {
 // Client App Component - USANDO HOOK
 function ClientAppContent() {
   const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
+  const { currentTheme } = useTheme();
 
   if (loading) {
     return <LoadingScreen />;
@@ -873,35 +881,47 @@ function ClientAppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800/50">
+    <div className="min-h-screen bg-surface-app text-content-main">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-theme-header-bg text-theme-header-text border-b border-white/10 shadow-sm transition-colors duration-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">📊</span>
               </div>
               <div>
-                <h1 className="text-lg text-white font-semibold">Dashboard Cliente</h1>
-                <p className="text-xs text-slate-400">
+                <h1 className="text-lg text-theme-header-text font-semibold">Dashboard Cliente</h1>
+                <p className="text-xs text-white/70">
                   {dbUser?.nombre || session.user.email}
-                  {isAdmin && <span className="ml-2 px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded text-xs">Admin</span>}
+                  {isAdmin && <span className="ml-2 px-2 py-0.5 bg-white/20 text-white rounded text-xs">Admin</span>}
                 </p>
               </div>
             </div>
+
+            {/* Centered Dominant Branding */}
+            {currentTheme.slug === 'heineken' && (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
+                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+                  {currentTheme.nombre}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
+              {isAdmin && <ThemeSelector />}
+              <ColorSchemeToggle />
               <LanguageSwitcher />
               {isAdmin && (
                 <button
                   onClick={() => window.location.href = '/?mode=admin'}
-                  className="flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-400 px-4 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   <span className="text-sm">Volver a Admin</span>
                 </button>
               )}
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 hover:text-white px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm hidden sm:inline">Cerrar Sesión</span>
@@ -921,6 +941,7 @@ function ClientAppContent() {
 // Admin App Component - USANDO HOOK
 function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null }) {
   const { session, loading, dbRole, dbUser, roleLoading, signOut } = useAuth();
+  const { currentTheme } = useTheme();
   const [currentView, setCurrentView] = useState<'admin' | 'inspector' | 'client'>('admin');
 
   const isAdmin = dbRole === 'admin' && dbUser?.estado_aprobacion === 'approved';
@@ -989,34 +1010,46 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-hidden">
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800/50">
+    <div className="min-h-screen bg-surface-app text-content-main overflow-x-hidden">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-theme-header-bg text-theme-header-text border-b border-white/10 shadow-sm transition-colors duration-200">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
           {/* Title and Logout Row */}
-          <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="relative flex items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-lg">⚙️</span>
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-base sm:text-lg text-white font-semibold truncate">
+                <h1 className="text-base sm:text-lg text-theme-header-text font-semibold truncate">
                   {currentView === 'admin' && 'Panel de Administración'}
                   {currentView === 'inspector' && 'Vista Inspector (Admin)'}
                   {currentView === 'client' && 'Vista Cliente (Admin)'}
                 </h1>
-                <p className="text-xs text-slate-400 truncate">
+                <p className="text-xs text-white/70 truncate">
                   {dbUser?.nombre || session.user.email}
                 </p>
               </div>
             </div>
 
+            {/* Centered Dominant Branding */}
+            {currentTheme.slug === 'heineken' && (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
+                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+                  {currentTheme.nombre}
+                </span>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 shrink-0">
+              <ThemeSelector />
+              <ColorSchemeToggle />
               <LanguageSwitcher />
 
               {/* Logout Button */}
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 hover:text-white px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-3 py-2 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="text-sm hidden sm:inline whitespace-nowrap">Cerrar Sesión</span>
@@ -1030,7 +1063,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               <button
                 onClick={() => setCurrentView('admin')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'admin'
-                  ? 'bg-purple-600 text-white shadow-lg'
+                  ? 'bg-theme-primary text-white shadow-lg'
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
@@ -1050,7 +1083,7 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
               <button
                 onClick={() => setCurrentView('client')}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${currentView === 'client'
-                  ? 'bg-amber-600 text-white shadow-lg'
+                  ? 'bg-theme-accent text-white shadow-lg'
                   : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
@@ -1143,25 +1176,27 @@ export default function App() {
     }
   }, []);
 
-  // Wrap everything in ONE AuthProvider and LanguageProvider
+  // Wrap everything in ONE AuthProvider, LanguageProvider, and ThemeProvider
   return (
     <LanguageProvider>
       <AuthProvider>
-        <Toaster
-          theme="dark"
-          position="top-right"
-          richColors
-          closeButton
-          toastOptions={{
-            style: {
-              background: 'rgba(15, 23, 42, 0.9)', // slate-900 with opacity
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(148, 163, 184, 0.1)',
-            },
-            className: 'glass-toast'
-          }}
-        />
-        <AppRouter mode={mode} ticketId={ticketId} />
+        <ThemeProvider>
+          <Toaster
+            theme="dark"
+            position="top-right"
+            richColors
+            closeButton
+            toastOptions={{
+              style: {
+                background: 'rgba(15, 23, 42, 0.9)', // slate-900 with opacity
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(148, 163, 184, 0.1)',
+              },
+              className: 'glass-toast'
+            }}
+          />
+          <AppRouter mode={mode} ticketId={ticketId} />
+        </ThemeProvider>
       </AuthProvider>
     </LanguageProvider>
   );

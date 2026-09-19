@@ -81,10 +81,61 @@
 - [x] Validación de compilación estática con `npx tsc --noEmit` (cero errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 13)
 
-## Fase 14: Visor Ampliado (Lightbox) de Fotos en VenueDetail
-- [x] Declarar estado `selectedImage` y listener para la tecla `Escape` en `components/VenueDetail.tsx`
-- [x] Asignar manejador `onClick` y feedback visual en miniaturas de galería
-- [x] Implementar contenedor Modal Lightbox con backdrop desenfocado, botón de cierre accesible y stopPropagation
-- [x] Validación estática de código y tipado con `npx tsc --noEmit`
-- [x] Actualización y completitud de `walkthrough.md` (Sprint 14)
+## Fase 15: Sistema de Theming Dinámico Multi-Tenant (Fases 1 y 2)
+- [x] Definición de `btl_temas`, RLS y semillas en `master_schema.sql` y generación de snippet DDL para Supabase
+- [x] Implementación de `context/ThemeContext.tsx` con persistencia en `localStorage`, variables CSS en `:root` y catálogo de contingencia
+- [x] Creación de `components/ThemeSelector.tsx` restringido a administradores con conmutación en tiempo real
+- [x] Integración de `<ThemeProvider>` y `<ThemeSelector />` en `App.tsx`
+- [x] Implementación de tarjeta de administración de temas en `components/SettingsManagement.tsx` con listado, activación y modal de creación/edición
+- [x] Integración de badge temático de estrella roja Heineken para scoring de venue en `components/VenueDetail.tsx`
+- [x] Validación estática de código con `npx tsc --noEmit` (0 errores)
+- [x] Actualización técnica y funcional de `walkthrough.md` (Sprint 15)
+
+## Fase 16: Propagación Reactiva de Colores de Tema y Acabado Mate de Estrella
+- [x] Extender `theme.extend.colors` en `tailwind.config.js` con el namespace `theme` vinculado a variables CSS
+- [x] Declarar variables fallback `--theme-*` en `styles/globals.css`
+- [x] Refactorizar clases hardcodeadas (`amber`/`purple`) en `components/VenueDetail.tsx` ("Crear Ticket") y `components/TicketModal.tsx`
+- [x] Rediseñar la estrella de scoring de Heineken en `components/VenueDetail.tsx` (remover glow/drop-shadow, aplicar rojo mate plano `#d92518` y texto blanco puro nítido)
+- [x] Refactorizar clases activas en `components/ThemeSelector.tsx` para usar utilidades `theme-*`
+- [x] Validación estática de compilación con `npx tsc --noEmit` (0 errores)
+- [x] Actualización técnica y funcional en `walkthrough.md` (Sprint 16)
+
+## Fase 17: Refactor Visual Integral (Fase 1) - Header Corporativo y Desacople de Clases Hardcodeadas
+- [x] Tokenización y extensión de variables de tema (`--theme-header-bg`, `--theme-header-text`) en `ThemeContext.tsx`, `globals.css` y `tailwind.config.js`
+- [x] Header corporativo y branding dinámico en `App.tsx` (Heineken `#205527`, badge corporativo, controles translúcidos)
+- [x] Desacople de clases púrpuras en `AdminDashboard.tsx` y `AdminStats.tsx`
+- [x] Desacople de clases hardcodeadas en `InspectorHeader.tsx` y `VenueSelectionForm.tsx`
+- [x] Conexión de `FilterChip.tsx` y floating action button en `ClientDashboard.tsx` a variables de tema
+- [x] Conexión de SVG strokes y gradientes dinámicos en `PerformanceChart.tsx`
+- [x] Actualización de botones y tarjetas en `VenueTrainingAnalytics.tsx`
+- [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 17)
+
+## Fase 18: Corrección Visual de Layout, Header Branding y Contraste de Filtros
+- [x] Botón activo "Cliente" con fondo de acento corporativo (`bg-theme-accent`) en `App.tsx`
+- [x] Branding de marca centrado y dominante (`★ HEINEKEN`) con posición absoluta en `App.tsx`
+- [x] Normalización de espaciado superior (`pt-6 space-y-6`) en `ClientDashboard.tsx`
+- [x] Corrección de contraste del botón inactivo ("Sin inspección") en `FilterChip.tsx` y filtros de mapa
+- [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 18)
+
+## Fase 19: Soporte Integral de Modo Claro y Modo Oscuro (Color Scheme)
+- [x] Arquitectura de tokens y estado en `ThemeContext.tsx` (`colorScheme`, `toggleColorScheme`, persistencia `localStorage`)
+- [x] Extensión de tokens semánticos en `tailwind.config.js` y variables en `styles/globals.css`
+- [x] Creación de `components/ColorSchemeToggle.tsx` e integración en los 3 headers en `App.tsx`
+- [x] Tokenización de formularios, inputs y modales flotantes (`TicketModal.tsx`, `VenueSelectionForm.tsx`, `ThemeSelector.tsx`)
+- [x] Compatibilidad gráfica en `PerformanceChart.tsx` (Grid, Axis, Tooltip con fallbacks inline)
+- [x] Refactorización de superficies y tarjetas a tokens semánticos (`ClientDashboard.tsx`, `AdminDashboard.tsx`, `AdminStats.tsx`, `KPICard.tsx`, `ProductMetrics.tsx`, `VenueDetail.tsx`, `InspectorHeader.tsx`, `VenueTrainingAnalytics.tsx`, `FilterChip.tsx`)
+- [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 19)
+
+## Fase 20: Refinamiento Visual y Theming de Loaders
+- [x] Calibración de superficies y reducción de luminancia en Modo Claro (`ThemeContext.tsx`, `globals.css`)
+- [x] Corrección de legibilidad y contraste en alertas de `ProductMetrics.tsx`
+- [x] Erradicación de fondos oscuros residuales en `ManagerDashboard.tsx`, `CompetitionChart.tsx`, `PricePositioningChart.tsx`, `OpportunityBreakdown.tsx`, `VenueTable.tsx` y `OpportunityMap.tsx`
+- [x] Creación de `LoadingSpinner.tsx` y theming de `LoadingScreen` en `App.tsx` y spinners modulares (`UserManagement`, `TicketManagement`, `PendingUsersManagement`, `ClientVenueManager`, `VenueDetail`, `ProductMetrics`)
+- [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 20)
+
+
 

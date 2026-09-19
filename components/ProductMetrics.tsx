@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase/client';
 import { Package, TrendingUp, TrendingDown, AlertCircle, ChevronDown, DollarSign } from 'lucide-react';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface ProductMetric {
   id: string;
@@ -284,13 +285,13 @@ export function ProductMetrics({
 
   if (products.length === 0) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 shadow-xl">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-8 shadow-xl">
         <div className="text-center">
-          <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-xl text-white font-semibold mb-2">
+          <Package className="w-16 h-16 text-content-muted mx-auto mb-4" />
+          <h3 className="text-xl text-content-main font-semibold mb-2">
             No hay productos disponibles
           </h3>
-          <p className="text-slate-400 mb-6">
+          <p className="text-content-muted mb-6">
             Contacta a tu administrador para asignar productos.
           </p>
         </div>
@@ -303,24 +304,24 @@ export function ProductMetrics({
       {/* Header with Dropdown */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl text-white font-semibold mb-1">Métricas por Producto</h2>
-          <p className="text-slate-400 text-sm">
+          <h2 className="text-xl text-content-main font-semibold mb-1">Métricas por Producto</h2>
+          <p className="text-content-muted text-sm">
             Selecciona un producto para ver su desempeño detallado
           </p>
         </div>
 
         <div className="relative w-full sm:w-64">
-          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-content-muted">
             <ChevronDown className="w-4 h-4" />
           </div>
           <select
             value={selectedProductId || 'all'}
             onChange={(e) => onProductSelect && onProductSelect(e.target.value)}
-            className="w-full bg-slate-800/80 border border-slate-700 text-white pl-4 pr-10 py-2.5 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer hover:bg-slate-800 transition-colors"
+            className="w-full bg-surface-card-subtle border border-border-subtle text-content-main pl-4 pr-10 py-2.5 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-theme-primary/50 cursor-pointer hover:bg-surface-card transition-colors"
           >
-            <option value="all">Todos los productos</option>
+            <option value="all" className="bg-surface-card text-content-main">Todos los productos</option>
             {products.map((product) => (
-              <option key={product.id} value={product.id}>
+              <option key={product.id} value={product.id} className="bg-surface-card text-content-main">
                 {product.marca} - {product.nombre}
               </option>
             ))}
@@ -330,13 +331,13 @@ export function ProductMetrics({
 
       {/* Metrics Card */}
       {loadingMetrics || !metric ? (
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-12 shadow-xl flex justify-center">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-12 shadow-xl flex justify-center">
+          <LoadingSpinner size="md" />
         </div>
       ) : (
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 sm:p-8 shadow-xl">
           {/* Product Header */}
-          <div className="flex flex-col sm:flex-row items-start gap-6 mb-8 border-b border-slate-700/50 pb-6">
+          <div className="flex flex-col sm:flex-row items-start gap-6 mb-8 border-b border-border-subtle pb-6">
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
               style={{
@@ -356,13 +357,13 @@ export function ProductMetrics({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-2xl text-white font-bold mb-1">{metric.marca}</h3>
-                  <p className="text-slate-400 text-lg mb-2">{metric.nombre}</p>
+                  <h3 className="text-2xl text-content-main font-bold mb-1">{metric.marca}</h3>
+                  <p className="text-content-muted text-lg mb-2">{metric.nombre}</p>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-full border border-slate-600/30">
+                    <span className="px-3 py-1 bg-surface-card-subtle text-content-muted text-sm rounded-full border border-border-subtle">
                       {metric.categoria}
                     </span>
-                    <span className="px-3 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-full border border-slate-600/30 flex items-center gap-1">
+                    <span className="px-3 py-1 bg-surface-card-subtle text-content-muted text-sm rounded-full border border-border-subtle flex items-center gap-1">
                       <Package className="w-3.5 h-3.5" />
                       {metric.puntos_venta_con_producto} PDV Activos
                     </span>
@@ -384,18 +385,18 @@ export function ProductMetrics({
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Presencia */}
-            <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/30">
+            <div className="bg-surface-card-subtle rounded-xl p-4 border border-border-subtle">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-slate-400 font-medium">Presencia en PDV</span>
+                <span className="text-content-muted font-medium">Presencia en PDV</span>
                 <span className={`text-xl font-bold ${getStatusColor(metric.presencia_actual, metric.presencia_objetivo)}`}>
                   {metric.presencia_actual}%
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+              <div className="flex items-center justify-between text-xs text-content-muted mb-2">
                 <span>Actual</span>
                 <span>Objetivo: {metric.presencia_objetivo}%</span>
               </div>
-              <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="h-3 bg-surface-card rounded-full overflow-hidden border border-border-subtle/50">
                 <div
                   className={`h-full ${getProgressColor(metric.presencia_actual, metric.presencia_objetivo)} transition-all duration-1000 ease-out`}
                   style={{ width: `${Math.min((metric.presencia_actual / metric.presencia_objetivo) * 100, 100)}%` }}
@@ -404,18 +405,18 @@ export function ProductMetrics({
             </div>
 
             {/* Stock */}
-            <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/30">
+            <div className="bg-surface-card-subtle rounded-xl p-4 border border-border-subtle">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-slate-400 font-medium">Disponibilidad Stock</span>
+                <span className="text-content-muted font-medium">Disponibilidad Stock</span>
                 <span className={`text-xl font-bold ${getStatusColor(metric.stock_actual, metric.stock_objetivo)}`}>
                   {metric.stock_actual}%
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+              <div className="flex items-center justify-between text-xs text-content-muted mb-2">
                 <span>Actual</span>
                 <span>Objetivo: {metric.stock_objetivo}%</span>
               </div>
-              <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="h-3 bg-surface-card rounded-full overflow-hidden border border-border-subtle/50">
                 <div
                   className={`h-full ${getProgressColor(metric.stock_actual, metric.stock_objetivo)} transition-all duration-1000 ease-out`}
                   style={{ width: `${Math.min((metric.stock_actual / metric.stock_objetivo) * 100, 100)}%` }}
@@ -424,18 +425,18 @@ export function ProductMetrics({
             </div>
 
             {/* Material POP */}
-            <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/30">
+            <div className="bg-surface-card-subtle rounded-xl p-4 border border-border-subtle">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-slate-400 font-medium">Material POP</span>
+                <span className="text-content-muted font-medium">Material POP</span>
                 <span className={`text-xl font-bold ${getStatusColor(metric.pop_actual, metric.pop_objetivo)}`}>
                   {metric.pop_actual}%
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
+              <div className="flex items-center justify-between text-xs text-content-muted mb-2">
                 <span>Actual</span>
                 <span>Objetivo: {metric.pop_objetivo}%</span>
               </div>
-              <div className="h-3 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="h-3 bg-surface-card rounded-full overflow-hidden border border-border-subtle/50">
                 <div
                   className={`h-full ${getProgressColor(metric.pop_actual, metric.pop_objetivo)} transition-all duration-1000 ease-out`}
                   style={{ width: `${Math.min((metric.pop_actual / metric.pop_objetivo) * 100, 100)}%` }}
@@ -446,36 +447,36 @@ export function ProductMetrics({
 
           {/* Pricing Deviation Card */}
           {metric.precio_referencia != null && (
-            <div className="mt-6 bg-slate-800/30 rounded-xl p-5 border border-slate-700/30">
+            <div className="mt-6 bg-surface-card-subtle rounded-xl p-5 border border-border-subtle">
               <div className="flex items-center gap-2 mb-4">
                 <DollarSign className="w-5 h-5 text-amber-400" />
-                <span className="text-white font-semibold">Análisis de Precio</span>
+                <span className="text-content-main font-semibold">Análisis de Precio</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Reference Price */}
                 <div className="text-center">
-                  <div className="text-xs text-slate-500 mb-1">Precio Referencia</div>
-                  <div className="text-lg text-white font-bold">
+                  <div className="text-xs text-content-muted mb-1">Precio Referencia</div>
+                  <div className="text-lg text-content-main font-bold">
                     {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(metric.precio_referencia)}
                   </div>
                 </div>
                 {/* Avg Observed Price */}
                 <div className="text-center">
-                  <div className="text-xs text-slate-500 mb-1">Precio Carta Prom.</div>
-                  <div className="text-lg text-white font-bold">
+                  <div className="text-xs text-content-muted mb-1">Precio Carta Prom.</div>
+                  <div className="text-lg text-content-main font-bold">
                     {metric.precio_carta_promedio != null
                       ? new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(metric.precio_carta_promedio)
                       : '—'}
                   </div>
                   {metric.precio_min != null && metric.precio_max != null && metric.precio_min !== metric.precio_max && (
-                    <div className="text-[10px] text-slate-500 mt-0.5">
+                    <div className="text-[10px] text-content-muted mt-0.5">
                       Rango: {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(metric.precio_min)} – {new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(metric.precio_max)}
                     </div>
                   )}
                 </div>
                 {/* Deviation */}
                 <div className="text-center">
-                  <div className="text-xs text-slate-500 mb-1">Desviación</div>
+                  <div className="text-xs text-content-muted mb-1">Desviación</div>
                   {metric.desviacion_precio != null ? (
                     <>
                       <div className={`text-lg font-bold ${
@@ -495,10 +496,10 @@ export function ProductMetrics({
                       </div>
                     </>
                   ) : (
-                    <div className="text-lg text-slate-500">—</div>
+                    <div className="text-lg text-content-muted">—</div>
                   )}
                   {metric.inspecciones_con_precio > 0 && (
-                    <div className="text-[10px] text-slate-600 mt-1">
+                    <div className="text-[10px] text-content-muted mt-1">
                       {metric.inspecciones_con_precio} inspección(es) con precio
                     </div>
                   )}
@@ -511,11 +512,11 @@ export function ProductMetrics({
           {(metric.presencia_actual < metric.presencia_objetivo * 0.75 ||
             metric.stock_actual < metric.stock_objetivo * 0.75 ||
             metric.pop_actual < metric.pop_objetivo * 0.75) && (
-              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="mt-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-red-400 font-medium text-sm mb-1">Atención Requerida</h4>
-                  <p className="text-sm text-red-300/80">
+                  <h4 className="text-red-900 dark:text-red-200 font-semibold text-sm mb-1">Atención Requerida</h4>
+                  <p className="text-sm text-red-800 dark:text-red-300/80 font-medium">
                     Uno o más indicadores están significativamente por debajo del objetivo establecido (menos del 75%). Se recomienda revisar la ejecución en punto de venta.
                   </p>
                 </div>

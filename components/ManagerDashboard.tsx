@@ -12,6 +12,7 @@ import { ActivationTimeline } from './ActivationTimeline';
 import { VenueDetail } from './VenueDetail';
 import { DEMO_DATA } from '../utils/demoData';
 import { FilterChip } from './FilterChip';
+import { LoadingSpinner } from './LoadingSpinner';
 import { TrendingUp, TrendingDown, Minus, Target, Store, Users, DollarSign } from 'lucide-react';
 
 interface ManagerDashboardProps {
@@ -299,17 +300,14 @@ export function ManagerDashboard({
 
   if (loading && !kpis) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-400">Cargando dashboard...</p>
-        </div>
+      <div className={`${readOnly ? '' : 'min-h-screen'} flex items-center justify-center bg-surface-app text-content-main py-20`}>
+        <LoadingSpinner size="lg" text="Cargando dashboard..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className={`${readOnly ? '' : 'min-h-screen'} bg-surface-app text-content-main`}>
       <div className={`max-w-[1600px] mx-auto py-6 space-y-6 ${readOnly ? '' : 'px-4 sm:px-8'}`}>
 
         {/* Filters Section */}
@@ -319,7 +317,7 @@ export function ManagerDashboard({
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500/50 appearance-none"
+              className="w-full px-4 py-2.5 bg-surface-card-subtle border border-border-subtle rounded-lg text-sm text-content-main focus:outline-none focus:border-theme-primary/50 appearance-none"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
             >
               <option value="1M">1 Mes</option>
@@ -333,7 +331,7 @@ export function ManagerDashboard({
             <select
               value={regionFilter}
               onChange={(e) => setRegionFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700/50 rounded-lg text-sm text-white focus:outline-none focus:border-amber-500/50 appearance-none"
+              className="w-full px-4 py-2.5 bg-surface-card-subtle border border-border-subtle rounded-lg text-sm text-content-main focus:outline-none focus:border-theme-primary/50 appearance-none"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
             >
               <option value="all">Todas las regiones</option>
@@ -375,7 +373,7 @@ export function ManagerDashboard({
             />
           </div>
 
-          <div className="border-l border-slate-700 h-8 mx-1 flex-shrink-0"></div>
+          <div className="border-l border-border-subtle h-8 mx-1 flex-shrink-0"></div>
 
           {/* Region Filters — single row with horizontal scroll */}
           <div className="flex gap-2 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pb-1 min-w-0">

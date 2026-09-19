@@ -512,6 +512,45 @@ export type Database = {
         }
         Relationships: []
       }
+      btl_temas: {
+        Row: {
+          activo: boolean | null
+          accent_color: string
+          border_color: string
+          config: Json | null
+          created_at: string | null
+          id: string
+          nombre: string
+          primary_color: string
+          secondary_color: string
+          slug: string
+        }
+        Insert: {
+          activo?: boolean | null
+          accent_color: string
+          border_color: string
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          nombre: string
+          primary_color: string
+          secondary_color: string
+          slug: string
+        }
+        Update: {
+          activo?: boolean | null
+          accent_color?: string
+          border_color?: string
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          nombre?: string
+          primary_color?: string
+          secondary_color?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       btl_reportes: {
         Row: {
           archivos_adjuntos: string[] | null

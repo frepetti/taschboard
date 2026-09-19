@@ -78,8 +78,8 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
 
   if (venues.length === 0) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl p-8 text-center">
-        <p className="text-slate-400 text-sm">
+      <div className="bg-surface-card border border-border-subtle rounded-xl shadow-xl p-8 text-center">
+        <p className="text-content-muted text-sm">
           {language === 'es' ? 'No hay inspecciones registradas para este período.' : 'No inspections recorded for this period.'}
         </p>
       </div>
@@ -87,40 +87,40 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl overflow-hidden">
+    <div className="bg-surface-card border border-border-subtle rounded-xl shadow-xl overflow-hidden">
       {/* Desktop Table Header */}
-      <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-700/50 bg-slate-900/30">
-        <div className="col-span-4 text-xs uppercase tracking-wider text-slate-400 font-semibold">
+      <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 border-b border-border-subtle bg-surface-card-subtle">
+        <div className="col-span-4 text-xs uppercase tracking-wider text-content-muted font-semibold">
           {language === 'es' ? 'Punto de Venta' : 'Venue'}
         </div>
-        <div className="col-span-2 text-xs uppercase tracking-wider text-slate-400 font-semibold">Canal</div>
-        <div className="col-span-2 text-xs uppercase tracking-wider text-slate-400 font-semibold text-center">
+        <div className="col-span-2 text-xs uppercase tracking-wider text-content-muted font-semibold">Canal</div>
+        <div className="col-span-2 text-xs uppercase tracking-wider text-content-muted font-semibold text-center">
           {language === 'es' ? 'Cumplimiento' : 'Compliance'}
         </div>
-        <div className="col-span-2 text-xs uppercase tracking-wider text-slate-400 font-semibold text-center">Material POP</div>
-        <div className="col-span-1 text-xs uppercase tracking-wider text-slate-400 font-semibold text-center">Visitas</div>
+        <div className="col-span-2 text-xs uppercase tracking-wider text-content-muted font-semibold text-center">Material POP</div>
+        <div className="col-span-1 text-xs uppercase tracking-wider text-content-muted font-semibold text-center">Visitas</div>
         <div className="col-span-1" />
       </div>
 
       {/* Table Body */}
-      <div className="divide-y divide-slate-700/30">
+      <div className="divide-y divide-border-subtle">
         {venues.map((venue) => (
           <div
             key={venue.id}
             onClick={() => onVenueClick && onVenueClick(venue)}
-            className={`${!readOnly && 'hover:bg-slate-800/40 transition-colors cursor-pointer group'}`}
+            className={`${!readOnly && 'hover:bg-surface-card-subtle transition-colors cursor-pointer group'}`}
           >
             {/* Desktop Layout */}
             <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 items-center">
               <div className="col-span-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center text-slate-400 text-xs font-bold">
+                <div className="w-10 h-10 rounded-lg bg-surface-card-subtle border border-border-subtle flex items-center justify-center text-content-muted text-xs font-bold">
                   {venue.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-white font-medium">{venue.name}</span>
+                <span className="text-content-main font-medium">{venue.name}</span>
               </div>
 
               <div className="col-span-2 flex items-center">
-                <span className="px-3 py-1 rounded-full text-xs bg-slate-700/30 text-slate-300 border border-slate-600/30">
+                <span className="px-3 py-1 rounded-full text-xs bg-surface-card-subtle text-content-muted border border-border-subtle">
                   {venue.channel}
                 </span>
               </div>
@@ -138,22 +138,22 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
               </div>
 
               <div className="col-span-1 flex items-center justify-center">
-                <span className="text-white font-semibold">{venue.count}</span>
+                <span className="text-content-main font-semibold">{venue.count}</span>
               </div>
 
               <div className="col-span-1 flex items-center justify-end">
-                {!readOnly && <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-amber-400 transition-colors" />}
+                {!readOnly && <ChevronRight className="w-5 h-5 text-content-muted group-hover:text-theme-primary transition-colors" />}
               </div>
             </div>
 
             {/* Mobile Layout */}
             <div className="lg:hidden px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center text-slate-400 text-xs font-bold shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-surface-card-subtle border border-border-subtle flex items-center justify-center text-content-muted text-xs font-bold shrink-0">
                   {venue.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-white font-medium text-sm mb-1 truncate">{venue.name}</div>
+                  <div className="text-content-main font-medium text-sm mb-1 truncate">{venue.name}</div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className={`font-bold ${getScoreColor(venue.avgCompliance)}`}>
                       {venue.avgCompliance > 0 ? `${venue.avgCompliance}%` : '—'}
@@ -161,10 +161,10 @@ export function VenueTable({ onVenueClick, inspections = [], allVenues = [], rea
                     <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${getMaterialColor(venue.materialStatus)}`}>
                       {venue.materialStatus}
                     </span>
-                    <span className="text-slate-400">{venue.count} visitas</span>
+                    <span className="text-content-muted">{venue.count} visitas</span>
                   </div>
                 </div>
-                {!readOnly && <ChevronRight className="w-4 h-4 text-slate-500 shrink-0" />}
+                {!readOnly && <ChevronRight className="w-4 h-4 text-content-muted shrink-0" />}
               </div>
             </div>
           </div>

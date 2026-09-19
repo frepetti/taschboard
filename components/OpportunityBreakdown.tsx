@@ -19,10 +19,10 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
       { name: 'Previous Activations', value: 15, color: COLORS[3] },
     ];
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
         <div className="mb-4">
-          <h3 className="text-lg text-white font-semibold mb-2">Opportunity Score</h3>
-          <div className="text-5xl text-amber-400 font-bold">8.2<span className="text-2xl text-slate-400">/10</span></div>
+          <h3 className="text-lg text-content-main font-semibold mb-2">Opportunity Score</h3>
+          <div className="text-5xl text-amber-500 font-bold">8.2<span className="text-2xl text-content-muted">/10</span></div>
         </div>
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
@@ -30,9 +30,9 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
               {demoData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
             </Pie>
             <Tooltip
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
-              labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
-              itemStyle={{ color: '#e2e8f0' }}
+              contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }}
+              labelStyle={{ color: 'var(--text-main, #0f172a)', fontWeight: 'bold' }}
+              itemStyle={{ color: 'var(--text-muted, #64748b)' }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -41,9 +41,9 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
             <div key={i} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-slate-300">{item.name}</span>
+                <span className="text-content-muted">{item.name}</span>
               </div>
-              <span className="text-white font-semibold">{item.value}%</span>
+              <span className="text-content-main font-semibold">{item.value}%</span>
             </div>
           ))}
         </div>
@@ -56,8 +56,8 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
 
   if (total === 0) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl flex items-center justify-center min-h-[200px]">
-        <p className="text-slate-400 text-sm text-center">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex items-center justify-center min-h-[200px]">
+        <p className="text-content-muted text-sm text-center">
           {language === 'es'
             ? 'Sin inspecciones para calcular oportunidades.'
             : 'No inspections to calculate opportunities.'}
@@ -113,24 +113,24 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
   const allZero = data.every(d => d.value === 0);
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
       <div className="mb-4">
-        <h3 className="text-lg text-white font-semibold mb-2">
+        <h3 className="text-lg text-content-main font-semibold mb-2">
           {language === 'es' ? 'Análisis de Oportunidades' : 'Opportunity Analysis'}
         </h3>
         {!allZero && (
-          <div className="text-5xl text-amber-400 font-bold">
+          <div className="text-5xl text-amber-500 font-bold">
             {opportunityScore.toFixed(1)}
-            <span className="text-2xl text-slate-400">/10</span>
+            <span className="text-2xl text-content-muted">/10</span>
           </div>
         )}
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-content-muted mt-1">
           {language === 'es' ? `Basado en ${total} inspecciones` : `Based on ${total} inspections`}
         </p>
       </div>
 
       {allZero ? (
-        <div className="py-8 text-center text-slate-400 text-sm">
+        <div className="py-8 text-center text-content-muted text-sm">
           {language === 'es'
             ? 'Los datos de oportunidad se calcularán cuando haya inspecciones con métricas registradas.'
             : 'Opportunity data will be calculated once inspections with metrics are recorded.'}
@@ -153,9 +153,9 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
-                labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
-                itemStyle={{ color: '#e2e8f0' }}
+                contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }}
+                labelStyle={{ color: 'var(--text-main, #0f172a)', fontWeight: 'bold' }}
+                itemStyle={{ color: 'var(--text-muted, #64748b)' }}
                 formatter={(value: any, name: any) => [`${value}%`, name]}
               />
             </PieChart>
@@ -166,11 +166,11 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
               <div key={i} className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-300">{item.name}</span>
+                  <span className="text-content-muted">{item.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500 text-xs">{item.raw}/{total}</span>
-                  <span className="text-white font-semibold">{item.value}%</span>
+                  <span className="text-content-muted text-xs">{item.raw}/{total}</span>
+                  <span className="text-content-main font-semibold">{item.value}%</span>
                 </div>
               </div>
             ))}

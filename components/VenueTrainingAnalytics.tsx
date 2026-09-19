@@ -349,14 +349,14 @@ export function VenueTrainingAnalytics({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl text-white font-semibold mb-1">Análisis de Capacitación</h3>
-          <p className="text-slate-400 text-sm">
+          <h3 className="text-xl text-content-main font-semibold mb-1">Análisis de Capacitación</h3>
+          <p className="text-content-muted text-sm">
             Seguimiento de capacitación del personal por venue
           </p>
         </div>
         <button
           onClick={() => setShowDetailModal(true)}
-          className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          className="bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2"
         >
           <GraduationCap className="w-4 h-4 hidden sm:inline-block" />
           <span>Ver Detalle</span>
@@ -366,65 +366,65 @@ export function VenueTrainingAnalytics({
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Venues */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-lg bg-purple-600/20 flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-purple-400" />
+            <div className="w-12 h-12 rounded-lg bg-theme-primary/20 flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-theme-primary" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.totalVenues}</div>
-          <div className="text-slate-400 text-sm">Total de Venues</div>
+          <div className="text-3xl font-bold text-content-main mb-1">{stats.totalVenues}</div>
+          <div className="text-content-muted text-sm">Total de Venues</div>
         </div>
 
         {/* Venues with Training */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-green-700/30 rounded-xl p-6 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-lg bg-green-600/20 flex items-center justify-center">
               <CheckCircle className="w-6 h-6 text-green-400" />
             </div>
-            <span className="text-green-400 text-sm font-medium">
+            <span className="text-green-500 text-sm font-medium">
               {(stats.percentageTrained || 0).toFixed(1)}%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.venuesWithTraining}</div>
-          <div className="text-slate-400 text-sm">Con Personal Capacitado</div>
+          <div className="text-3xl font-bold text-content-main mb-1">{stats.venuesWithTraining}</div>
+          <div className="text-content-muted text-sm">Con Personal Capacitado</div>
         </div>
 
         {/* Venues without Training */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-red-700/30 rounded-xl p-6 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-lg bg-red-600/20 flex items-center justify-center">
               <XCircle className="w-6 h-6 text-red-400" />
             </div>
-            <span className="text-red-400 text-sm font-medium">
+            <span className="text-red-500 text-sm font-medium">
               {stats.totalVenues > 0 ? (100 - stats.percentageTrained).toFixed(1) : '0.0'}%
             </span>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.venuesWithoutTraining}</div>
-          <div className="text-slate-400 text-sm">Sin Personal Capacitado</div>
+          <div className="text-3xl font-bold text-content-main mb-1">{stats.venuesWithoutTraining}</div>
+          <div className="text-content-muted text-sm">Sin Personal Capacitado</div>
         </div>
 
         {/* Total Trainings */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-amber-700/30 rounded-xl p-6 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div className="w-12 h-12 rounded-lg bg-amber-600/20 flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-amber-400" />
+              <GraduationCap className="w-6 h-6 text-amber-500" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.totalTrainings}</div>
-          <div className="text-slate-400 text-sm">Capacitaciones Completadas</div>
+          <div className="text-3xl font-bold text-content-main mb-1">{stats.totalTrainings}</div>
+          <div className="text-content-muted text-sm">Capacitaciones Completadas</div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-white font-medium">Progreso de Capacitación</span>
-          <span className="text-slate-400 text-sm">
+          <span className="text-content-main font-medium">Progreso de Capacitación</span>
+          <span className="text-content-muted text-sm">
             {stats.venuesWithTraining} de {stats.totalVenues} venues
           </span>
         </div>
-        <div className="w-full h-4 bg-slate-700/50 rounded-full overflow-hidden">
+        <div className="w-full h-4 bg-surface-card-subtle border border-border-subtle rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-500"
             style={{ width: `${stats.totalVenues > 0 ? stats.percentageTrained : 0}%` }}
@@ -435,34 +435,34 @@ export function VenueTrainingAnalytics({
       {/* Detail Modal */}
       {showDetailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-2xl max-w-5xl w-full max-h-[85vh] flex flex-col">
+          <div className="bg-surface-card border border-border-subtle rounded-xl shadow-2xl max-w-5xl w-full max-h-[85vh] flex flex-col">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+            <div className="p-6 border-b border-border-subtle flex items-center justify-between">
               <div>
-                <h3 className="text-xl text-white font-semibold mb-1">
+                <h3 className="text-xl text-content-main font-semibold mb-1">
                   Detalle de Capacitación por Venue
                 </h3>
-                <p className="text-slate-400 text-sm">
+                <p className="text-content-muted text-sm">
                   {filteredVenues.length} venues mostrados
                 </p>
               </div>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-content-muted hover:text-content-main transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Filters */}
-            <div className="p-6 border-b border-slate-700/50 space-y-4">
+            <div className="p-6 border-b border-border-subtle space-y-4">
               {/* Status Filter */}
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => setDetailFilter('all')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'all'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    ? 'bg-theme-primary text-white'
+                    : 'bg-surface-card-subtle text-content-muted hover:bg-surface-card border border-border-subtle'
                     }`}
                 >
                   Todos ({venues.length})
@@ -471,7 +471,7 @@ export function VenueTrainingAnalytics({
                   onClick={() => setDetailFilter('trained')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'trained'
                     ? 'bg-green-600 text-white'
-                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    : 'bg-surface-card-subtle text-content-muted hover:bg-surface-card border border-border-subtle'
                     }`}
                 >
                   Con Capacitación ({stats.venuesWithTraining})
@@ -480,7 +480,7 @@ export function VenueTrainingAnalytics({
                   onClick={() => setDetailFilter('untrained')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${detailFilter === 'untrained'
                     ? 'bg-red-600 text-white'
-                    : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                    : 'bg-surface-card-subtle text-content-muted hover:bg-surface-card border border-border-subtle'
                     }`}
                 >
                   Sin Capacitación ({stats.venuesWithoutTraining})
@@ -489,13 +489,13 @@ export function VenueTrainingAnalytics({
 
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
                 <input
                   type="text"
                   placeholder="Buscar por nombre, ciudad o tipo..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                 />
               </div>
             </div>
@@ -506,20 +506,20 @@ export function VenueTrainingAnalytics({
                 {filteredVenues.map((venue) => (
                   <div
                     key={venue.id}
-                    className="bg-slate-900/30 border border-slate-700/50 rounded-lg p-4 hover:bg-slate-900/50 transition-all"
+                    className="bg-surface-card-subtle border border-border-subtle rounded-lg p-4 hover:border-theme-primary/40 transition-all"
                   >
                     <div className="flex items-start justify-between gap-4">
                       {/* Venue Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="text-white font-medium">{venue.nombre}</h4>
+                          <h4 className="text-content-main font-medium">{venue.nombre}</h4>
                           {venue.hasTrained ? (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-medium">
+                            <span className="flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-500 border border-green-500/30 rounded-full text-xs font-medium">
                               <CheckCircle className="w-3 h-3" />
                               Capacitado
                             </span>
                           ) : (
-                            <span className="flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs font-medium">
+                            <span className="flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-500 border border-red-500/30 rounded-full text-xs font-medium">
                               <XCircle className="w-3 h-3" />
                               Sin Capacitar
                             </span>
@@ -527,17 +527,17 @@ export function VenueTrainingAnalytics({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                          <div className="flex items-center gap-2 text-slate-400">
+                          <div className="flex items-center gap-2 text-content-muted">
                             <MapPin className="w-4 h-4" />
                             <span className="truncate">{venue.ciudad || venue.direccion}</span>
                           </div>
                           {venue.tipo && (
-                            <div className="text-slate-500">
+                            <div className="text-content-muted">
                               {venue.tipo}
                             </div>
                           )}
                           {venue.lastTrainingDate && (
-                            <div className="flex items-center gap-2 text-slate-500">
+                            <div className="flex items-center gap-2 text-content-muted">
                               <Calendar className="w-4 h-4" />
                               <span>
                                 Última: {new Date(venue.lastTrainingDate).toLocaleDateString()}
@@ -550,14 +550,14 @@ export function VenueTrainingAnalytics({
                         {venue.totalStaff > 0 && (
                           <div className="mt-3">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-content-muted">
                                 Personal capacitado: {venue.trainedStaff} de {venue.totalStaff}
                               </span>
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-content-muted">
                                 {((venue.trainedStaff / venue.totalStaff) * 100).toFixed(0)}%
                               </span>
                             </div>
-                            <div className="w-full h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                            <div className="w-full h-2 bg-surface-card border border-border-subtle rounded-full overflow-hidden">
                               <div
                                 className={`h-full transition-all ${venue.trainedStaff === venue.totalStaff
                                   ? 'bg-green-500'
@@ -577,8 +577,8 @@ export function VenueTrainingAnalytics({
 
                 {filteredVenues.length === 0 && (
                   <div className="text-center py-12">
-                    <GraduationCap className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                    <p className="text-slate-400">No se encontraron venues</p>
+                    <GraduationCap className="w-16 h-16 text-content-muted mx-auto mb-4" />
+                    <p className="text-content-muted">No se encontraron venues</p>
                   </div>
                 )}
               </div>

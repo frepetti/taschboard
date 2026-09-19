@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader2, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Search, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { useLanguage } from '../utils/LanguageContext';
 import { toast } from 'sonner';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface TicketManagementProps {
   session: any;
@@ -174,7 +175,7 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+        <LoadingSpinner size="lg" text={t('common.loading')} />
       </div>
     );
   }

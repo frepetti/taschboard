@@ -5,6 +5,7 @@ import { authAPI, adminAPI } from '../utils/api';
 import { ClientVenueManager } from './ClientVenueManager';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface UserManagementProps {
   session: any;
@@ -230,7 +231,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+        <LoadingSpinner size="lg" text="Cargando usuarios..." />
       </div>
     );
   }

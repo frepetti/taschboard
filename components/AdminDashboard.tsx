@@ -166,8 +166,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('stats')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'stats'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <BarChart3 className="w-5 h-5" />
@@ -176,8 +176,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('users')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'users'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <Users className="w-5 h-5" />
@@ -187,8 +187,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('tickets')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'tickets'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <Ticket className="w-5 h-5" />
@@ -198,8 +198,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('venues')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'venues'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <MapPin className="w-5 h-5" />
@@ -209,8 +209,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('regions')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'regions'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <Map className="w-5 h-5" />
@@ -219,8 +219,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('products')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'products'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <Package className="w-5 h-5" />
@@ -229,8 +229,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('pending')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'pending'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <UserCheck className="w-5 h-5" />
@@ -240,8 +240,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('trainings')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'trainings'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <GraduationCap className="w-5 h-5" />
@@ -250,8 +250,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
             <button
               onClick={() => setActiveTab('settings')}
               className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition-all ${activeTab === 'settings'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
-                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+                : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
                 }`}
             >
               <Settings className="w-5 h-5" />
@@ -262,7 +262,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
 
         <button
           onClick={loadStats}
-          className="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors ml-auto lg:ml-0"
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-lg bg-surface-card hover:bg-surface-card-subtle border border-border-subtle text-content-muted hover:text-content-main transition-colors ml-auto lg:ml-0"
         >
           <RefreshCw className="w-4 h-4" />
           <span className="hidden sm:inline">Actualizar</span>
@@ -272,7 +272,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+          <Loader2 className="w-12 h-12 text-theme-primary animate-spin" />
         </div>
       ) : error ? (
         <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-8 text-center">
@@ -283,7 +283,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
           <p className="text-slate-300 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg transition-colors"
+            className="bg-theme-primary hover:bg-theme-secondary text-white px-6 py-3 rounded-lg transition-colors"
           >
             Reintentar
           </button>
@@ -301,7 +301,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
                 <button
                   onClick={() => setProductSubTab('catalog')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'catalog'
-                    ? 'bg-amber-600 text-white shadow-lg'
+                    ? 'bg-theme-primary text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                     }`}
                 >
@@ -310,7 +310,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
                 <button
                   onClick={() => setProductSubTab('assignment')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'assignment'
-                    ? 'bg-amber-600 text-white shadow-lg'
+                    ? 'bg-theme-primary text-white shadow-lg'
                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                     }`}
                 >

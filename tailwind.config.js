@@ -23,6 +23,23 @@ export default {
           500: '#6422B8', // Baroque
           600: '#5412A8', // Darker Baroque for hover
         },
+        theme: {
+          primary: 'var(--theme-primary, #7c3aed)',
+          secondary: 'var(--theme-secondary, #4c1d95)',
+          accent: 'var(--theme-accent, #ec4899)',
+          border: 'var(--theme-border, #334155)',
+          'header-bg': 'var(--theme-header-bg, #111318)',
+          'header-text': 'var(--theme-header-text, #ffffff)',
+        },
+        surface: {
+          app: 'var(--bg-app)',
+          card: 'var(--bg-card)',
+          'card-subtle': 'var(--bg-card-subtle)',
+        },
+        content: {
+          main: 'var(--text-main)',
+          muted: 'var(--text-muted)',
+        },
         slate: {
           ...colors.slate,
           700: '#444444',
@@ -30,7 +47,11 @@ export default {
           900: '#222222', // Crowshead
           950: '#151515', 
         },
-        border: "var(--border)",
+        border: {
+          DEFAULT: "var(--border)",
+          subtle: "var(--border-subtle)",
+        },
+        'border-subtle': 'var(--border-subtle)',
         input: "var(--input)",
         ring: "var(--ring)",
         background: "var(--background)",

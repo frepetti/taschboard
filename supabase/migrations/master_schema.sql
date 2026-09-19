@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS btl_puntos_venta CASCADE;
 DROP TABLE IF EXISTS btl_capacitacion_asistentes CASCADE;
 DROP TABLE IF EXISTS btl_capacitaciones CASCADE;
 DROP TABLE IF EXISTS btl_temas_capacitacion CASCADE;
+DROP TABLE IF EXISTS btl_temas CASCADE;
 DROP TABLE IF EXISTS btl_productos CASCADE;
 DROP TABLE IF EXISTS btl_regiones CASCADE;
 DROP TABLE IF EXISTS btl_usuarios CASCADE;
@@ -297,6 +298,24 @@ CREATE TABLE btl_capacitacion_asistentes (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(capacitacion_id, usuario_id)
 );
+
+-- 10. TABLA DE TEMAS VISUALES (THEMING MULTI-TENANT)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.btl_temas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nombre TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    primary_color TEXT NOT NULL,
+    secondary_color TEXT NOT NULL,
+    accent_color TEXT NOT NULL,
+    border_color TEXT NOT NULL,
+    config JSONB DEFAULT '{}'::jsonb,
+    activo BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_btl_temas_slug ON btl_temas(slug);
+CREATE INDEX IF NOT EXISTS idx_btl_temas_activo ON btl_temas(activo);
 
 -- Temas Capacitación (Catálogo)
 CREATE TABLE btl_temas_capacitacion (
@@ -646,6 +665,21 @@ CREATE POLICY "capacitacion_asistentes_admin_all" ON btl_capacitacion_asistentes
   FOR ALL 
   USING (is_admin());
 
+-- ==============================================================================
+-- TEMAS VISUALES (MULTI-TENANT): Lectura pública/autenticada, modificación solo Admin
+-- ==============================================================================
+ALTER TABLE btl_temas ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "temas_read_all" ON btl_temas;
+CREATE POLICY "temas_read_all" ON btl_temas 
+  FOR SELECT 
+  USING (true);
+
+DROP POLICY IF EXISTS "temas_admin_all" ON btl_temas;
+CREATE POLICY "temas_admin_all" ON btl_temas 
+  FOR ALL 
+  USING (is_admin());
+
 -- 12. DATA SEEDING (BÁSICO)
 -- ==============================================================================
 -- Productos base
@@ -666,6 +700,13 @@ ON CONFLICT (nombre) DO NOTHING;
 INSERT INTO btl_regiones (nombre, descripcion) VALUES 
 ('Norte', 'Zona Norte'), ('Centro', 'Zona Centro y Capital'), ('Sur', 'Zona Sur') 
 ON CONFLICT (nombre) DO NOTHING;
+
+-- Temas Visuales Semilla (Multi-Tenant)
+INSERT INTO btl_temas (nombre, slug, primary_color, secondary_color, accent_color, border_color, config, activo)
+VALUES 
+  ('Default', 'default', '#7c3aed', '#4c1d95', '#ec4899', '#334155', '{"badge_style": "default"}'::jsonb, true),
+  ('Heineken', 'heineken', '#008200', '#205527', '#ff2b00', '#c3c3c3', '{"badge_style": "heineken_star"}'::jsonb, true)
+ON CONFLICT (slug) DO NOTHING;
 
 -- 13. STORAGE BUCKETS
 -- ==============================================================================

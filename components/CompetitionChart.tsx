@@ -22,21 +22,21 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
 
   if (isDemo) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-        <h3 className="text-lg text-white font-semibold mb-6">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+        <h3 className="text-lg text-content-main font-semibold mb-6">
           {language === 'es' ? 'Comparativa Share of Menu' : 'Share of Menu Comparison'}
         </h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={demoData} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
-            <XAxis type="number" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} axisLine={{ stroke: '#475569' }} />
-            <YAxis type="category" dataKey="brand" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} axisLine={{ stroke: '#475569' }} width={120} />
-            <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #d5d9e2)" opacity={0.5} />
+            <XAxis type="number" stroke="var(--text-muted, #64748b)" tick={{ fill: 'var(--text-muted, #64748b)' }} axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }} />
+            <YAxis type="category" dataKey="brand" stroke="var(--text-muted, #64748b)" tick={{ fill: 'var(--text-muted, #64748b)' }} axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }} width={120} />
+            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }} />
             <Bar dataKey="count" fill="#DA407C" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
-        <div className="mt-4 pt-4 border-t border-slate-700/50 text-sm text-slate-400">
-          <span className="text-amber-400 font-semibold">Hendrick's</span> {language === 'es' ? 'lidera con 23.4% de participación en 247 puntos de venta' : 'leads with 23.4% share across 247 venues'}
+        <div className="mt-4 pt-4 border-t border-border-subtle text-sm text-content-muted">
+          <span className="text-theme-primary font-semibold">Hendrick's</span> {language === 'es' ? 'lidera con 23.4% de participación en 247 puntos de venta' : 'leads with 23.4% share across 247 venues'}
         </div>
       </div>
     );
@@ -106,8 +106,8 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
 
   if (!hasNamedCompetitors && !hasVisibilityData) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl h-full flex flex-col justify-center items-center gap-3">
-        <p className="text-slate-400 text-sm text-center">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl h-full flex flex-col justify-center items-center gap-3">
+        <p className="text-content-muted text-sm text-center">
           {language === 'es'
             ? 'Sin datos de competencia registrados. Los inspectores deben completar la sección de competencia en las inspecciones.'
             : 'No competition data recorded yet. Inspectors must fill the competition section in inspections.'}
@@ -146,30 +146,30 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
     : (language === 'es' ? 'Nivel de visibilidad de competidores' : 'Competitor visibility level');
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-      <h3 className="text-lg text-white font-semibold mb-1">{title}</h3>
-      <p className="text-xs text-slate-400 mb-6">{subtitle}</p>
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+      <h3 className="text-lg text-content-main font-semibold mb-1">{title}</h3>
+      <p className="text-xs text-content-muted mb-6">{subtitle}</p>
 
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} layout="vertical">
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #d5d9e2)" opacity={0.5} />
           <XAxis
             type="number"
-            stroke="#94a3b8"
-            tick={{ fill: '#94a3b8' }}
-            axisLine={{ stroke: '#475569' }}
+            stroke="var(--text-muted, #64748b)"
+            tick={{ fill: 'var(--text-muted, #64748b)' }}
+            axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }}
             allowDecimals={false}
           />
           <YAxis
             type="category"
             dataKey="label"
-            stroke="#94a3b8"
-            tick={{ fill: '#94a3b8' }}
-            axisLine={{ stroke: '#475569' }}
+            stroke="var(--text-muted, #64748b)"
+            tick={{ fill: 'var(--text-muted, #64748b)' }}
+            axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }}
             width={130}
           />
           <Tooltip
-            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '8px', color: '#fff' }}
+            contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }}
             formatter={(value: any) => [value, language === 'es' ? 'Inspecciones' : 'Inspections']}
           />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
@@ -180,7 +180,7 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
         </BarChart>
       </ResponsiveContainer>
 
-      <div className="mt-4 pt-4 border-t border-slate-700/50 text-sm text-slate-400">
+      <div className="mt-4 pt-4 border-t border-border-subtle text-sm text-content-muted">
         {language === 'es'
           ? `Basado en ${inspections.length} inspecciones registradas`
           : `Based on ${inspections.length} recorded inspections`}

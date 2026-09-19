@@ -17,8 +17,8 @@ export function InspectorHeader({ currentView, onViewChange }: InspectorHeaderPr
           onClick={() => onViewChange('new')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
             currentView === 'new'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+              ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+              : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
           }`}
         >
           <ClipboardList className="w-4 h-4" />
@@ -28,8 +28,8 @@ export function InspectorHeader({ currentView, onViewChange }: InspectorHeaderPr
           onClick={() => onViewChange('history')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all ${
             currentView === 'history'
-              ? 'bg-amber-600 text-white'
-              : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+              ? 'bg-theme-primary text-white shadow-lg shadow-theme-primary/20'
+              : 'bg-surface-card text-content-muted hover:bg-surface-card-subtle border border-border-subtle'
           }`}
         >
           <History className="w-4 h-4" />

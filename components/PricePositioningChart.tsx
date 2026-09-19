@@ -52,11 +52,11 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
   ].filter(d => d.value > 0);
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl min-w-0 overflow-hidden">
-      <h3 className="text-lg text-white font-semibold mb-1">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl min-w-0 overflow-hidden">
+      <h3 className="text-lg text-content-main font-semibold mb-1">
         {language === 'es' ? 'Posicionamiento de Precio vs Competencia' : 'Price Positioning vs Competition'}
       </h3>
-      <p className="text-xs text-slate-400 mb-6">
+      <p className="text-xs text-content-muted mb-6">
         {language === 'es'
           ? 'Distribución del precio de nuestro producto respecto a competidores observados'
           : 'Our product price distribution relative to observed competitors'}
@@ -83,10 +83,10 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: '#1e293b',
-              border: '1px solid #475569',
+              backgroundColor: 'var(--bg-card, #ffffff)',
+              border: '1px solid var(--border-subtle, #d5d9e2)',
               borderRadius: '8px',
-              color: '#fff',
+              color: 'var(--text-main, #0f172a)',
             }}
             formatter={(value: number, name: string) => [
               `${value} ${language === 'es' ? 'registros' : 'records'} (${total > 0 ? Math.round((value / total) * 100) : 0}%)`,
@@ -100,7 +100,7 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
               const item = data.find((d) => d.name === value);
               const pct = item && total > 0 ? Math.round((item.value / total) * 100) : 0;
               return (
-                <span className="text-slate-300 text-xs sm:text-sm">
+                <span className="text-content-main text-xs sm:text-sm">
                   {value} ({pct}%)
                 </span>
               );
@@ -109,7 +109,7 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
         </PieChart>
       </ResponsiveContainer>
 
-      <div className="mt-4 pt-4 border-t border-slate-700/50 text-sm text-slate-400">
+      <div className="mt-4 pt-4 border-t border-border-subtle text-sm text-content-muted">
         {language === 'es'
           ? `Basado en ${total} comparaciones de precio en ${inspections.length} inspecciones`
           : `Based on ${total} price comparisons across ${inspections.length} inspections`}

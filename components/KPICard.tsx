@@ -39,9 +39,9 @@ export function KPICard({ title, label, value, icon, trend, positive, sparkline,
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl hover:border-slate-600/50 transition-all">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl hover:border-theme-primary/40 transition-all">
       <div className="flex items-start justify-between mb-4">
-        <div className="text-sm text-slate-400">{title || label}</div>
+        <div className="text-sm text-content-muted">{title || label}</div>
         {icon && (
           <div className={`${colorClasses[color]}`}>
             {icon}
@@ -49,7 +49,7 @@ export function KPICard({ title, label, value, icon, trend, positive, sparkline,
         )}
       </div>
       
-      <div className="text-3xl text-white font-bold mb-3">{value}</div>
+      <div className="text-3xl text-content-main font-bold mb-3">{value}</div>
       
       <div className="flex items-center justify-between">
         <div className={`flex items-center gap-1 text-sm font-medium ${trendColor}`}>

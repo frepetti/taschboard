@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, X, Plus, Trash2, Loader2, Store } from 'lucide-react';
+import { Search, MapPin, X, Plus, Trash2, Store } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface ClientVenueManagerProps {
   clientId: string;
@@ -175,7 +176,7 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
           <div className="space-y-2">
             {loading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
+                <LoadingSpinner size="sm" />
               </div>
             ) : filteredAvailable.length === 0 ? (
               <p className="text-slate-500 text-center text-sm py-4">
@@ -218,7 +219,7 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
           <div className="space-y-2">
             {loading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 text-purple-500 animate-spin" />
+                <LoadingSpinner size="sm" />
               </div>
             ) : assignedVenues.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">

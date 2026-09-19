@@ -104,18 +104,18 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
   if (showNewVenueForm) {
     return (
       <div className="space-y-4">
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
-          <h2 className="text-xl text-white font-semibold mb-6">{t('inspector.add_venue')}</h2>
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+          <h2 className="text-xl text-content-main font-semibold mb-6">{t('inspector.add_venue')}</h2>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-300 mb-2">{t('inspector.venue_name')} *</label>
+              <label className="block text-sm text-content-muted mb-2">{t('inspector.venue_name')} *</label>
               <input
                 type="text"
                 value={newVenueName}
                 onChange={(e) => setNewVenueName(e.target.value)}
                 placeholder={t('inspector.enter_venue_name')}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
               />
             </div>
 
@@ -137,11 +137,11 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">{t('inspector.channel_type')} *</label>
+              <label className="block text-sm text-content-muted mb-2">{t('inspector.channel_type')} *</label>
               <select
                 value={newVenueChannel}
                 onChange={(e) => setNewVenueChannel(e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 cursor-pointer"
               >
                 <option>Bar</option>
                 <option>Club</option>
@@ -153,14 +153,14 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setShowNewVenueForm(false)}
-              className="flex-1 bg-slate-700/50 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="flex-1 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle text-content-main px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={handleAddNewVenue}
               disabled={!newVenueName || !newVenueAddress || creatingVenue}
-              className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="flex-1 bg-theme-primary hover:bg-theme-secondary disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               {creatingVenue ? t('inspector.creating') : t('inspector.continue_inspection')}
             </button>
@@ -172,9 +172,9 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl text-white font-semibold">{t('inspector.select_venue')}</h2>
+          <h2 className="text-xl text-content-main font-semibold">{t('inspector.select_venue')}</h2>
           {!loading && venues.length > 0 && (
             <span className="px-3 py-1 rounded-full text-xs bg-green-600/20 text-green-400 border border-green-600/30 flex items-center gap-2">
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
@@ -186,8 +186,8 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
         {/* Loading State */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-12 h-12 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-400">{t('common.loading')}</p>
+            <div className="w-12 h-12 border-4 border-theme-primary/30 border-t-theme-primary rounded-full animate-spin mb-4"></div>
+            <p className="text-content-muted">{t('common.loading')}</p>
           </div>
         )}
 
@@ -196,20 +196,20 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
           <>
             {/* Search Bar */}
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
               <input
                 type="text"
                 placeholder={t('inspector.search_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
               />
             </div>
 
             {/* Add New Venue Button */}
             <button
               onClick={() => setShowNewVenueForm(true)}
-              className="w-full flex items-center justify-center gap-2 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-600/50 text-white px-4 py-3 rounded-lg font-medium transition-colors mb-4"
+              className="w-full flex items-center justify-center gap-2 bg-theme-primary/20 hover:bg-theme-primary/30 border border-theme-primary/50 text-content-main px-4 py-3 rounded-lg font-medium transition-colors mb-4"
             >
               <Plus className="w-5 h-5" />
               <span>{t('inspector.add_venue')}</span>
@@ -217,13 +217,13 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
 
             {/* Empty State */}
             {venues.length === 0 && !searchQuery && (
-              <div className="text-center py-12 border-2 border-dashed border-slate-700 rounded-lg">
-                <MapPin className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-lg text-white font-semibold mb-2">{t('common.no_data')}</h3>
-                <p className="text-slate-400 mb-4">{t('inspector.start_adding_venue')}</p>
+              <div className="text-center py-12 border-2 border-dashed border-border-subtle rounded-lg">
+                <MapPin className="w-16 h-16 text-content-muted mx-auto mb-4" />
+                <h3 className="text-lg text-content-main font-semibold mb-2">{t('common.no_data')}</h3>
+                <p className="text-content-muted mb-4">{t('inspector.start_adding_venue')}</p>
                 <button
                   onClick={() => setShowNewVenueForm(true)}
-                  className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  className="inline-flex items-center gap-2 bg-theme-primary hover:bg-theme-secondary text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   {t('inspector.add_venue')}
@@ -238,24 +238,24 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
                   <button
                     key={venue.id}
                     onClick={() => onVenueSelect(venue)}
-                    className="w-full text-left p-4 bg-slate-800/30 hover:bg-slate-800/50 border border-slate-700/30 hover:border-slate-600/50 rounded-lg transition-all group"
+                    className="w-full text-left p-4 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle hover:border-theme-primary/40 rounded-lg transition-all group"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-white font-semibold mb-1 group-hover:text-amber-400 transition-colors">
+                        <h3 className="text-content-main font-semibold mb-1 group-hover:text-theme-primary transition-colors">
                           {venue.name}
                         </h3>
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <div className="flex items-center gap-2 text-sm text-content-muted">
                           <MapPin className="w-3 h-3" />
                           <span>{venue.address}</span>
                         </div>
                         {venue.zone && (
-                          <div className="text-xs text-slate-500 mt-1">
+                          <div className="text-xs text-content-muted mt-1">
                             {venue.city} • {venue.zone}
                           </div>
                         )}
                       </div>
-                      <span className="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-slate-300 border border-slate-600/30">
+                      <span className="px-3 py-1 rounded-full text-xs bg-surface-card text-content-muted border border-border-subtle">
                         {venue.channel}
                       </span>
                     </div>
@@ -265,11 +265,11 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
             )}
 
             {filteredVenues.length === 0 && searchQuery && venues.length > 0 && (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-content-muted">
                 <p>{t('inspector.no_venues_found_query').replace('{query}', searchQuery)}</p>
                 <button
                   onClick={() => setShowNewVenueForm(true)}
-                  className="mt-4 text-amber-400 hover:text-amber-300 font-medium"
+                  className="mt-4 text-theme-primary hover:brightness-110 font-medium"
                 >
                   {t('inspector.add_as_new')}
                 </button>

@@ -101,7 +101,7 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
           {/* Ticket Button */}
           <button
             onClick={() => setShowTicketModal(true)}
-            className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
+            className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
             title="Crear Ticket o Solicitud"
           >
             <MessageSquarePlus className="w-5 h-5 sm:w-7 sm:h-7" />
@@ -109,7 +109,7 @@ export function ClientDashboard({ session, isDemo = false, isAdmin = false }: Cl
         </div>
       )}
 
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 pt-6 space-y-6">
         {/* Product Metrics Section */}
         {!isDemo && showProductMetrics && (
           <ProductMetrics
