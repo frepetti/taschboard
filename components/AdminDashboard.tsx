@@ -297,12 +297,12 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
           {activeTab === 'regions' && <RegionManager session={session} />}
           {activeTab === 'products' && (
             <div className="space-y-6">
-              <div className="flex p-1 bg-slate-800/50 rounded-lg w-fit border border-slate-700/50">
+              <div className="flex p-1 bg-surface-card-subtle rounded-lg w-fit border border-border-subtle">
                 <button
                   onClick={() => setProductSubTab('catalog')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'catalog'
-                    ? 'bg-theme-primary text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-theme-primary text-white shadow-sm'
+                    : 'text-content-muted hover:text-content-main hover:bg-surface-card'
                     }`}
                 >
                   Catálogo y Objetivos
@@ -310,8 +310,8 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
                 <button
                   onClick={() => setProductSubTab('assignment')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${productSubTab === 'assignment'
-                    ? 'bg-theme-primary text-white shadow-lg'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-theme-primary text-white shadow-sm'
+                    : 'text-content-muted hover:text-content-main hover:bg-surface-card'
                     }`}
                 >
                   Asignación por Cliente

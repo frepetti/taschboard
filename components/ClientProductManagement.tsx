@@ -198,8 +198,8 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl text-white font-semibold mb-2">Gestión de Productos por Cliente</h2>
-        <p className="text-slate-400 text-sm">
+        <h2 className="text-2xl text-content-main font-semibold mb-2">Gestión de Productos por Cliente</h2>
+        <p className="text-content-muted text-sm">
           Asigna productos a cada cliente para que aparezcan en sus solicitudes de tickets
         </p>
       </div>
@@ -207,21 +207,21 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Panel - Client List */}
         <div className="lg:col-span-1">
-          <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl p-6">
-            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <div className="bg-surface-card border border-border-subtle rounded-xl shadow-sm p-6">
+            <h3 className="text-content-main font-semibold mb-4 flex items-center gap-2">
               <span>Clientes</span>
-              <span className="text-xs bg-slate-700/50 px-2 py-1 rounded">{clients.length}</span>
+              <span className="text-xs bg-surface-card-subtle border border-border-subtle text-content-muted px-2 py-1 rounded">{clients.length}</span>
             </h3>
 
             {/* Search */}
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-muted" />
               <input
                 type="text"
                 placeholder="Buscar cliente..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white text-sm pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted text-sm pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-theme-primary/50"
               />
             </div>
 
@@ -232,20 +232,20 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                   key={client.id}
                   onClick={() => setSelectedClient(client)}
                   className={`w-full text-left p-3 rounded-lg border transition-all ${selectedClient?.id === client.id
-                    ? 'bg-amber-600/20 border-amber-600 text-white'
-                    : 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-800 hover:border-slate-600'
+                    ? 'bg-theme-primary/10 border-theme-primary text-content-main font-medium shadow-sm'
+                    : 'bg-surface-card-subtle border-border-subtle text-content-muted hover:bg-surface-card hover:text-content-main'
                     }`}
                 >
-                  <div className="font-medium text-sm">{client.nombre}</div>
-                  <div className="text-xs text-slate-400 truncate">{client.email}</div>
+                  <div className="font-medium text-sm text-content-main">{client.nombre}</div>
+                  <div className="text-xs text-content-muted truncate">{client.email}</div>
                   {client.empresa && (
-                    <div className="text-xs text-slate-500 mt-1">{client.empresa}</div>
+                    <div className="text-xs text-content-muted mt-1">{client.empresa}</div>
                   )}
                 </button>
               ))}
 
               {filteredClients.length === 0 && (
-                <div className="text-center py-8 text-slate-400 text-sm">
+                <div className="text-center py-8 text-content-muted text-sm">
                   No se encontraron clientes
                 </div>
               )}
@@ -256,20 +256,20 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
         {/* Right Panel - Products */}
         <div className="lg:col-span-2">
           {selectedClient ? (
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl p-6">
+            <div className="bg-surface-card border border-border-subtle rounded-xl shadow-sm p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h3 className="text-white font-semibold text-lg mb-1">
+                  <h3 className="text-content-main font-semibold text-lg mb-1">
                     Productos de {selectedClient.nombre}
                   </h3>
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-content-muted text-sm">
                     {clientProducts.length} productos asignados
                   </p>
                 </div>
                 <button
                   onClick={() => setShowAddProducts(true)}
-                  className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                  className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Agregar Productos</span>
@@ -279,24 +279,24 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
               {/* Products List */}
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-theme-primary animate-spin" />
                 </div>
               ) : clientProducts.length > 0 ? (
                 <div className="space-y-3">
                   {clientProducts.map((cp) => (
                     <div
                       key={cp.id}
-                      className="bg-slate-900/30 border border-slate-700/50 rounded-lg p-4"
+                      className="bg-surface-card-subtle border border-border-subtle rounded-lg p-4"
                     >
                       <div className="flex items-start gap-4">
                         {/* Product Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
                             <div>
-                              <h4 className="text-white font-medium">{cp.btl_productos.nombre}</h4>
-                              <p className="text-slate-400 text-sm">{cp.btl_productos.marca}</p>
+                              <h4 className="text-content-main font-medium">{cp.btl_productos.nombre}</h4>
+                              <p className="text-content-muted text-sm">{cp.btl_productos.marca}</p>
                               {cp.btl_productos.categoria && (
-                                <p className="text-slate-500 text-xs mt-1">{cp.btl_productos.categoria}</p>
+                                <p className="text-content-muted text-xs mt-1">{cp.btl_productos.categoria}</p>
                               )}
                             </div>
                             <button
@@ -315,13 +315,13 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <Package className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <p className="text-slate-400 mb-4">
+                  <Package className="w-12 h-12 text-content-muted mx-auto mb-3" />
+                  <p className="text-content-muted mb-4">
                     Este cliente no tiene productos asignados
                   </p>
                   <button
                     onClick={() => setShowAddProducts(true)}
-                    className="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="bg-theme-primary hover:brightness-95 text-white px-4 py-2 rounded-lg transition-colors font-medium shadow-sm"
                   >
                     Agregar Productos
                   </button>
@@ -329,12 +329,12 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
               )}
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl p-12 text-center">
-              <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-white font-semibold text-lg mb-2">
+            <div className="bg-surface-card border border-border-subtle rounded-xl shadow-sm p-12 text-center">
+              <Package className="w-16 h-16 text-content-muted mx-auto mb-4" />
+              <h3 className="text-content-main font-semibold text-lg mb-2">
                 Selecciona un Cliente
               </h3>
-              <p className="text-slate-400">
+              <p className="text-content-muted">
                 Elige un cliente de la lista para gestionar sus productos
               </p>
             </div>
@@ -354,11 +354,11 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
 
       {/* Add Products Modal */}
       {showAddProducts && selectedClient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface-card border border-border-subtle rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] flex flex-col">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
-              <h3 className="text-xl text-white font-semibold">
+            <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+              <h3 className="text-xl text-content-main font-semibold">
                 Agregar Productos a {selectedClient.nombre}
               </h3>
               <button
@@ -366,7 +366,7 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                   setShowAddProducts(false);
                   setSelectedProductsToAdd([]);
                 }}
-                className="text-slate-400 hover:text-white"
+                className="text-content-muted hover:text-content-main transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -380,8 +380,8 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                     <label
                       key={product.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedProductsToAdd.includes(product.id)
-                        ? 'bg-amber-600/10 border-amber-600 shadow-sm shadow-amber-500/20'
-                        : 'bg-slate-800/30 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
+                        ? 'bg-theme-primary/10 border-theme-primary text-content-main shadow-sm'
+                        : 'bg-surface-card-subtle border-border-subtle text-content-muted hover:border-border-subtle hover:bg-surface-card hover:text-content-main'
                         }`}
                     >
                       <input
@@ -394,27 +394,27 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
                             setSelectedProductsToAdd(selectedProductsToAdd.filter(id => id !== product.id));
                           }
                         }}
-                        className="w-5 h-5 rounded border-slate-600 text-amber-600 focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-0 bg-slate-700"
+                        className="w-5 h-5 rounded border-border-subtle text-theme-primary focus:ring-2 focus:ring-theme-primary/50 focus:ring-offset-0 bg-surface-card"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-white text-sm font-medium truncate">{product.nombre}</div>
-                        <div className="text-slate-400 text-xs truncate">{product.marca}</div>
+                        <div className="text-content-main text-sm font-medium truncate">{product.nombre}</div>
+                        <div className="text-content-muted text-xs truncate">{product.marca}</div>
                         {product.categoria && (
-                          <div className="text-slate-500 text-xs mt-0.5">{product.categoria}</div>
+                          <div className="text-content-muted text-xs mt-0.5">{product.categoria}</div>
                         )}
                       </div>
                     </label>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-slate-400">
+                <div className="text-center py-12 text-content-muted">
                   Todos los productos ya están asignados a este cliente
                 </div>
               )}
 
               {selectedProductsToAdd.length > 0 && (
-                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <p className="text-xs text-amber-400">
+                <div className="mt-4 p-3 bg-theme-primary/10 border border-theme-primary/30 rounded-lg">
+                  <p className="text-xs text-theme-primary font-medium">
                     ✓ {selectedProductsToAdd.length} producto{selectedProductsToAdd.length !== 1 ? 's' : ''} seleccionado{selectedProductsToAdd.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -422,21 +422,21 @@ export function ClientProductManagement({ session: _session }: ClientProductMana
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-700/50 flex gap-3">
+            <div className="p-6 border-t border-border-subtle flex gap-3">
               <button
                 onClick={() => {
                   setShowAddProducts(false);
                   setSelectedProductsToAdd([]);
                 }}
                 disabled={saving}
-                className="flex-1 bg-slate-700/50 hover:bg-slate-700 disabled:bg-slate-800 text-white px-4 py-2.5 rounded-lg transition-colors"
+                className="flex-1 bg-surface-card-subtle hover:bg-surface-card text-content-main border border-border-subtle disabled:opacity-50 px-4 py-2.5 rounded-lg transition-colors font-medium"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAddProducts}
                 disabled={saving || selectedProductsToAdd.length === 0}
-                className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium shadow-sm"
               >
                 {saving ? (
                   <>

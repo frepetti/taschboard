@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { VenueImporter } from './VenueImporter';
-import { MapPin, Edit2, Trash2, Loader2, Plus, Save, X, Map } from 'lucide-react';
+import { MapPin, Edit2, Trash2, Plus, Save, X, Map } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { VenueLocationPicker } from './VenueLocationPicker';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface VenueManagerProps {
   session: any;
@@ -217,8 +218,8 @@ export function VenueManager({ session }: VenueManagerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl text-white font-bold">Gestión de Venues</h2>
-          <p className="text-slate-400 mt-1">
+          <h2 className="text-2xl text-content-main font-bold">Gestión de Venues</h2>
+          <p className="text-content-muted mt-1">
             {venues.length} venues registrados
           </p>
         </div>
@@ -228,14 +229,14 @@ export function VenueManager({ session }: VenueManagerProps) {
               setCurrentVenue({});
               setShowEditModal(true);
             }}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-all border border-slate-700"
+            className="flex items-center gap-2 bg-surface-card-subtle hover:bg-surface-card text-content-main px-4 py-2 rounded-lg transition-all border border-border-subtle shadow-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             Agregar Nuevo
           </button>
           <button
             onClick={() => setShowImporter(!showImporter)}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2 rounded-lg transition-all"
+            className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-4 py-2 rounded-lg transition-all shadow-sm font-medium"
           >
             {showImporter ? (
               <>
@@ -259,18 +260,18 @@ export function VenueManager({ session }: VenueManagerProps) {
 
       {/* Venues List */}
       {!showImporter && (
-        <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-xl overflow-hidden">
+        <div className="bg-surface-card border border-border-subtle rounded-xl overflow-hidden shadow-sm">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+              <LoadingSpinner size="lg" text="Cargando venues..." />
             </div>
           ) : venues.length === 0 ? (
             <div className="text-center py-12">
-              <MapPin className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400">No hay venues registrados</p>
+              <MapPin className="w-12 h-12 text-content-muted mx-auto mb-4" />
+              <p className="text-content-muted">No hay venues registrados</p>
               <button
                 onClick={() => setShowImporter(true)}
-                className="mt-4 text-amber-400 hover:text-amber-300 font-medium"
+                className="mt-4 text-theme-primary hover:brightness-110 font-medium"
               >
                 Importar venues desde Excel
               </button>
@@ -279,63 +280,63 @@ export function VenueManager({ session }: VenueManagerProps) {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-700 bg-slate-900/50">
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Nombre</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Región</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Ciudad</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Dirección</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Tipo/Segmento</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Contacto</th>
-                    <th className="text-right py-3 px-4 text-slate-400 font-medium text-sm">Acciones</th>
+                  <tr className="border-b border-border-subtle bg-surface-card-subtle">
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Nombre</th>
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Región</th>
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Ciudad</th>
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Dirección</th>
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Tipo/Segmento</th>
+                    <th className="text-left py-3 px-4 text-content-muted font-medium text-sm">Contacto</th>
+                    <th className="text-right py-3 px-4 text-content-muted font-medium text-sm">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {venues.map((venue) => (
-                    <tr key={venue.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3 px-4 text-white font-medium">{venue.nombre}</td>
-                      <td className="py-3 px-4 text-slate-300">
+                    <tr key={venue.id} className="border-b border-border-subtle hover:bg-surface-card-subtle/50 transition-colors">
+                      <td className="py-3 px-4 text-content-main font-medium">{venue.nombre}</td>
+                      <td className="py-3 px-4 text-content-muted">
                         {getRegionName(venue) !== '-' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded border border-purple-500/30">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-theme-primary/10 text-theme-primary text-xs rounded border border-theme-primary/20">
                             <Map className="w-3 h-3" />
                             {getRegionName(venue)}
                           </span>
                         ) : (
-                          <span className="text-slate-500 text-xs">Sin asignar</span>
+                          <span className="text-content-muted text-xs">Sin asignar</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-slate-300 text-sm">{venue.ciudad || '-'}</td>
-                      <td className="py-3 px-4 text-slate-400 text-sm max-w-xs truncate" title={venue.direccion}>{venue.direccion}</td>
+                      <td className="py-3 px-4 text-content-muted text-sm">{venue.ciudad || '-'}</td>
+                      <td className="py-3 px-4 text-content-muted text-sm max-w-xs truncate" title={venue.direccion}>{venue.direccion}</td>
                       <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
-                          <span className="inline-block px-2 py-1 bg-amber-500/20 text-amber-300 text-xs rounded w-fit">
+                          <span className="inline-block px-2 py-1 bg-theme-primary/10 text-theme-primary text-xs rounded w-fit border border-theme-primary/20">
                             {venue.tipo || 'General'}
                           </span>
                           {venue.segmento && (
-                            <span className="text-xs text-slate-500">{venue.segmento}</span>
+                            <span className="text-xs text-content-muted">{venue.segmento}</span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-slate-400 text-sm">
+                      <td className="py-3 px-4 text-content-muted text-sm">
                         <div className="flex flex-col">
-                          <span>{venue.contacto_nombre || '-'}</span>
-                          {venue.contacto_telefono && <span className="text-xs text-slate-500">{venue.contacto_telefono}</span>}
+                          <span className="text-content-main">{venue.contacto_nombre || '-'}</span>
+                          {venue.contacto_telefono && <span className="text-xs text-content-muted">{venue.contacto_telefono}</span>}
                         </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => openEditModal(venue)}
-                            className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            className="p-2 hover:bg-theme-primary/10 rounded-lg text-content-muted hover:text-theme-primary transition-colors"
                             title="Editar"
                           >
-                            <Edit2 className="w-4 h-4 text-blue-400" />
+                            <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(venue.id)}
-                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-2 hover:bg-red-500/10 rounded-lg text-content-muted hover:text-red-400 transition-colors"
                             title="Eliminar"
                           >
-                            <Trash2 className="w-4 h-4 text-red-400" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -360,13 +361,13 @@ export function VenueManager({ session }: VenueManagerProps) {
 
       {/* Edit Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
-              <h3 className="text-xl text-white font-bold">{currentVenue.id ? 'Editar Venue' : 'Nuevo Venue'}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface-card border border-border-subtle rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden text-content-main">
+            <div className="flex items-center justify-between p-6 border-b border-border-subtle">
+              <h3 className="text-xl text-content-main font-bold">{currentVenue.id ? 'Editar Venue' : 'Nuevo Venue'}</h3>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-content-muted hover:text-content-main transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -376,21 +377,21 @@ export function VenueManager({ session }: VenueManagerProps) {
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Nombre del Venue</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Nombre del Venue</label>
                   <input
                     type="text"
                     value={currentVenue.nombre || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, nombre: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Región</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Región</label>
                   <select
                     value={currentVenue.region_id || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, region_id: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   >
                     <option value="">Seleccionar Región...</option>
                     {regions.map(r => (
@@ -400,12 +401,12 @@ export function VenueManager({ session }: VenueManagerProps) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Ciudad</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Ciudad</label>
                   <input
                     type="text"
                     value={currentVenue.ciudad || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, ciudad: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
               </div>
@@ -424,33 +425,33 @@ export function VenueManager({ session }: VenueManagerProps) {
               {/* Classification */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Tipo</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Tipo</label>
                   <input
                     type="text"
                     value={currentVenue.tipo || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, tipo: e.target.value })}
                     placeholder="Ej. Bar, Discoteca"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Segmento</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Segmento</label>
                   <input
                     type="text"
                     value={currentVenue.segmento || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, segmento: e.target.value })}
                     placeholder="Ej. Premium, High Energy"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Potencial Ventas</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Potencial Ventas</label>
                   <input
                     type="text"
                     value={currentVenue.potencial_ventas || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, potencial_ventas: e.target.value })}
                     placeholder="Ej. Alto, Medio"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
               </div>
@@ -458,36 +459,36 @@ export function VenueManager({ session }: VenueManagerProps) {
               {/* Contact */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Nombre Contacto</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Nombre Contacto</label>
                   <input
                     type="text"
                     value={currentVenue.contacto_nombre || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, contacto_nombre: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Teléfono Contacto</label>
+                  <label className="block text-sm font-medium text-content-muted mb-1">Teléfono Contacto</label>
                   <input
                     type="text"
                     value={currentVenue.contacto_telefono || ''}
                     onChange={(e) => setCurrentVenue({ ...currentVenue, contacto_telefono: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-800 bg-slate-900/50">
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-border-subtle bg-surface-card-subtle/50">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 text-slate-400 hover:text-white transition-colors font-medium"
+                className="px-4 py-2 bg-surface-card-subtle border border-border-subtle text-content-muted hover:text-content-main hover:bg-surface-card rounded-lg transition-colors font-medium"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleUpdate}
-                className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-6 py-2 rounded-lg font-medium shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+                className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition-all"
               >
                 <Save className="w-4 h-4" />
                 Guardar Cambios

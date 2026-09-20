@@ -13,7 +13,7 @@ import { VenueDetail } from './VenueDetail';
 import { DEMO_DATA } from '../utils/demoData';
 import { FilterChip } from './FilterChip';
 import { LoadingSpinner } from './LoadingSpinner';
-import { TrendingUp, TrendingDown, Minus, Target, Store, Users, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, Store, Users, DollarSign, RefreshCw } from 'lucide-react';
 
 interface ManagerDashboardProps {
   session: any;
@@ -137,13 +137,13 @@ export function ManagerDashboard({
         .from('btl_inspecciones')
         .select('*, btl_puntos_venta!btl_inspecciones_punto_venta_id_fkey(id, nombre, region_id)')
         .order('fecha_inspeccion', { ascending: false })
-        .limit(100);
+        .limit(5000);
 
       if (regionFilter !== 'all') {
         inspectionsQuery = inspectionsQuery.eq('btl_puntos_venta.region_id', regionFilter);
       }
 
-      if (productId) {
+      if (productId && productId !== 'all') {
         inspectionsQuery = inspectionsQuery.eq('producto_id', productId);
       }
 
@@ -312,7 +312,7 @@ export function ManagerDashboard({
 
         {/* Filters Section */}
         {/* ── Mobile Filters (< lg) ── */}
-        <div className="flex lg:hidden gap-3">
+        <div className="flex lg:hidden gap-2 sm:gap-3 items-center">
           <div className="flex-1">
             <select
               value={dateFilter}
@@ -325,6 +325,7 @@ export function ManagerDashboard({
               <option value="6M">6 Meses</option>
               <option value="1Y">1 Año</option>
               <option value="YTD">YTD</option>
+              <option value="all">Histórico Completo</option>
             </select>
           </div>
           <div className="flex-1">
@@ -340,6 +341,14 @@ export function ManagerDashboard({
               ))}
             </select>
           </div>
+          <button
+            onClick={() => loadDashboardData()}
+            disabled={loading}
+            className="p-2.5 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle rounded-lg text-content-muted hover:text-content-main transition-colors disabled:opacity-50 flex items-center justify-center shrink-0 cursor-pointer"
+            title="Actualizar datos"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-theme-primary' : ''}`} />
+          </button>
         </div>
 
         {/* ── Desktop Filters (≥ lg) ── */}
@@ -371,12 +380,17 @@ export function ManagerDashboard({
               active={dateFilter === 'YTD'}
               onClick={() => setDateFilter('YTD')}
             />
+            <FilterChip
+              label="Histórico"
+              active={dateFilter === 'all'}
+              onClick={() => setDateFilter('all')}
+            />
           </div>
 
           <div className="border-l border-border-subtle h-8 mx-1 flex-shrink-0"></div>
 
           {/* Region Filters — single row with horizontal scroll */}
-          <div className="flex gap-2 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pb-1 min-w-0">
+          <div className="flex gap-2 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pb-1 min-w-0 flex-1">
             <FilterChip
               label="Todas las regiones"
               active={regionFilter === 'all'}
@@ -398,6 +412,19 @@ export function ManagerDashboard({
               </span>
             )}
           </div>
+
+          <div className="border-l border-border-subtle h-8 mx-1 flex-shrink-0"></div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={() => loadDashboardData()}
+            disabled={loading}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border-subtle bg-surface-card-subtle hover:bg-surface-card text-content-muted hover:text-content-main text-sm font-medium transition-all shadow-sm hover:shadow disabled:opacity-50 flex-shrink-0 cursor-pointer"
+            title="Forzar actualización de datos"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-theme-primary' : ''}`} />
+            <span>{loading ? 'Actualizando...' : 'Actualizar'}</span>
+          </button>
         </div>
 
         {/* KPI Cards */}
@@ -464,8 +491,9 @@ export function ManagerDashboard({
             dateFilter={dateFilter}
             regionFilter={regionFilter}
             isDemo={isDemo}
+            productId={productId}
           />
-          <CompetitionChart inspections={inspections} isDemo={isDemo} />
+          <CompetitionChart inspections={inspections} isDemo={isDemo} dateFilter={dateFilter} />
         </div>
 
         {/* Price Positioning Chart — only rendered when there's sufficient data */}

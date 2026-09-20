@@ -1,0 +1,1650 @@
+[
+    {
+        "table_name": "btl_acciones",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "punto_venta_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "asunto",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "fecha_programada",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "presupuesto",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "estado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": "'pendiente'::character varying"
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "notas",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_acciones",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "capacitacion_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "estado_inscripcion",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": "'inscrito'::character varying"
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "asistio",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "calificacion_evaluacion",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "aprobo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "calificacion_capacitacion",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_capacitacion_asistentes",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "titulo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "objetivo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "categoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "tipo",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "nivel",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": "'Básico'::character varying"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "fecha_inicio",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "fecha_fin",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "duracion_horas",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "modalidad",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "ubicacion",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "plataforma",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "link_sesion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "instructor_nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "cupo_maximo",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "cupo_minimo",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": "1"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "material_urls",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "certificado_emitido",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "temas",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "productos_relacionados",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "costo_total",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "estado",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": "'programada'::character varying"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "asistencia_esperada",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "asistencia_real",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "porcentaje_asistencia",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "promedio_calificacion",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "creado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_capacitaciones",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "producto_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "visible_dashboard",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "true"
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "orden",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "objetivo_presencia_custom",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "objetivo_stock_custom",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "objetivo_pop_custom",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_cliente_productos",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_clientes_venues",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_clientes_venues",
+        "column_name": "cliente_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_clientes_venues",
+        "column_name": "venue_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_clientes_venues",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "timezone('utc'::text, now())"
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "clave",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "valor",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_config",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "punto_venta_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "fecha_inspeccion",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "tiene_producto",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "tiene_material_pop",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "material_pop_detalle",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "temperatura_refrigeracion",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "stock_estimado",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "observaciones",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "fotos_urls",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "producto_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "stock_nivel",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "stock_unidades",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "material_pop_tipos",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "precio_venta",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "en_promocion",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "visibilidad_score",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "detalles",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "global_score",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_inspecciones",
+        "column_name": "compliance_score",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "marca",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "categoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "subcategoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "sku",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "codigo_barras",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "presentacion",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "logo_url",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "color_primario",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "color_secundario",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "objetivo_presencia",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "objetivo_stock",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "objetivo_pop",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "true"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "orden_visualizacion",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "configuracion",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": "'{}'::jsonb"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "competidores",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": "'[]'::jsonb"
+    },
+    {
+        "table_name": "btl_productos",
+        "column_name": "precio_referencia",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "nombre",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "tipo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "direccion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "ciudad",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "region_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "latitud",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "longitud",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "contacto_nombre",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "contacto_telefono",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "segmento",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "potencial_ventas",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "created_by",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "global_score",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": "0"
+    },
+    {
+        "table_name": "btl_puntos_venta",
+        "column_name": "last_inspection_date",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_regiones",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_regiones",
+        "column_name": "nombre",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_regiones",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_regiones",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "NO",
+        "column_default": "timezone('utc'::text, now())"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "creado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "asignado_a",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "categoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": "'general'::character varying"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "tipo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "subcategoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "prioridad",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": "'media'::text"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "estado",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": "'abierto'::text"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "urgente",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "asunto",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "titulo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "archivos_adjuntos",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "punto_venta_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "inspeccion_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "capacitacion_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "tipo_activacion",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "fecha_activacion_solicitada",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "productos_involucrados",
+        "data_type": "ARRAY",
+        "udt_name": "_uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "tipo_material",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "cantidad_solicitada",
+        "data_type": "integer",
+        "udt_name": "int4",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "marca_producto",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "fecha_entrega_requerida",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "fecha_resolucion",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "fecha_aprobacion",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "fecha_rechazo",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "motivo_rechazo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "calificacion_servicio",
+        "data_type": "numeric",
+        "udt_name": "numeric",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_reportes",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "nombre",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "slug",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "primary_color",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "secondary_color",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "accent_color",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "border_color",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "config",
+        "data_type": "jsonb",
+        "udt_name": "jsonb",
+        "is_nullable": "YES",
+        "column_default": "'{}'::jsonb"
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "true"
+    },
+    {
+        "table_name": "btl_temas",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "nombre",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "categoria",
+        "data_type": "character varying",
+        "udt_name": "varchar",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "descripcion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "true"
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_temas_capacitacion",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "ticket_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "usuario_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "comentario",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "es_interno",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "false"
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "archivos_adjuntos",
+        "data_type": "ARRAY",
+        "udt_name": "_text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_ticket_comentarios",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "NO",
+        "column_default": "gen_random_uuid()"
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "auth_user_id",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "email",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "nombre",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "rol",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "NO",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "empresa",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "telefono",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "activo",
+        "data_type": "boolean",
+        "udt_name": "bool",
+        "is_nullable": "YES",
+        "column_default": "true"
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "estado_aprobacion",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": "'pending'::text"
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "aprobado_por",
+        "data_type": "uuid",
+        "udt_name": "uuid",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "fecha_aprobacion",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "nota_rechazo",
+        "data_type": "text",
+        "udt_name": "text",
+        "is_nullable": "YES",
+        "column_default": null
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    },
+    {
+        "table_name": "btl_usuarios",
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "udt_name": "timestamptz",
+        "is_nullable": "YES",
+        "column_default": "now()"
+    }
+]

@@ -135,20 +135,20 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
   );
 
   const content = (
-    <div className={`${embedded ? 'h-full border-0 shadow-none bg-transparent' : 'bg-slate-900 border border-slate-700 shadow-2xl max-h-[85vh]'} rounded-xl w-full flex flex-col overflow-hidden`}>
+    <div className={`${embedded ? 'h-full border-0 shadow-none bg-transparent' : 'bg-surface-card border border-border-subtle shadow-2xl max-h-[85vh]'} rounded-xl w-full flex flex-col overflow-hidden text-content-main`}>
       {/* Header - Only show if NOT embedded */}
       {!embedded && (
-        <div className="flex items-center justify-between p-6 border-b border-slate-800 bg-slate-900">
+        <div className="flex items-center justify-between p-6 border-b border-border-subtle bg-surface-card">
           <div>
-            <h3 className="text-xl text-white font-bold flex items-center gap-2">
-              <Store className="w-5 h-5 text-amber-500" />
+            <h3 className="text-xl text-content-main font-bold flex items-center gap-2">
+              <Store className="w-5 h-5 text-theme-primary" />
               Asignar Venues
             </h3>
-            <p className="text-slate-400 text-sm mt-1">
-              Cliente: <span className="text-white font-medium">{clientName}</span>
+            <p className="text-content-muted text-sm mt-1">
+              Cliente: <span className="text-content-main font-medium">{clientName}</span>
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-content-muted hover:text-content-main transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -156,20 +156,19 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
 
       <div className={`flex-1 overflow-hidden flex flex-col md:flex-row ${embedded ? 'min-h-[400px]' : ''}`}>
         {/* Left Panel: Available Venues */}
-        <div className="flex-1 p-4 border-r border-slate-800 overflow-y-auto bg-slate-900/50">
-          {/* ... existing content ... */}
-          <h4 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">
+        <div className="flex-1 p-4 border-r border-border-subtle overflow-y-auto bg-surface-card-subtle">
+          <h4 className="text-sm font-semibold text-content-muted mb-3 uppercase tracking-wider">
             Disponibles ({filteredAvailable.length})
           </h4>
 
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-muted" />
             <input
               type="text"
               placeholder="Buscar venue..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+              className="w-full bg-surface-card border border-border-subtle rounded-lg pl-9 pr-3 py-2 text-sm text-content-main placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
             />
           </div>
 
@@ -179,18 +178,18 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
                 <LoadingSpinner size="sm" />
               </div>
             ) : filteredAvailable.length === 0 ? (
-              <p className="text-slate-500 text-center text-sm py-4">
+              <p className="text-content-muted text-center text-sm py-4">
                 No hay venues disponibles con ese criterio.
               </p>
             ) : (
               filteredAvailable.map(venue => (
                 <div
                   key={venue.id}
-                  className="flex items-center justify-between p-3 bg-slate-800/40 border border-slate-700/30 rounded-lg hover:border-amber-500/30 transition-colors group"
+                  className="flex items-center justify-between p-3 bg-surface-card border border-border-subtle rounded-lg hover:border-theme-primary/50 transition-colors group"
                 >
                   <div className="min-w-0">
-                    <p className="text-slate-200 font-medium text-sm truncate">{venue.nombre}</p>
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <p className="text-content-main font-medium text-sm truncate">{venue.nombre}</p>
+                    <div className="flex items-center gap-1 text-xs text-content-muted">
                       <MapPin className="w-3 h-3" />
                       <span className="truncate">{venue.ciudad || 'Sin ciudad'}</span>
                     </div>
@@ -198,7 +197,7 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
                   <button
                     onClick={() => handleAssign(venue.id)}
                     disabled={assigning}
-                    className="p-1.5 bg-slate-700 text-slate-300 rounded hover:bg-amber-600 hover:text-white transition-colors"
+                    className="p-1.5 bg-surface-card-subtle text-content-muted hover:text-white hover:bg-theme-primary border border-border-subtle rounded transition-all"
                     title="Asignar"
                   >
                     <Plus className="w-4 h-4" />
@@ -210,9 +209,8 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
         </div>
 
         {/* Right Panel: Assigned Venues */}
-        <div className="flex-1 p-4 overflow-y-auto bg-slate-950/30">
-          {/* ... existing content ... */}
-          <h4 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">
+        <div className="flex-1 p-4 overflow-y-auto bg-surface-card">
+          <h4 className="text-sm font-semibold text-content-muted mb-3 uppercase tracking-wider">
             Asignados ({assignedVenues.length})
           </h4>
 
@@ -222,23 +220,23 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
                 <LoadingSpinner size="sm" />
               </div>
             ) : assignedVenues.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-                <Store className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                <p className="text-slate-500 text-sm">Este cliente no tiene venues asignados.</p>
+              <div className="text-center py-12 border-2 border-dashed border-border-subtle rounded-xl">
+                <Store className="w-8 h-8 text-content-muted mx-auto mb-2" />
+                <p className="text-content-muted text-sm">Este cliente no tiene venues asignados.</p>
               </div>
             ) : (
               assignedVenues.map(assignment => (
                 <div
                   key={assignment.id}
-                  className="flex items-center justify-between p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-theme-primary/10 border border-theme-primary/20 rounded-lg"
                 >
                   <div className="min-w-0">
-                    <p className="text-purple-200 font-medium text-sm truncate">{assignment.venue.nombre}</p>
-                    <p className="text-xs text-purple-300/60 truncate">{assignment.venue.ciudad}</p>
+                    <p className="text-theme-primary font-medium text-sm truncate">{assignment.venue.nombre}</p>
+                    <p className="text-xs text-content-muted truncate">{assignment.venue.ciudad}</p>
                   </div>
                   <button
                     onClick={() => handleUnassign(assignment.id)}
-                    className="p-1.5 hover:bg-red-500/20 rounded text-slate-400 hover:text-red-400 transition-colors"
+                    className="p-1.5 hover:bg-red-500/20 rounded text-content-muted hover:text-red-500 transition-colors"
                     title="Remover asignación"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -252,10 +250,10 @@ export function ClientVenueManager({ clientId, clientName, onClose, embedded = f
 
       {/* Footer - Only show if NOT embedded */}
       {!embedded && (
-        <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-end">
+        <div className="p-4 border-t border-border-subtle bg-surface-card flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle text-content-main rounded-lg transition-colors text-sm font-medium"
           >
             Cerrar
           </button>

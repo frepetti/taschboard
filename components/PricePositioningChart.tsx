@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useLanguage } from '../utils/LanguageContext';
+import { parseInspectionCompetition } from '../utils/competitionUtils';
 
 interface PricePositioningChartProps {
   inspections: any[];
@@ -20,21 +21,23 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
   const { language } = useLanguage();
   const labels = LABELS[language] || LABELS.es;
 
-  // Aggregate priceComparison from detalles.competitors[]
+  // Aggregate priceComparison from parsed inspection competition
   const counts: Record<string, number> = { premium: 0, equal: 0, lower: 0 };
 
   for (const insp of inspections) {
-    if (insp.detalles?.competitors && Array.isArray(insp.detalles.competitors)) {
-      for (const comp of insp.detalles.competitors) {
+    const compData = parseInspectionCompetition(insp);
+    if (compData.competitors && compData.competitors.length > 0) {
+      for (const comp of compData.competitors) {
+        // Ignorar competidores sin presencia física afirmativa
+        if (comp.present === false) continue;
         const pc = comp.priceComparison;
         if (pc && counts[pc] !== undefined) {
           counts[pc]++;
         }
       }
-    } else if (insp.detalles?.priceComparison) {
-      const pc = insp.detalles.priceComparison;
-      if (counts[pc] !== undefined) {
-        counts[pc]++;
+    } else if (compData.priceComparison && counts[compData.priceComparison] !== undefined) {
+      if (compData.mainCompetitor && compData.mainCompetitor !== 'Ninguno' && compData.mainCompetitor !== 'N/A') {
+        counts[compData.priceComparison]++;
       }
     }
   }

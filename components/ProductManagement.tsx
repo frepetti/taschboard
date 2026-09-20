@@ -158,15 +158,15 @@ export function ProductManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl text-white font-bold mb-1">Gestión de Productos</h2>
-          <p className="text-slate-400">
+          <h2 className="text-2xl text-content-main font-bold mb-1">Gestión de Productos</h2>
+          <p className="text-content-muted">
             Administra el catálogo de productos disponibles para los clientes
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowImporter(!showImporter)}
-            className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all flex items-center gap-2"
+            className="px-4 py-2 bg-surface-card border border-border-subtle text-content-main rounded-lg hover:bg-surface-card-subtle transition-all flex items-center gap-2 shadow-sm font-medium"
           >
             {showImporter ? (
               <>
@@ -185,7 +185,7 @@ export function ProductManagement() {
               setEditingProduct(emptyProduct);
               setShowForm(true);
             }}
-            className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+            className="px-4 py-2 bg-theme-primary hover:brightness-95 text-white rounded-lg transition-all flex items-center gap-2 shadow-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             Nuevo Producto
@@ -199,27 +199,27 @@ export function ProductManagement() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar productos por nombre, marca o SKU..."
-          className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500/50"
+          className="w-full pl-10 pr-4 py-3 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
         />
       </div>
 
       {/* Products Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-theme-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 hover:border-slate-600/50 transition-all"
+              className="bg-surface-card border border-border-subtle rounded-xl p-4 hover:border-theme-primary/50 transition-all shadow-sm"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -241,8 +241,8 @@ export function ProductManagement() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
-                      <h3 className="text-white font-semibold">{product.marca}</h3>
-                      <p className="text-slate-400 text-sm">{product.nombre}</p>
+                      <h3 className="text-content-main font-semibold">{product.marca}</h3>
+                      <p className="text-content-muted text-sm">{product.nombre}</p>
                     </div>
                     <div className="flex gap-1">
                       <button
@@ -250,13 +250,13 @@ export function ProductManagement() {
                           setEditingProduct(product);
                           setShowForm(true);
                         }}
-                        className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all"
+                        className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => product.id && handleDeleteProduct(product.id)}
-                        className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -265,33 +265,33 @@ export function ProductManagement() {
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs rounded">
+                      <span className="px-2 py-0.5 bg-surface-card-subtle text-content-main border border-border-subtle text-xs rounded font-medium">
                         {product.categoria}
                       </span>
-                      <span className="px-2 py-0.5 bg-slate-700/50 text-slate-300 text-xs rounded">
+                      <span className="px-2 py-0.5 bg-surface-card-subtle text-content-main border border-border-subtle text-xs rounded font-medium">
                         {product.presentacion}
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-content-muted">
                       SKU: {product.sku}
                     </div>
                     <div className="grid grid-cols-3 gap-1 text-xs">
                       <div className="text-center">
-                        <div className="text-slate-400">Presencia</div>
-                        <div className="text-white font-semibold">{product.objetivo_presencia}%</div>
+                        <div className="text-content-muted">Presencia</div>
+                        <div className="text-content-main font-semibold">{product.objetivo_presencia}%</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-slate-400">Stock</div>
-                        <div className="text-white font-semibold">{product.objetivo_stock}%</div>
+                        <div className="text-content-muted">Stock</div>
+                        <div className="text-content-main font-semibold">{product.objetivo_stock}%</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-slate-400">POP</div>
-                        <div className="text-white font-semibold">{product.objetivo_pop}%</div>
+                        <div className="text-content-muted">POP</div>
+                        <div className="text-content-main font-semibold">{product.objetivo_pop}%</div>
                       </div>
                     </div>
                     {product.precio_referencia != null && (
-                      <div className="text-xs text-slate-400 mt-1">
-                        Precio Ref: <span className="text-amber-400 font-semibold">{new Intl.NumberFormat(undefined, { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(product.precio_referencia)}</span>
+                      <div className="text-xs text-content-muted mt-1">
+                        Precio Ref: <span className="text-theme-primary font-semibold">{new Intl.NumberFormat(undefined, { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(product.precio_referencia)}</span>
                       </div>
                     )}
                   </div>
@@ -469,21 +469,21 @@ function ProductForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+      <div className="bg-surface-card border border-border-subtle rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col text-content-main">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10">
+          <div className="p-6 border-b border-border-subtle sticky top-0 bg-surface-card/95 backdrop-blur-sm z-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl text-white font-bold">
+              <h2 className="text-2xl text-content-main font-bold">
                 {formData.id ? 'Editar Producto' : 'Nuevo Producto'}
               </h2>
-              <button type="button" onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+              <button type="button" onClick={onClose} className="text-content-muted hover:text-content-main transition-colors">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 border-b border-slate-700/50">
+            <div className="flex gap-4 border-b border-border-subtle">
               {([
                 { key: 'general', label: 'Información General' },
                 { key: 'perfect-serve', label: 'Perfect Serve' },
@@ -493,11 +493,11 @@ function ProductForm({
                   key={tab.key}
                   type="button"
                   onClick={() => setActiveTab(tab.key)}
-                  className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === tab.key ? 'text-amber-500' : 'text-slate-400 hover:text-slate-300'}`}
+                  className={`pb-2 px-1 text-sm font-medium transition-colors relative ${activeTab === tab.key ? 'text-theme-primary font-semibold' : 'text-content-muted hover:text-content-main'}`}
                 >
                   {tab.label}
                   {activeTab === tab.key && (
-                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-theme-primary rounded-t-full" />
                   )}
                 </button>
               ))}
@@ -512,36 +512,36 @@ function ProductForm({
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Marca *</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Marca *</label>
                     <input
                       type="text" required value={formData.marca}
                       onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">SKU *</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">SKU *</label>
                     <input
                       type="text" required value={formData.sku || ''}
                       onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Nombre del Producto *</label>
+                  <label className="block text-content-muted text-sm font-medium mb-2">Nombre del Producto *</label>
                   <input
                     type="text" required value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   {/* Categoría dinámica */}
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Categoría</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Categoría</label>
                     {isCustomCategory ? (
                       <div className="flex gap-2">
                         <input
@@ -551,19 +551,19 @@ function ProductForm({
                           onChange={(e) => setCustomCategoryInput(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), confirmCustomCategory())}
                           placeholder="Nueva categoría..."
-                          className="flex-1 px-3 py-2 bg-slate-800/50 border border-amber-500/50 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm"
+                          className="flex-1 px-3 py-2 bg-surface-card-subtle border border-theme-primary/50 rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50 text-sm"
                         />
                         <button
                           type="button"
                           onClick={confirmCustomCategory}
-                          className="px-2 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+                          className="px-2 py-2 bg-theme-primary hover:brightness-95 text-white rounded-lg transition-all"
                         >
                           <Check className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => { setIsCustomCategory(false); setCustomCategoryInput(''); }}
-                          className="px-2 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
+                          className="px-2 py-2 bg-surface-card-subtle border border-border-subtle hover:bg-surface-card text-content-muted rounded-lg transition-colors"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -572,7 +572,7 @@ function ProductForm({
                       <select
                         value={formData.categoria || ''}
                         onChange={(e) => handleCategoryChange(e.target.value)}
-                        className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                        className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                       >
                         <option value="">Seleccionar...</option>
                         {allCategories.map(cat => (
@@ -583,11 +583,11 @@ function ProductForm({
                     )}
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Subcategoría</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Subcategoría</label>
                     <select
                       value={formData.subcategoria || ''}
                       onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                     >
                       <option>Premium</option>
                       <option>Estándar</option>
@@ -595,31 +595,31 @@ function ProductForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Presentación</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Presentación</label>
                     <input
                       type="text" value={formData.presentacion || ''}
                       onChange={(e) => setFormData({ ...formData, presentacion: e.target.value })}
                       placeholder="355ml, 750ml..."
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Color Primario</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Color Primario</label>
                     <input
                       type="color" value={formData.color_primario || '#000000'}
                       onChange={(e) => setFormData({ ...formData, color_primario: e.target.value })}
-                      className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
+                      className="w-full h-10 bg-surface-card-subtle border border-border-subtle rounded-lg cursor-pointer"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Color Secundario</label>
+                    <label className="block text-content-muted text-sm font-medium mb-2">Color Secundario</label>
                     <input
                       type="color" value={formData.color_secundario || '#000000'}
                       onChange={(e) => setFormData({ ...formData, color_secundario: e.target.value })}
-                      className="w-full h-10 bg-slate-800/50 border border-slate-700/50 rounded-lg cursor-pointer"
+                      className="w-full h-10 bg-surface-card-subtle border border-border-subtle rounded-lg cursor-pointer"
                     />
                   </div>
                 </div>
@@ -631,12 +631,12 @@ function ProductForm({
                     { label: 'Objetivo POP (%)', field: 'objetivo_pop' },
                   ].map(item => (
                     <div key={item.field}>
-                      <label className="block text-slate-300 text-sm mb-2">{item.label}</label>
+                      <label className="block text-content-muted text-sm font-medium mb-2">{item.label}</label>
                       <input
                         type="number" min="0" max="100"
                         value={(formData as any)[item.field] ?? 0}
                         onChange={(e) => setFormData({ ...formData, [item.field]: Number(e.target.value) })}
-                        className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                        className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                       />
                     </div>
                   ))}
@@ -644,31 +644,31 @@ function ProductForm({
 
                 {/* Precio de Referencia */}
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Precio de Referencia</label>
+                  <label className="block text-content-muted text-sm font-medium mb-2">Precio de Referencia</label>
                   <input
                     type="number" min="0" step="0.01"
                     value={formData.precio_referencia ?? ''}
                     onChange={(e) => setFormData({ ...formData, precio_referencia: e.target.value === '' ? null : Number(e.target.value) })}
                     placeholder="Ej: 350.00"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Precio sugerido del producto. Se usa para calcular desviación vs precio de carta.</p>
+                  <p className="text-xs text-content-muted mt-1">Precio sugerido del producto. Se usa para calcular desviación vs precio de carta.</p>
                 </div>
 
                 {/* Competitors Section */}
-                <div className="pt-4 border-t border-slate-700/50">
-                  <label className="block text-slate-300 text-sm mb-2">Competidores Directos</label>
+                <div className="pt-4 border-t border-border-subtle">
+                  <label className="block text-content-muted text-sm font-medium mb-2">Competidores Directos</label>
                   <div className="flex gap-2 mb-3">
                     <input
                       type="text" value={newCompetitor}
                       onChange={(e) => setNewCompetitor(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCompetitor())}
                       placeholder="Agregar competidor..."
-                      className="flex-1 bg-slate-800/50 border border-slate-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-amber-500/50"
+                      className="flex-1 bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                     />
                     <button
                       type="button" onClick={addCompetitor}
-                      className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                      className="bg-surface-card-subtle border border-border-subtle hover:bg-surface-card text-content-main px-4 py-2 rounded-lg transition-colors font-medium"
                     >
                       <Plus className="w-5 h-5" />
                     </button>
@@ -676,15 +676,15 @@ function ProductForm({
 
                   <div className="flex flex-wrap gap-2">
                     {(formData.competidores || []).map((comp, idx) => (
-                      <div key={idx} className="flex items-center gap-1 bg-slate-800 text-slate-300 text-sm px-3 py-1 rounded-full border border-slate-600/50">
+                      <div key={idx} className="flex items-center gap-1 bg-surface-card-subtle text-content-main text-sm px-3 py-1 rounded-full border border-border-subtle">
                         <span>{comp}</span>
-                        <button type="button" onClick={() => removeCompetitor(comp)} className="text-slate-500 hover:text-red-400 focus:outline-none ml-1">
+                        <button type="button" onClick={() => removeCompetitor(comp)} className="text-content-muted hover:text-red-500 focus:outline-none ml-1">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
                     {(formData.competidores || []).length === 0 && (
-                      <p className="text-slate-500 text-sm italic">Sin competidores asignados</p>
+                      <p className="text-content-muted text-sm italic">Sin competidores asignados</p>
                     )}
                   </div>
                 </div>
@@ -695,15 +695,15 @@ function ProductForm({
             {activeTab === 'perfect-serve' && (
               <div className="space-y-4">
                 {/* Toggle habilitado/deshabilitado */}
-                <div className="flex items-center justify-between p-4 bg-slate-800/30 border border-slate-700/40 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-surface-card-subtle border border-border-subtle rounded-xl">
                   <div>
-                    <p className="text-white font-medium text-sm">Habilitar checklist de Perfect Serve</p>
-                    <p className="text-slate-400 text-xs mt-0.5">Si se deshabilita, la sección no aparecerá en el formulario de inspección.</p>
+                    <p className="text-content-main font-medium text-sm">Habilitar checklist de Perfect Serve</p>
+                    <p className="text-content-muted text-xs mt-0.5">Si se deshabilita, la sección no aparecerá en el formulario de inspección.</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => togglePerfectServeEnabled(!perfectServeEnabled)}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${perfectServeEnabled ? 'bg-amber-500' : 'bg-slate-600'}`}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${perfectServeEnabled ? 'bg-theme-primary' : 'bg-surface-card border border-border-subtle'}`}
                   >
                     <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${perfectServeEnabled ? 'left-7' : 'left-1'}`} />
                   </button>
@@ -711,8 +711,8 @@ function ProductForm({
 
                 {perfectServeEnabled ? (
                   <>
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                      <p className="text-sm text-blue-300">
+                    <div className="bg-theme-primary/10 border border-theme-primary/30 rounded-lg p-4">
+                      <p className="text-sm text-theme-primary">
                         Define las preguntas de verificación para el Perfect Serve.
                         Estas aparecerán en el formulario de inspección para este producto.
                       </p>
@@ -720,27 +720,27 @@ function ProductForm({
 
                     <div className="space-y-3">
                       {(formData.configuracion?.perfect_serve || []).map((q, idx) => (
-                        <div key={q.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 flex gap-3 items-start group">
-                          <div className="pt-3 text-slate-500 text-xs font-mono">{idx + 1}</div>
+                        <div key={q.id} className="bg-surface-card-subtle border border-border-subtle rounded-lg p-3 flex gap-3 items-start group">
+                          <div className="pt-3 text-content-muted text-xs font-mono">{idx + 1}</div>
                           <div className="flex-1 space-y-2">
                             <input
                               type="text" value={q.question}
                               onChange={(e) => updateQuestion(q.id, 'question', e.target.value)}
                               placeholder="Ej: ¿Se sirve en copa balón?"
-                              className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700/50 rounded-md text-white text-sm focus:outline-none focus:border-amber-500/50"
+                              className="w-full px-3 py-2 bg-surface-card border border-border-subtle rounded-md text-content-main text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
                             />
                             <label className="flex items-center gap-2 cursor-pointer w-fit">
                               <input
                                 type="checkbox" checked={q.required}
                                 onChange={(e) => updateQuestion(q.id, 'required', e.target.checked)}
-                                className="rounded border-slate-600 bg-slate-700 text-amber-500 focus:ring-amber-500/50"
+                                className="rounded border-border-subtle bg-surface-card text-theme-primary focus:ring-theme-primary/50"
                               />
-                              <span className="text-xs text-slate-400">Requerido (cuenta para el puntaje)</span>
+                              <span className="text-xs text-content-muted">Requerido (cuenta para el puntaje)</span>
                             </label>
                           </div>
                           <button
                             type="button" onClick={() => removeQuestion(q.id)}
-                            className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                            className="p-2 text-content-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -748,14 +748,14 @@ function ProductForm({
                       ))}
 
                       {(formData.configuracion?.perfect_serve || []).length === 0 && (
-                        <div className="text-center py-8 text-slate-500 text-sm italic border border-dashed border-slate-700/50 rounded-lg">
+                        <div className="text-center py-8 text-content-muted text-sm italic border border-dashed border-border-subtle rounded-lg">
                           No hay preguntas configuradas. Se usarán las preguntas por defecto.
                         </div>
                       )}
 
                       <button
                         type="button" onClick={addQuestion}
-                        className="w-full py-2 border-2 border-dashed border-slate-700 hover:border-amber-500/50 text-slate-400 hover:text-amber-500 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                        className="w-full py-2 border-2 border-dashed border-border-subtle hover:border-theme-primary text-content-muted hover:text-theme-primary rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                       >
                         <Plus className="w-4 h-4" />
                         Agregar Pregunta
@@ -763,10 +763,10 @@ function ProductForm({
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-10 text-slate-500 flex flex-col items-center gap-3">
-                    <Package className="w-10 h-10 text-slate-600" />
+                  <div className="text-center py-10 text-content-muted flex flex-col items-center gap-3">
+                    <Package className="w-10 h-10 text-content-muted" />
                     <p className="text-sm">El checklist de Perfect Serve está deshabilitado para este producto.</p>
-                    <p className="text-xs text-slate-600">Activalo con el toggle de arriba para configurar preguntas.</p>
+                    <p className="text-xs text-content-muted">Activalo con el toggle de arriba para configurar preguntas.</p>
                   </div>
                 )}
               </div>
@@ -775,8 +775,8 @@ function ProductForm({
             {/* ──── TAB: Cocktails ──── */}
             {activeTab === 'cocktails' && (
               <div className="space-y-4">
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
-                  <p className="text-sm text-purple-300">
+                <div className="bg-theme-primary/10 border border-theme-primary/30 rounded-lg p-4">
+                  <p className="text-sm text-theme-primary font-medium">
                     Listá los cocktails disponibles para este producto. Estos se mostrarán como referencia en el formulario de inspección.
                   </p>
                 </div>
@@ -784,18 +784,18 @@ function ProductForm({
                 {/* Input agregar cocktail */}
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <Wine className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Wine className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-muted" />
                     <input
                       type="text" value={newCocktailName}
                       onChange={(e) => setNewCocktailName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCocktail())}
                       placeholder="Nombre del cocktail..."
-                      className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-purple-500/50 text-sm"
+                      className="w-full pl-10 pr-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:ring-2 focus:ring-theme-primary/50 text-sm"
                     />
                   </div>
                   <button
                     type="button" onClick={addCocktail}
-                    className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="bg-theme-primary hover:brightness-95 text-white px-4 py-2 rounded-lg transition-all shadow-sm font-medium"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -804,14 +804,14 @@ function ProductForm({
                 {/* Lista de cocktails */}
                 <div className="space-y-2">
                   {(formData.configuracion?.cocktails || []).map((cocktail, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/30 border border-slate-700/40 rounded-lg group">
+                    <div key={idx} className="flex items-center justify-between p-3 bg-surface-card-subtle border border-border-subtle rounded-lg group">
                       <div className="flex items-center gap-3">
-                        <Wine className="w-4 h-4 text-purple-400" />
-                        <span className="text-white text-sm">{cocktail.name}</span>
+                        <Wine className="w-4 h-4 text-theme-primary" />
+                        <span className="text-content-main text-sm font-medium">{cocktail.name}</span>
                       </div>
                       <button
                         type="button" onClick={() => removeCocktail(cocktail.name)}
-                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 text-content-muted hover:text-red-500 hover:bg-red-500/10 rounded transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -819,10 +819,10 @@ function ProductForm({
                   ))}
 
                   {(formData.configuracion?.cocktails || []).length === 0 && (
-                    <div className="text-center py-10 text-slate-500 flex flex-col items-center gap-3 border border-dashed border-slate-700/50 rounded-lg">
-                      <Wine className="w-8 h-8 text-slate-600" />
+                    <div className="text-center py-10 text-content-muted flex flex-col items-center gap-3 border border-dashed border-border-subtle rounded-lg">
+                      <Wine className="w-8 h-8 text-content-muted" />
                       <p className="text-sm italic">Sin cocktails configurados.</p>
-                      <p className="text-xs text-slate-600">Agregá cocktails usando el campo de arriba.</p>
+                      <p className="text-xs text-content-muted">Agregá cocktails usando el campo de arriba.</p>
                     </div>
                   )}
                 </div>
@@ -831,16 +831,16 @@ function ProductForm({
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-700/50 bg-slate-800/30 flex justify-end gap-3 sticky bottom-0 z-10">
+          <div className="p-6 border-t border-border-subtle bg-surface-card flex justify-end gap-3 sticky bottom-0 z-10">
             <button
               type="button" onClick={onClose}
-              className="px-6 py-2.5 bg-slate-700/50 text-white rounded-lg hover:bg-slate-700 transition-colors"
+              className="px-6 py-2.5 bg-surface-card-subtle border border-border-subtle text-content-muted hover:text-content-main rounded-lg transition-colors font-medium"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-theme-primary hover:brightness-95 text-white rounded-lg transition-all flex items-center gap-2 shadow-sm font-medium"
             >
               <Check className="w-4 h-4" />
               Guardar

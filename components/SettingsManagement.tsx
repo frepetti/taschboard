@@ -183,43 +183,43 @@ export function SettingsManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-purple-500/20 rounded-lg">
-          <Settings className="w-6 h-6 text-purple-400" />
+        <div className="p-2 bg-theme-primary/20 text-theme-primary border border-theme-primary/30 rounded-lg">
+          <Settings className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">Ajustes del Sistema</h2>
-          <p className="text-sm text-slate-400">Configuraciones generales, de seguridad y personalización visual</p>
+          <h2 className="text-xl font-bold text-content-main">Ajustes del Sistema</h2>
+          <p className="text-sm text-content-muted">Configuraciones generales, de seguridad y personalización visual</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Security / Demo Settings Card */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl flex flex-col justify-between">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <ShieldAlert className="w-5 h-5 text-amber-500" />
-              <h3 className="text-lg font-semibold text-white">Seguridad de Acceso Demo</h3>
+              <h3 className="text-lg font-semibold text-content-main">Seguridad de Acceso Demo</h3>
             </div>
 
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-content-muted mb-6">
               Define o actualiza la palabra clave requerida para que los usuarios puedan entrar al modo demostración desde la landing page.
             </p>
 
             <form onSubmit={handleSaveDemoKeyword} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-content-main mb-2">
                   Palabra Clave (Keyword)
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="w-5 h-5 text-slate-500" />
+                    <Key className="w-5 h-5 text-content-muted" />
                   </div>
                   <input
                     type="password"
                     value={demoKeyword}
                     onChange={(e) => setDemoKeyword(e.target.value)}
                     placeholder="Nueva palabra clave..."
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary focus:ring-1 focus:ring-theme-primary transition-colors"
                   />
                 </div>
               </div>
@@ -227,7 +227,7 @@ export function SettingsManagement() {
               <button
                 type="submit"
                 disabled={isSavingKeyword || !demoKeyword.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white px-4 py-2.5 rounded-lg font-medium transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 bg-theme-primary hover:brightness-95 text-white px-4 py-2.5 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSavingKeyword ? (
                   <>
@@ -246,24 +246,24 @@ export function SettingsManagement() {
         </div>
 
         {/* Multi-Tenant Theming Card */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl flex flex-col justify-between">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <Palette className="w-5 h-5 text-purple-400" />
-                <h3 className="text-lg font-semibold text-white">Gestión de Temas Visuales</h3>
+                <Palette className="w-5 h-5 text-theme-primary" />
+                <h3 className="text-lg font-semibold text-content-main">Gestión de Temas Visuales</h3>
               </div>
               <button
                 type="button"
                 onClick={handleOpenCreateModal}
-                className="flex items-center gap-1.5 bg-purple-600/30 hover:bg-purple-600/40 border border-purple-500/40 text-purple-200 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                className="flex items-center gap-1.5 bg-theme-primary hover:brightness-95 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span>Nuevo Tema</span>
               </button>
             </div>
 
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-sm text-content-muted mb-4">
               Configura paletas corporativas y estilos de marca (Multi-Tenant). Los cambios se aplican en caliente a toda la plataforma.
             </p>
 
@@ -276,8 +276,8 @@ export function SettingsManagement() {
                     key={theme.id || theme.slug}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                       isActive
-                        ? 'bg-purple-950/20 border-purple-500/50 ring-1 ring-purple-500/30'
-                        : 'bg-slate-900/40 border-slate-700/60 hover:border-slate-600'
+                        ? 'bg-theme-primary/10 border-theme-primary/40 ring-1 ring-theme-primary/20'
+                        : 'bg-surface-card-subtle border-border-subtle hover:border-theme-primary/30'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -307,14 +307,14 @@ export function SettingsManagement() {
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-white truncate">{theme.nombre}</span>
+                          <span className="text-sm font-semibold text-content-main truncate">{theme.nombre}</span>
                           {theme.config?.badge_style === 'heineken_star' && (
                             <span className="text-[10px] bg-red-500/20 text-red-300 border border-red-500/30 px-1.5 py-0.2 rounded font-medium">
                               Estrella Roja
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-slate-400 block truncate">slug: {theme.slug}</span>
+                        <span className="text-xs text-content-muted block truncate">slug: {theme.slug}</span>
                       </div>
                     </div>
 
@@ -322,7 +322,7 @@ export function SettingsManagement() {
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(theme)}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                        className="p-1.5 rounded-md text-content-muted hover:text-content-main hover:bg-surface-card-subtle transition-colors"
                         title="Editar paleta"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -337,7 +337,7 @@ export function SettingsManagement() {
                         <button
                           type="button"
                           onClick={() => setTheme(theme.slug)}
-                          className="text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1 rounded-md border border-slate-700 transition-colors"
+                          className="text-xs font-medium bg-surface-card hover:bg-surface-card-subtle text-content-main px-2.5 py-1 rounded-md border border-border-subtle transition-colors"
                         >
                           Aplicar
                         </button>
@@ -354,20 +354,20 @@ export function SettingsManagement() {
       {/* Modal Creación / Edición de Tema */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700/80 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative">
+          <div className="bg-surface-card border border-border-subtle rounded-2xl p-6 max-w-lg w-full shadow-2xl relative text-content-main">
             <button
               type="button"
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-content-muted hover:text-content-main transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-purple-500/20 rounded-lg">
-                <Palette className="w-5 h-5 text-purple-400" />
+              <div className="p-2 bg-theme-primary/20 text-theme-primary border border-theme-primary/30 rounded-lg">
+                <Palette className="w-5 h-5 text-theme-primary" />
               </div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-content-main">
                 {editingThemeId ? 'Editar Tema Visual' : 'Nuevo Tema Visual'}
               </h3>
             </div>
@@ -375,18 +375,18 @@ export function SettingsManagement() {
             <form onSubmit={handleSaveTheme} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Nombre</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Nombre</label>
                   <input
                     type="text"
                     required
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                     placeholder="Ej. Heineken Brand"
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-3 py-2 text-sm text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Slug (Identificador)</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Slug (Identificador)</label>
                   <input
                     type="text"
                     required
@@ -394,7 +394,7 @@ export function SettingsManagement() {
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                     placeholder="ej. heineken"
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 disabled:opacity-50"
+                    className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-3 py-2 text-sm text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -402,13 +402,13 @@ export function SettingsManagement() {
               {/* Color pickers */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Color Primario (HEX)</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Color Primario (HEX)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.primary_color}
                       onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-border-subtle bg-transparent cursor-pointer"
                     />
                     <input
                       type="text"
@@ -416,19 +416,19 @@ export function SettingsManagement() {
                       value={formData.primary_color}
                       onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
                       placeholder="#008200"
-                      className="flex-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase focus:outline-none focus:border-purple-500 font-mono"
+                      className="flex-1 bg-surface-card-subtle border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-content-main uppercase focus:outline-none focus:border-theme-primary font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Color Secundario (HEX)</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Color Secundario (HEX)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.secondary_color}
                       onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-border-subtle bg-transparent cursor-pointer"
                     />
                     <input
                       type="text"
@@ -436,19 +436,19 @@ export function SettingsManagement() {
                       value={formData.secondary_color}
                       onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })}
                       placeholder="#205527"
-                      className="flex-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase focus:outline-none focus:border-purple-500 font-mono"
+                      className="flex-1 bg-surface-card-subtle border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-content-main uppercase focus:outline-none focus:border-theme-primary font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Color Acento (HEX)</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Color Acento (HEX)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.accent_color}
                       onChange={(e) => setFormData({ ...formData, accent_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-border-subtle bg-transparent cursor-pointer"
                     />
                     <input
                       type="text"
@@ -456,19 +456,19 @@ export function SettingsManagement() {
                       value={formData.accent_color}
                       onChange={(e) => setFormData({ ...formData, accent_color: e.target.value })}
                       placeholder="#ff2b00"
-                      className="flex-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase focus:outline-none focus:border-purple-500 font-mono"
+                      className="flex-1 bg-surface-card-subtle border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-content-main uppercase focus:outline-none focus:border-theme-primary font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Color de Borde (HEX)</label>
+                  <label className="block text-xs font-medium text-content-muted mb-1">Color de Borde (HEX)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={formData.border_color}
                       onChange={(e) => setFormData({ ...formData, border_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-slate-700 bg-transparent cursor-pointer"
+                      className="w-8 h-8 rounded border border-border-subtle bg-transparent cursor-pointer"
                     />
                     <input
                       type="text"
@@ -476,7 +476,7 @@ export function SettingsManagement() {
                       value={formData.border_color}
                       onChange={(e) => setFormData({ ...formData, border_color: e.target.value })}
                       placeholder="#c3c3c3"
-                      className="flex-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase focus:outline-none focus:border-purple-500 font-mono"
+                      className="flex-1 bg-surface-card-subtle border border-border-subtle rounded-lg px-2.5 py-1.5 text-xs text-content-main uppercase focus:outline-none focus:border-theme-primary font-mono"
                     />
                   </div>
                 </div>
@@ -484,31 +484,31 @@ export function SettingsManagement() {
 
               {/* Badge Style */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-content-muted mb-1">
                   Estilo de Badge de Scoring
                 </label>
                 <select
                   value={formData.badge_style}
                   onChange={(e) => setFormData({ ...formData, badge_style: e.target.value })}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-3 py-2 text-sm text-content-main focus:outline-none focus:border-theme-primary"
                 >
                   <option value="default">Estándar (Círculo / Rectángulo Numérico)</option>
                   <option value="heineken_star">Estrella Roja Heineken (Identidad de Marca)</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border-subtle">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-content-muted hover:text-content-main bg-surface-card-subtle border border-border-subtle rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingTheme}
-                  className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50"
+                  className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm disabled:opacity-50"
                 >
                   {isSavingTheme ? (
                     <>

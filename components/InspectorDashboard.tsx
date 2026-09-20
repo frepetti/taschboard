@@ -175,14 +175,20 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         // Full Details for History
         detalles: {
           ...data,
+          competencia: (data.competitors || []).map((c: any) => ({
+            nombre: c.name,
+            visibilidad: c.visibility,
+            presente: true,
+            comparacion_precio: c.priceComparison,
+          })),
           scoreBreakdown: scores.breakdown,
           venueStatus: venueStatus
         },
 
-        // Global Score
-        global_score: scores.globalScore,
-        visibilidad_score: scores.globalScore,
-        compliance_score: scores.globalScore,
+        // Global Score (estrictamente normalizado a entero)
+        global_score: Math.round(scores.globalScore),
+        visibilidad_score: Math.round(scores.globalScore),
+        compliance_score: Math.round(scores.globalScore),
 
         precio_venta: data.precioCartaObservado ?? 0,
         en_promocion: false,
@@ -192,13 +198,13 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         // UPDATE existing
         await updateInspection(editingInspectionId, inspectionData);
         toast.success('Inspección Actualizada', {
-          description: `Nuevo Score: ${scores.globalScore}`
+          description: `Nuevo Score: ${Math.round(scores.globalScore)}`
         });
       } else {
         // CREATE new
         await createInspection(inspectionData as any);
         toast.success('Inspección Enviada', {
-          description: `Score Global: ${scores.globalScore} (${venueStatus.label})`
+          description: `Score Global: ${Math.round(scores.globalScore)} (${venueStatus.label})`
         });
       }
 
@@ -207,7 +213,7 @@ export function InspectorDashboard({ session }: InspectorDashboardProps) {
         .from('btl_puntos_venta')
         .update({
           segmento: venueStatus.label,
-          global_score: scores.globalScore,
+          global_score: Math.round(scores.globalScore),
           last_inspection_date: new Date().toISOString()
         })
         .eq('id', selectedVenue.id);

@@ -90,9 +90,9 @@ export function SecurityStatus() {
 
       {/* Security Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden">
+        <div className="fixed bottom-24 right-6 z-50 w-96 bg-surface-card border border-border-subtle rounded-xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className={`p-4 border-b border-slate-700/50 ${
+          <div className={`p-4 border-b border-border-subtle ${
             securityScore === 100
               ? 'bg-green-600/20'
               : securityScore >= 50
@@ -101,18 +101,18 @@ export function SecurityStatus() {
           }`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-white" />
-                <h3 className="text-white font-semibold">Security Status</h3>
+                <Shield className="w-5 h-5 text-theme-primary" />
+                <h3 className="text-content-main font-semibold">Security Status</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-content-muted hover:text-content-main transition-colors"
               >
                 ✕
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex-1 bg-slate-800/50 rounded-full h-2 overflow-hidden">
+              <div className="flex-1 bg-surface-card-subtle rounded-full h-2 overflow-hidden border border-border-subtle/50">
                 <div
                   className={`h-full transition-all duration-500 ${
                     securityScore === 100
@@ -124,23 +124,23 @@ export function SecurityStatus() {
                   style={{ width: `${securityScore}%` }}
                 />
               </div>
-              <span className="text-white font-bold text-sm">{securityScore}%</span>
+              <span className="text-content-main font-bold text-sm">{securityScore}%</span>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 p-4 border-b border-slate-700/50">
+          <div className="grid grid-cols-3 gap-4 p-4 border-b border-border-subtle bg-surface-card-subtle/30">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-400">{protectedCount}</div>
-              <div className="text-xs text-slate-400">Protected</div>
+              <div className="text-xs text-content-muted">Protected</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-400">{vulnerableCount}</div>
-              <div className="text-xs text-slate-400">Vulnerable</div>
+              <div className="text-xs text-content-muted">Vulnerable</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-slate-300">{totalChecks}</div>
-              <div className="text-xs text-slate-400">Total Checks</div>
+              <div className="text-2xl font-bold text-content-main">{totalChecks}</div>
+              <div className="text-xs text-content-muted">Total Checks</div>
             </div>
           </div>
 
@@ -155,7 +155,7 @@ export function SecurityStatus() {
                       ? 'bg-green-500/10 border-green-500/30'
                       : check.status === 'vulnerable'
                       ? 'bg-red-500/10 border-red-500/30'
-                      : 'bg-slate-700/30 border-slate-600/30'
+                      : 'bg-surface-card-subtle border-border-subtle'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -170,20 +170,20 @@ export function SecurityStatus() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className="text-white font-medium text-sm">{check.name}</h4>
+                        <h4 className="text-content-main font-medium text-sm">{check.name}</h4>
                         <span
                           className={`px-2 py-0.5 rounded text-xs font-medium ${
                             check.status === 'protected'
-                              ? 'bg-green-500/20 text-green-300'
+                              ? 'bg-green-500/20 text-green-400'
                               : check.status === 'vulnerable'
-                              ? 'bg-red-500/20 text-red-300'
-                              : 'bg-yellow-500/20 text-yellow-300'
+                              ? 'bg-red-500/20 text-red-400'
+                              : 'bg-yellow-500/20 text-yellow-400'
                           }`}
                         >
                           {check.status === 'protected' ? '✓' : check.status === 'vulnerable' ? '✗' : '?'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">{check.description}</p>
+                      <p className="text-xs text-content-muted mt-1">{check.description}</p>
                     </div>
                   </div>
                 </div>
@@ -192,12 +192,12 @@ export function SecurityStatus() {
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-700/50 bg-slate-800/30">
+          <div className="p-4 border-t border-border-subtle bg-surface-card-subtle">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Extension Protection</span>
+              <span className="text-content-muted">Extension Protection</span>
               <button
                 onClick={performSecurityChecks}
-                className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                className="text-theme-primary hover:underline transition-colors font-medium"
               >
                 Refresh ↻
               </button>

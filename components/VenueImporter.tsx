@@ -223,20 +223,20 @@ export function VenueImporter({ onImportComplete }: VenueImporterProps) {
   };
 
   return (
-    <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-lg bg-amber-600/20 flex items-center justify-center">
-          <FileSpreadsheet className="w-6 h-6 text-amber-400" />
+        <div className="w-12 h-12 rounded-lg bg-theme-primary/10 flex items-center justify-center">
+          <FileSpreadsheet className="w-6 h-6 text-theme-primary" />
         </div>
         <div>
-          <h2 className="text-xl text-white font-semibold">Importar Venues desde Excel</h2>
-          <p className="text-sm text-slate-400">Carga un archivo .xlsx con el listado de bares</p>
+          <h2 className="text-xl text-content-main font-semibold">Importar Venues desde Excel</h2>
+          <p className="text-sm text-content-muted">Carga un archivo .xlsx con el listado de bares</p>
         </div>
       </div>
 
       {/* File Upload */}
       <div className="mb-6">
-        <label className="block mb-2 text-sm text-slate-300">
+        <label className="block mb-2 text-sm text-content-muted">
           Seleccionar archivo Excel (.xlsx)
         </label>
         <div className="relative">
@@ -253,16 +253,16 @@ export function VenueImporter({ onImportComplete }: VenueImporterProps) {
             className={`
               flex items-center justify-center gap-3 w-full px-6 py-8 
               border-2 border-dashed rounded-lg cursor-pointer transition-all
-              ${importing ? 'opacity-50 cursor-not-allowed' : 'hover:border-amber-500/50 hover:bg-slate-800/50'}
-              ${file ? 'border-amber-500/50 bg-amber-500/10' : 'border-slate-600'}
+              ${importing ? 'opacity-50 cursor-not-allowed' : 'hover:border-theme-primary/50 hover:bg-surface-card-subtle'}
+              ${file ? 'border-theme-primary/50 bg-theme-primary/10' : 'border-border-subtle'}
             `}
           >
-            <Upload className="w-6 h-6 text-slate-400" />
+            <Upload className="w-6 h-6 text-content-muted" />
             <div className="text-center">
-              <p className="text-white font-medium">
+              <p className="text-content-main font-medium">
                 {file ? file.name : 'Haz clic para seleccionar archivo'}
               </p>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-content-muted mt-1">
                 Columnas requeridas: Nombre | Dirección | Zona | Lat | Lng
               </p>
             </div>
@@ -273,28 +273,28 @@ export function VenueImporter({ onImportComplete }: VenueImporterProps) {
       {/* Preview */}
       {preview.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm text-slate-300 font-medium mb-3">
+          <h3 className="text-sm text-content-main font-medium mb-3">
             Vista Previa de Datos Normalizados (primeras 5 filas)
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left py-2 px-3 text-slate-400 font-medium">Nombre</th>
-                  <th className="text-left py-2 px-3 text-slate-400 font-medium">Zona/Región</th>
-                  <th className="text-left py-2 px-3 text-slate-400 font-medium">Dirección</th>
-                  <th className="text-left py-2 px-3 text-slate-400 font-medium">Lat</th>
-                  <th className="text-left py-2 px-3 text-slate-400 font-medium">Lng</th>
+                <tr className="border-b border-border-subtle">
+                  <th className="text-left py-2 px-3 text-content-muted font-medium">Nombre</th>
+                  <th className="text-left py-2 px-3 text-content-muted font-medium">Zona/Región</th>
+                  <th className="text-left py-2 px-3 text-content-muted font-medium">Dirección</th>
+                  <th className="text-left py-2 px-3 text-content-muted font-medium">Lat</th>
+                  <th className="text-left py-2 px-3 text-content-muted font-medium">Lng</th>
                 </tr>
               </thead>
               <tbody>
                 {preview.map((row: any, idx) => (
-                  <tr key={idx} className="border-b border-slate-800/50">
-                    <td className="py-2 px-3 text-white">{row.nombre}</td>
-                    <td className="py-2 px-3 text-slate-300">{row.region}</td>
-                    <td className="py-2 px-3 text-slate-400 text-xs">{row.direccion}</td>
-                    <td className="py-2 px-3 text-slate-400 text-xs font-mono">{row.latitud !== null ? row.latitud : <span className="text-red-400">Invalid</span>}</td>
-                    <td className="py-2 px-3 text-slate-400 text-xs font-mono">{row.longitud !== null ? row.longitud : <span className="text-red-400">Invalid</span>}</td>
+                  <tr key={idx} className="border-b border-border-subtle/50">
+                    <td className="py-2 px-3 text-content-main">{row.nombre}</td>
+                    <td className="py-2 px-3 text-content-muted">{row.region}</td>
+                    <td className="py-2 px-3 text-content-muted text-xs">{row.direccion}</td>
+                    <td className="py-2 px-3 text-content-muted text-xs font-mono">{row.latitud !== null ? row.latitud : <span className="text-red-400">Invalid</span>}</td>
+                    <td className="py-2 px-3 text-content-muted text-xs font-mono">{row.longitud !== null ? row.longitud : <span className="text-red-400">Invalid</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -321,8 +321,8 @@ export function VenueImporter({ onImportComplete }: VenueImporterProps) {
         className={`
           w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2
           ${!file || importing || success || preview.length === 0
-            ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg shadow-green-900/20'
+            ? 'bg-surface-card-subtle text-content-muted border border-border-subtle cursor-not-allowed'
+            : 'bg-theme-primary hover:brightness-95 text-white shadow-sm font-medium'
           }
         `}
       >

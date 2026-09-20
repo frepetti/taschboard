@@ -240,12 +240,12 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-app flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <a
           href="/"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-content-muted hover:text-content-main transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Volver al Inicio</span>
@@ -253,17 +253,17 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-xl bg-theme-primary/10 border border-theme-primary/30 flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">⚙️</span>
           </div>
-          <h1 className="text-3xl text-white font-bold mb-2">
+          <h1 className="text-3xl text-content-main font-bold mb-2">
             {mode === 'login' ? 'Admin Login' : mode === 'register' ? 'Registrar Admin' : 'Recuperar Acceso'}
           </h1>
-          <p className="text-slate-400">Panel de Administración del Sistema</p>
+          <p className="text-content-muted">Panel de Administración del Sistema</p>
         </div>
 
         {/* Auth Form */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 shadow-2xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-8 shadow-2xl">
           {/* Error Message */}
           {error && (
             <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${error.includes('✅') ? 'bg-green-500/10 border border-green-500/50' : 'bg-red-500/10 border border-red-500/50'}`}>
@@ -290,20 +290,20 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
               {resetStep === 'email' ? (
                 <form onSubmit={handleSendRecoveryCode} className="space-y-4">
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Email de Administrador</label>
+                    <label className="block text-sm text-content-muted mb-2">Email de Administrador</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@empresa.com"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-purple-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Mail className="w-5 h-5" />
                     <span>{loading ? 'Enviando...' : 'Enviar Código de Recuperación'}</span>
@@ -311,33 +311,33 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
                   <button
                     type="button"
                     onClick={handleSkipToOtp}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 mt-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 mt-2"
                   >
                     ¿Ya tienes un código? Ingrésalo aquí
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyCode} className="space-y-4">
-                  <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg mb-4">
-                    <p className="text-sm text-purple-300 text-center">
+                  <div className="p-4 bg-theme-primary/10 border border-theme-primary/30 rounded-lg mb-4">
+                    <p className="text-sm text-theme-primary text-center">
                       {successMessage || <>Ingresa el código enviado a <strong>{email}</strong></>}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Código de Verificación</label>
+                    <label className="block text-sm text-content-muted mb-2">Código de Verificación</label>
                     <input
                       type="text"
                       value={otpToken}
                       onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 8))}
                       placeholder="123456"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 text-center text-2xl tracking-widest font-mono"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50 text-center text-2xl tracking-widest font-mono"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || otpToken.length < 6}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-green-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Lock className="w-5 h-5" />
                     <span>{loading ? 'Verificando...' : 'Verificar y Cambiar Password'}</span>
@@ -349,12 +349,13 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
                       setOtpToken('');
                       setError('');
                     }}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2"
                   >
                     Volver a ingresar email
                   </button>
                 </form>
               )}
+
               <button
                 type="button"
                 onClick={() => {
@@ -363,7 +364,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
                   setError('');
                   setSuccessMessage('');
                 }}
-                className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 border-t border-slate-700/50 mt-4"
+                className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 border-t border-border-subtle mt-4"
               >
                 Volver al Login
               </button>
@@ -371,19 +372,19 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
           ) : (
             <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Email de Administrador</label>
+                <label className="block text-sm text-content-muted mb-2">Email de Administrador</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@empresa.com"
                   required
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
+                <label className="block text-sm text-content-muted mb-2">Contraseña</label>
                 <input
                   type="password"
                   value={password}
@@ -391,7 +392,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
                 {mode === 'login' && (
                   <div className="flex justify-end mt-1">
@@ -401,7 +402,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
                         setMode('forgot_password');
                         setError('');
                       }}
-                      className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                      className="text-xs text-theme-primary hover:underline transition-colors"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -411,14 +412,14 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
 
               {mode === 'register' && (
                 <div>
-                  <label className="block text-sm text-slate-300 mb-2">Nombre</label>
+                  <label className="block text-sm text-content-muted mb-2">Nombre</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Nombre del Administrador"
                     required
-                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
               )}
@@ -426,7 +427,7 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-purple-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
               >
                 <LogIn className="w-5 h-5" />
                 <span>{loading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</span>
@@ -436,28 +437,12 @@ export function AdminAuth({ onAuthSuccess }: AdminAuthProps) {
 
           {/* Warning */}
           {mode !== 'forgot_password' && (
-            <div className="mt-6 pt-6 border-t border-slate-700/50">
+            <div className="mt-6 pt-6 border-t border-border-subtle">
               <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-4">
                 <p className="text-xs text-amber-400 text-center">
                   ⚠️ Acceso restringido solo para administradores del sistema
                 </p>
               </div>
-
-              {/* Toggle between login and register - DISABLED (Admin creation only via manual insert or existing admin) */}
-              {/* 
-            <div className="text-center mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(mode === 'login' ? 'register' : 'login');
-                  setError('');
-                }}
-                className="text-sm text-slate-400 hover:text-purple-400 transition-colors"
-              >
-                {mode === 'login' ? '¿Necesitas crear una cuenta de admin?' : '¿Ya tienes cuenta? Inicia sesión'}
-              </button>
-            </div>
-            */}
             </div>
           )}
         </div>

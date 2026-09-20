@@ -1,12 +1,14 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useLanguage } from '../utils/LanguageContext';
+import { parseInspectionCompetition } from '../utils/competitionUtils';
 
 interface CompetitionChartProps {
   inspections?: any[];
   isDemo?: boolean;
+  dateFilter?: string;
 }
 
-export function CompetitionChart({ inspections = [], isDemo = false }: CompetitionChartProps) {
+export function CompetitionChart({ inspections = [], isDemo = false, dateFilter }: CompetitionChartProps) {
   const { language } = useLanguage();
 
   // Demo data — only shown in demo mode
@@ -43,61 +45,28 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
   }
 
   // Real mode: compute competitor frequency from inspection data
-  // Uses the competitor_presence field or observaciones
   const competitorMap = new Map<string, number>();
-
-  for (const insp of inspections) {
-    if (insp.detalles?.competitors && Array.isArray(insp.detalles.competitors) && insp.detalles.competitors.length > 0) {
-      insp.detalles.competitors.forEach((c: any) => {
-        const comp = c.name;
-        if (comp && typeof comp === 'string' && comp.trim() && comp.trim() !== 'Ninguno' && comp.trim() !== 'N/A') {
-          const key = comp.trim();
-          competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
-        }
-      });
-    } else {
-      // Try competitor_presence field (from DEMO_DATA structure) or new JSONB structure
-      let comp = insp.competitor_presence || insp.competidor_principal || insp.main_competitor;
-
-      // Check in detalles (new structure)
-      if (!comp && insp.detalles?.mainCompetitor) {
-        comp = insp.detalles.mainCompetitor;
-      }
-
-      if (comp && typeof comp === 'string' && comp.trim() && comp !== 'Ninguno' && comp !== 'N/A') {
-        const key = comp.trim();
-        competitorMap.set(key, (competitorMap.get(key) || 0) + 1);
-      }
-    }
-  }
-
-  // Also aggregate by competitor visibility level if no named competitors
   const visibilityMap = { Alta: 0, Media: 0, Baja: 0 };
+
   for (const insp of inspections) {
-    if (insp.detalles?.competitors && Array.isArray(insp.detalles.competitors) && insp.detalles.competitors.length > 0) {
-      insp.detalles.competitors.forEach((c: any) => {
-        const vis = c.visibility;
-        if (vis) {
-          const v = vis.toLowerCase();
-          if (v === 'alta' || v === 'high') visibilityMap.Alta++;
-          else if (v === 'media' || v === 'medium') visibilityMap.Media++;
-          else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
+    const compData = parseInspectionCompetition(insp);
+
+    if (compData.competitors && compData.competitors.length > 0) {
+      compData.competitors.forEach((c) => {
+        // Conteo condicionado estrictamente a presencia física afirmativa
+        if (c.name && c.name !== 'Ninguno' && c.name !== 'N/A' && c.present === true) {
+          competitorMap.set(c.name, (competitorMap.get(c.name) || 0) + 1);
+
+          if (c.visibility === 'high') visibilityMap.Alta++;
+          else if (c.visibility === 'medium') visibilityMap.Media++;
+          else if (c.visibility === 'low') visibilityMap.Baja++;
         }
       });
-    } else {
-      let vis = insp.presencia_competencia || insp.competitor_visibility;
-
-      // Check in detalles
-      if (!vis && insp.detalles?.competitorVisibility) {
-        vis = insp.detalles.competitorVisibility;
-      }
-
-      if (vis) {
-        const v = vis.toLowerCase();
-        if (v === 'alta' || v === 'high') visibilityMap.Alta++;
-        else if (v === 'media' || v === 'medium') visibilityMap.Media++;
-        else if (v === 'baja' || v === 'low') visibilityMap.Baja++;
-      }
+    } else if (compData.mainCompetitor && compData.mainCompetitor !== 'Ninguno' && compData.mainCompetitor !== 'N/A') {
+      competitorMap.set(compData.mainCompetitor, (competitorMap.get(compData.mainCompetitor) || 0) + 1);
+      if (compData.competitorVisibility === 'high') visibilityMap.Alta++;
+      else if (compData.competitorVisibility === 'medium') visibilityMap.Media++;
+      else if (compData.competitorVisibility === 'low') visibilityMap.Baja++;
     }
   }
 
@@ -145,6 +114,28 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
     ? (language === 'es' ? 'Frecuencia de aparición en inspecciones' : 'Frequency in inspections')
     : (language === 'es' ? 'Nivel de visibilidad de competidores' : 'Competitor visibility level');
 
+  const getPeriodLabel = () => {
+    if (language === 'es') {
+      if (dateFilter === '1M') return '(último mes)';
+      if (dateFilter === '3M') return '(últimos 3 meses)';
+      if (dateFilter === '6M') return '(últimos 6 meses)';
+      if (dateFilter === '1Y') return '(último año)';
+      if (dateFilter === 'YTD') return '(año a la fecha)';
+      if (dateFilter === 'all') return '(período completo)';
+      return '';
+    } else {
+      if (dateFilter === '1M') return '(last month)';
+      if (dateFilter === '3M') return '(last 3 months)';
+      if (dateFilter === '6M') return '(last 6 months)';
+      if (dateFilter === '1Y') return '(last year)';
+      if (dateFilter === 'YTD') return '(year to date)';
+      if (dateFilter === 'all') return '(full period)';
+      return '';
+    }
+  };
+
+  const periodLabel = getPeriodLabel();
+
   return (
     <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
       <h3 className="text-lg text-content-main font-semibold mb-1">{title}</h3>
@@ -182,8 +173,8 @@ export function CompetitionChart({ inspections = [], isDemo = false }: Competiti
 
       <div className="mt-4 pt-4 border-t border-border-subtle text-sm text-content-muted">
         {language === 'es'
-          ? `Basado en ${inspections.length} inspecciones registradas`
-          : `Based on ${inspections.length} recorded inspections`}
+          ? `Basado en ${inspections.length} inspecciones registradas ${periodLabel}`.trim()
+          : `Based on ${inspections.length} recorded inspections ${periodLabel}`.trim()}
       </div>
     </div>
   );

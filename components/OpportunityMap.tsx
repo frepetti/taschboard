@@ -265,7 +265,7 @@ export function OpportunityMap({
       if (hasProductFilter) {
         if (inspection) {
           // Color based on compliance score of the inspection
-          const complianceScore = inspection.compliance_score ?? 0;
+          const complianceScore = Math.round(inspection.compliance_score ?? 0);
           const status = calculateVenueStatus(complianceScore);
           type = status.status as any;
           score = complianceScore;
@@ -278,10 +278,10 @@ export function OpportunityMap({
         // No product filter active: use segment-based or fallback logic
         type = getVenueType(venue, index);
         if (venue.global_score !== undefined && venue.global_score !== null) {
-          const status = calculateVenueStatus(venue.global_score);
+          const status = calculateVenueStatus(Math.round(venue.global_score));
           type = status.status as any;
         }
-        score = venue.global_score || getVenueScore(venue.id);
+        score = Math.round(venue.global_score || getVenueScore(venue.id));
       }
 
       return {
@@ -376,7 +376,7 @@ export function OpportunityMap({
           <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider border ${typeColor}">
             ${typeLabel}
           </span>
-          ${loc.type !== 'none' ? `<span class="text-xs font-bold text-amber-400">★ ${loc.score}</span>` : ''}
+          ${loc.type !== 'none' ? `<span class="text-xs font-bold text-amber-400">★ ${Math.round(loc.score)}</span>` : ''}
         </div>
         <div class="space-y-1">
           <p class="text-slate-300 text-xs m-0">
@@ -390,7 +390,7 @@ export function OpportunityMap({
           </p>
         </div>
         <button 
-          class="w-full mt-3 px-3 py-2 bg-slate-700 text-white text-xs font-semibold rounded border border-slate-600 transition-colors flex items-center justify-center gap-2 ${btnDisabled}"
+          class="w-full mt-3 px-3 py-2 bg-theme-primary hover:brightness-95 text-white text-xs font-semibold rounded border border-theme-primary/30 transition-colors flex items-center justify-center gap-2 ${btnDisabled}"
           data-venue-id="${validId}"
           ${!validId ? 'disabled' : ''}
         >
@@ -586,15 +586,15 @@ export function OpportunityMap({
       </div>
 
       {/* Map Container */}
-      <div className="relative flex-1 rounded-xl overflow-hidden border border-slate-700/50 shadow-inner bg-slate-950">
+      <div className="relative flex-1 rounded-xl overflow-hidden border border-border-subtle shadow-inner bg-surface-card">
         <div
           ref={mapContainerRef}
           className="w-full h-full z-0"
         />
 
         {/* Overlay Gradients for "Glass" effect on edges */}
-        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-slate-900/50 to-transparent pointer-events-none z-[400]" />
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-900/50 to-transparent pointer-events-none z-[400]" />
+        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-surface-app/40 to-transparent pointer-events-none z-[400]" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-surface-app/40 to-transparent pointer-events-none z-[400]" />
       </div>
 
       {/* Legend */}

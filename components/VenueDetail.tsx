@@ -144,7 +144,7 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
         tipo: venueData.tipo,
         contacto_telefono: venueData.contacto_telefono,
         // Prioritize the score from the actual inspection to ensure it matches the history/map
-        global_score: (inspection as any)?.compliance_score ?? venueData.global_score ?? 0,
+        global_score: Math.round((inspection as any)?.compliance_score ?? venueData.global_score ?? 0),
         channel: venueData.segmento || 'Estándar', // Mapping 'segmento' as channel proxy
         brandPresence: inspectionError ? 0 : (inspection?.tiene_producto ? 100 : 0) // Simple proxy
       };
@@ -303,23 +303,38 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
               <div className="flex-1 lg:flex-initial flex flex-col items-start lg:items-end">
                 <div className="text-xs sm:text-sm text-content-muted mb-1 sm:mb-2">{t('venue_detail.global_score')}</div>
                 <Tooltip text="Basado en última inspección" position="left">
-                  {isHeineken ? (
-                    <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 my-1 select-none">
-                      <svg viewBox="0 0 100 100" className="w-full h-full" fill="#d92518">
-                        <polygon points="50,0 61.8,36.3 100,36.3 69.1,58.8 80.9,95.1 50,72.5 19.1,95.1 30.9,58.8 0,36.3 38.2,36.3" />
-                      </svg>
-                      <span className="absolute inset-0 flex items-center justify-center text-white font-black text-2xl sm:text-3xl tracking-tight select-none pt-1">
-                        {venue.global_score}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className={`text-4xl sm:text-6xl font-bold ${venue.global_score >= 90 ? 'text-green-400' :
-                      venue.global_score >= 70 ? 'text-amber-400' : 'text-red-400'
-                      }`}
-                    >
-                      {venue.global_score}
-                    </div>
-                  )}
+                  {(() => {
+                    const roundedScore = Math.round(venue.global_score);
+                    return isHeineken ? (
+                      <div className="relative inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 my-1 select-none">
+                        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm" aria-label={`Puntaje ${roundedScore}`}>
+                          <polygon
+                            points="50,0 61.8,36.3 100,36.3 69.1,58.8 80.9,95.1 50,72.5 19.1,95.1 30.9,58.8 0,36.3 38.2,36.3"
+                            fill="#d92518"
+                          />
+                          <text
+                            x="50"
+                            y="55"
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            fill="#ffffff"
+                            fontWeight="900"
+                            fontSize={roundedScore >= 100 ? "21" : roundedScore >= 10 ? "25" : "28"}
+                            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                          >
+                            {roundedScore}
+                          </text>
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className={`text-4xl sm:text-6xl font-bold ${roundedScore >= 90 ? 'text-green-400' :
+                        roundedScore >= 70 ? 'text-amber-400' : 'text-red-400'
+                        }`}
+                      >
+                        {roundedScore}
+                      </div>
+                    );
+                  })()}
                 </Tooltip>
                 <div className="text-xs sm:text-sm text-content-muted">{t('venue_detail.out_of_100')}</div>
               </div>
@@ -481,7 +496,7 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
             type="button"
             onClick={() => setSelectedImage(null)}
             aria-label="Cerrar vista previa"
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition-colors shadow-lg focus:outline-none"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-50 p-2 rounded-full bg-surface-card hover:bg-surface-card-subtle text-content-main border border-border-subtle transition-colors shadow-lg focus:outline-none"
           >
             <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>

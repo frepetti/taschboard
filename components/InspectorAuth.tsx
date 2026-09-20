@@ -246,12 +246,12 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-app flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <a
           href="/"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-content-muted hover:text-content-main transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Back to Home</span>
@@ -259,15 +259,15 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-xl bg-theme-primary/10 border border-theme-primary/30 flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">📋</span>
           </div>
-          <h1 className="text-3xl text-white font-bold mb-2">Inspector Login</h1>
-          <p className="text-slate-400">Acceso para empleados de campo</p>
+          <h1 className="text-3xl text-content-main font-bold mb-2">Inspector Login</h1>
+          <p className="text-content-muted">Acceso para empleados de campo</p>
         </div>
 
         {/* Auth Form */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 shadow-2xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-8 shadow-2xl">
           {/* Mode Tabs - DISABLED (Sign Up removed from UI) */}
           {/* 
           <div className="flex gap-2 mb-6">
@@ -279,8 +279,8 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
               }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
                 mode === 'login'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                  ? 'bg-theme-primary text-white'
+                  : 'bg-surface-card-subtle text-content-muted hover:bg-surface-card'
               }`}
             >
               <LogIn className="w-4 h-4" />
@@ -294,8 +294,8 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
               }}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
                 mode === 'signup'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
+                  ? 'bg-theme-primary text-white'
+                  : 'bg-surface-card-subtle text-content-muted hover:bg-surface-card'
               }`}
             >
               <UserPlus className="w-4 h-4" />
@@ -327,23 +327,28 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
           {/* Form */}
           {mode === 'forgot_password' ? (
             <div className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-content-main">Recuperar Acceso</h3>
+                <p className="text-xs text-content-muted">Ingresa tu email para recibir un código de recuperación</p>
+              </div>
+
               {resetStep === 'email' ? (
                 <form onSubmit={handleSendRecoveryCode} className="space-y-4">
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
+                    <label className="block text-sm text-content-muted mb-2">Email Corporativo</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@empresa.com"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Mail className="w-5 h-5" />
                     <span>{loading ? 'Enviando...' : 'Enviar Código de Acceso'}</span>
@@ -351,33 +356,33 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
                   <button
                     type="button"
                     onClick={handleSkipToOtp}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 mt-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 mt-2"
                   >
                     ¿Ya tienes un código? Ingrésalo aquí
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyCode} className="space-y-4">
-                  <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
-                    <p className="text-sm text-blue-300 text-center">
+                  <div className="p-4 bg-theme-primary/10 border border-theme-primary/30 rounded-lg mb-4">
+                    <p className="text-sm text-theme-primary text-center">
                       {successMessage || <>Ingresa el código enviado a <strong>{email}</strong></>}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Código de Verificación</label>
+                    <label className="block text-sm text-content-muted mb-2">Código de Verificación</label>
                     <input
                       type="text"
                       value={otpToken}
                       onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 8))}
                       placeholder="123456"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-center text-2xl tracking-widest font-mono"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50 text-center text-2xl tracking-widest font-mono"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || otpToken.length < 6}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-green-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Lock className="w-5 h-5" />
                     <span>{loading ? 'Validando...' : 'Verificar y Cambiar Password'}</span>
@@ -389,7 +394,7 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
                       setOtpToken('');
                       setError('');
                     }}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2"
                   >
                     Volver a ingresar email
                   </button>
@@ -404,7 +409,7 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
                   setError('');
                   setSuccessMessage('');
                 }}
-                className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 border-t border-slate-700/50 mt-4"
+                className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 border-t border-border-subtle mt-4"
               >
                 Volver al Login
               </button>
@@ -413,32 +418,32 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
             <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-4">
               {mode === 'signup' && (
                 <div>
-                  <label className="block text-sm text-slate-300 mb-2">Nombre Completo</label>
+                  <label className="block text-sm text-content-muted mb-2">Nombre Completo</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Tu nombre"
                     required={mode === 'signup'}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Email Corporativo</label>
+                <label className="block text-sm text-content-muted mb-2">Email Corporativo</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@empresa.com"
                   required
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
+                <label className="block text-sm text-content-muted mb-2">Contraseña</label>
                 <input
                   type="password"
                   value={password}
@@ -446,10 +451,10 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
                 {mode === 'signup' && (
-                  <p className="text-xs text-slate-500 mt-1">Mínimo 6 caracteres</p>
+                  <p className="text-xs text-content-muted mt-1">Mínimo 6 caracteres</p>
                 )}
                 {mode === 'login' && (
                   <div className="flex justify-end mt-1">
@@ -460,7 +465,7 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
                         setError('');
                         setSuccessMessage('');
                       }}
-                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                      className="text-xs text-theme-primary hover:underline transition-colors"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -471,7 +476,7 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none"
+                className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm"
               >
                 {loading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
               </button>
@@ -480,8 +485,8 @@ export function InspectorAuth({ onAuthSuccess }: InspectorAuthProps) {
 
           {/* Footer - HIDDEN */}
           {/*
-          <div className="mt-6 pt-6 border-t border-slate-700/50">
-            <p className="text-xs text-slate-500 text-center">
+          <div className="mt-6 pt-6 border-t border-border-subtle">
+            <p className="text-xs text-content-muted text-center">
               {mode === 'login' 
                 ? '¿Nuevo inspector? Cambia a Sign Up' 
                 : '¿Ya tienes cuenta? Cambia a Login'}

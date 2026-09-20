@@ -179,21 +179,21 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
         onClick={() => setSelectedActivation(null)}
       >
         <div
-          className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700/80 rounded-2xl w-full max-w-xl shadow-2xl shadow-black/60 overflow-hidden"
+          className="bg-surface-card border border-border-subtle rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden text-content-main"
           onClick={e => e.stopPropagation()}
         >
           {/* ── HEADER ── */}
-          <div className={`p-5 border-b border-slate-800 flex items-start justify-between gap-4 ${headerBg}`}>
+          <div className={`p-5 border-b border-border-subtle flex items-start justify-between gap-4 ${headerBg}`}>
             <div className="flex items-start gap-3 flex-1 min-w-0">
               <div className={`p-2.5 rounded-xl flex-shrink-0 ${iconBg}`}>
                 <Zap className={`w-5 h-5 ${iconColor}`} />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-white font-bold text-lg leading-tight">
+                <h2 className="text-content-main font-bold text-lg leading-tight">
                   {displayTitle}
                 </h2>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="text-slate-400 text-sm">{av.venue}</span>
+                  <span className="text-content-muted text-sm">{av.venue}</span>
                   {av.prioridad && getPrioridadStyles(av.prioridad) && (
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${getPrioridadStyles(av.prioridad)}`}>
                       <AlertTriangle className="w-3 h-3" />
@@ -205,7 +205,7 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
             </div>
             <button
               onClick={() => setSelectedActivation(null)}
-              className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors flex-shrink-0"
+              className="p-2 hover:bg-surface-card-subtle rounded-lg text-content-muted hover:text-content-main transition-colors flex-shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
@@ -217,8 +217,8 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
             {/* Row 1: Estado + Tipo */}
             <div className="grid grid-cols-2 gap-3">
               {/* Estado */}
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1.5">Estado</p>
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
+                <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1.5">Estado</p>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(av.status)}
                   <span className={`text-sm font-semibold ${statusTextColor}`}>
@@ -227,11 +227,11 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                 </div>
               </div>
               {/* Tipo */}
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1.5">Tipo</p>
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
+                <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1.5">Tipo</p>
                 <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-amber-400" />
-                  <p className="text-sm font-semibold text-white">
+                  <Tag className="w-4 h-4 text-theme-primary" />
+                  <p className="text-sm font-semibold text-content-main">
                     {av.tipo_activacion || av.type || '—'}
                   </p>
                 </div>
@@ -240,27 +240,27 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
             {/* Row 2: Fecha Programada + Impacto */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1.5">Fecha Programada</p>
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
+                <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1.5">Fecha Programada</p>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm font-semibold text-white">{formatDate(av.date)}</p>
+                  <Calendar className="w-4 h-4 text-content-muted" />
+                  <p className="text-sm font-semibold text-content-main">{formatDate(av.date)}</p>
                 </div>
               </div>
               {av.impact && av.impact !== 'N/A' && av.impact !== 'TBD' ? (
-                <div className="bg-green-900/20 rounded-xl p-3.5 border border-green-700/30">
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1.5">Impacto</p>
+                <div className="bg-green-600/10 rounded-xl p-3.5 border border-green-500/30">
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1.5">Impacto</p>
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-green-400" />
-                    <p className="text-lg font-bold text-green-400">{av.impact}</p>
+                    <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
+                    <p className="text-lg font-bold text-green-500 dark:text-green-400">{av.impact}</p>
                   </div>
                 </div>
               ) : av.fecha_entrega_requerida ? (
-                <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1.5">Entrega Requerida</p>
+                <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1.5">Entrega Requerida</p>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    <p className="text-sm font-semibold text-white">{formatDate(av.fecha_entrega_requerida)}</p>
+                    <Clock className="w-4 h-4 text-content-muted" />
+                    <p className="text-sm font-semibold text-content-main">{formatDate(av.fecha_entrega_requerida)}</p>
                   </div>
                 </div>
               ) : null}
@@ -268,28 +268,28 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
             {/* Material + Cantidad */}
             {(av.tipo_material || av.cantidad_solicitada || av.marca_producto) && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
                 <div className="flex items-center gap-2 mb-3">
-                  <Layers className="w-4 h-4 text-amber-400" />
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Material y Logística</p>
+                  <Layers className="w-4 h-4 text-theme-primary" />
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider">Material y Logística</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {av.tipo_material && (
                     <div>
-                      <p className="text-xs text-slate-500 mb-0.5">Tipo de material</p>
-                      <p className="text-sm text-white font-medium">{av.tipo_material}</p>
+                      <p className="text-xs text-content-muted mb-0.5">Tipo de material</p>
+                      <p className="text-sm text-content-main font-medium">{av.tipo_material}</p>
                     </div>
                   )}
                   {av.cantidad_solicitada && (
                     <div>
-                      <p className="text-xs text-slate-500 mb-0.5">Cantidad solicitada</p>
-                      <p className="text-sm text-white font-medium">{av.cantidad_solicitada} unidades</p>
+                      <p className="text-xs text-content-muted mb-0.5">Cantidad solicitada</p>
+                      <p className="text-sm text-content-main font-medium">{av.cantidad_solicitada} unidades</p>
                     </div>
                   )}
                   {av.marca_producto && (
                     <div className="col-span-2">
-                      <p className="text-xs text-slate-500 mb-0.5">Marca del producto</p>
-                      <p className="text-sm text-white font-medium">{av.marca_producto}</p>
+                      <p className="text-xs text-content-muted mb-0.5">Marca del producto</p>
+                      <p className="text-sm text-content-main font-medium">{av.marca_producto}</p>
                     </div>
                   )}
                 </div>
@@ -298,33 +298,33 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
             {/* Productos involucrados */}
             {av.productos_involucrados && av.productos_involucrados.length > 0 && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-amber-700/20">
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
                 <div className="flex items-center gap-2 mb-3">
-                  <Package className="w-4 h-4 text-amber-400" />
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Productos Involucrados</p>
+                  <Package className="w-4 h-4 text-theme-primary" />
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider">Productos Involucrados</p>
                 </div>
                 {loadingProducts ? (
                   <div className="flex items-center gap-2 py-2">
-                    <div className="w-3 h-3 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
-                    <span className="text-xs text-slate-400">Cargando productos...</span>
+                    <div className="w-3 h-3 rounded-full border-2 border-theme-primary border-t-transparent animate-spin" />
+                    <span className="text-xs text-content-muted">Cargando productos...</span>
                   </div>
                 ) : resolvedProducts.length > 0 ? (
                   <div className="space-y-2">
                     {resolvedProducts.map(p => (
                       <div
                         key={p.id}
-                        className="flex items-center gap-3 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/30"
+                        className="flex items-center gap-3 bg-surface-card px-3 py-2 rounded-lg border border-border-subtle"
                       >
-                        <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-theme-primary flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-semibold text-white leading-tight">{p.nombre}</p>
-                          <p className="text-xs text-slate-400">{p.marca}</p>
+                          <p className="text-sm font-semibold text-content-main leading-tight">{p.nombre}</p>
+                          <p className="text-xs text-content-muted">{p.marca}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 italic">
+                  <p className="text-xs text-content-muted italic">
                     {av.productos_involucrados.length} producto(s) referenciado(s) — sin detalle disponible.
                   </p>
                 )}
@@ -333,34 +333,34 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
             {/* Ubicación */}
             {av.ubicacion && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40 flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-content-muted mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Ubicación / Venue</p>
-                  <p className="text-sm text-white">{av.ubicacion}</p>
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1">Ubicación / Venue</p>
+                  <p className="text-sm text-content-main">{av.ubicacion}</p>
                 </div>
               </div>
             )}
 
             {/* Presupuesto */}
             {av.presupuesto && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40 flex items-start gap-3">
-                <DollarSign className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle flex items-start gap-3">
+                <DollarSign className="w-4 h-4 text-content-muted mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Presupuesto Asignado</p>
-                  <p className="text-sm text-white font-semibold">{av.presupuesto}</p>
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider mb-1">Presupuesto Asignado</p>
+                  <p className="text-sm text-content-main font-semibold">{av.presupuesto}</p>
                 </div>
               </div>
             )}
 
             {/* Descripción */}
             {av.descripcion && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileText className="w-4 h-4 text-slate-400" />
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Descripción</p>
+                  <FileText className="w-4 h-4 text-content-muted" />
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider">Descripción</p>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-content-main leading-relaxed whitespace-pre-line">
                   {av.descripcion}
                 </p>
               </div>
@@ -368,12 +368,12 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
             {/* Notas adicionales */}
             {av.notas && av.notas !== av.descripcion && (
-              <div className="bg-slate-800/50 rounded-xl p-3.5 border border-slate-700/40">
+              <div className="bg-surface-card-subtle rounded-xl p-3.5 border border-border-subtle">
                 <div className="flex items-center gap-2 mb-2">
-                  <Star className="w-4 h-4 text-amber-400" />
-                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Notas Adicionales</p>
+                  <Star className="w-4 h-4 text-theme-primary" />
+                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider">Notas Adicionales</p>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-content-main leading-relaxed whitespace-pre-line">
                   {av.notas}
                 </p>
               </div>
@@ -382,10 +382,10 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
             {/* Fallback: sin contenido enriquecido */}
             {!hasRichContent && (
               <div className="flex flex-col items-center justify-center py-6 gap-2">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-slate-500" />
+                <div className="w-10 h-10 rounded-full bg-surface-card-subtle border border-border-subtle flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-content-muted" />
                 </div>
-                <p className="text-slate-500 text-sm italic text-center">
+                <p className="text-content-muted text-sm italic text-center">
                   Sin información adicional registrada para esta activación.
                 </p>
               </div>
@@ -393,10 +393,10 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
           </div>
 
           {/* ── FOOTER ── */}
-          <div className="px-5 pb-5 pt-3 border-t border-slate-800">
+          <div className="px-5 pb-5 pt-3 border-t border-border-subtle bg-surface-card-subtle/30">
             <button
               onClick={() => setSelectedActivation(null)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors text-sm font-medium border border-slate-700/50 hover:border-slate-600"
+              className="w-full py-2.5 bg-surface-card-subtle text-content-muted hover:text-content-main border border-border-subtle hover:bg-surface-card rounded-xl transition-colors text-sm font-medium shadow-sm"
             >
               Cerrar
             </button>
@@ -408,19 +408,19 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
   return (
     <>
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl h-full flex flex-col">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-sm h-full flex flex-col">
         <div className="flex items-center gap-2 mb-6">
-          <Calendar className="w-5 h-5 text-amber-400" />
-          <h3 className="text-lg text-white font-semibold">Calendario de Activaciones</h3>
+          <Calendar className="w-5 h-5 text-theme-primary" />
+          <h3 className="text-lg text-content-main font-semibold">Calendario de Activaciones</h3>
         </div>
 
         <div className="relative flex-1 min-h-[400px]">
           {/* Timeline line */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-700/50" />
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border-subtle" />
 
           <div className="space-y-4">
             {displayActivations.length === 0 ? (
-              <div className="pl-14 py-8 text-slate-400 text-sm">
+              <div className="pl-14 py-8 text-content-muted text-sm">
                 No hay activaciones registradas para este período.
               </div>
             ) : (
@@ -434,25 +434,25 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                   <div className={`absolute left-5 w-3 h-3 rounded-full border-2 transition-transform group-hover:scale-125 ${
                     activation.status === 'success' ? 'bg-green-500 border-green-400' :
                     activation.status === 'active' ? 'bg-amber-500 border-amber-400 animate-pulse' :
-                    'bg-slate-600 border-slate-500'
+                    'bg-slate-500 border-border-subtle'
                   }`} />
 
-                  <div className="flex-1 bg-slate-800/30 rounded-lg border border-slate-700/30 p-4 hover:border-amber-500/40 hover:bg-slate-800/50 transition-all duration-200 group-hover:shadow-lg group-hover:shadow-amber-500/5">
+                  <div className="flex-1 bg-surface-card-subtle rounded-lg border border-border-subtle p-4 hover:border-theme-primary/40 hover:bg-surface-card transition-all duration-200 group-hover:shadow-lg group-hover:shadow-theme-primary/5">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="text-white font-semibold">
+                          <h4 className="text-content-main font-semibold">
                             {activation.asunto || activation.venue}
                           </h4>
                           <span className={`px-2 py-1 rounded text-xs font-medium border ${getStatusStyles(activation.status)}`}>
                             {activation.tipo_activacion || activation.type}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+                        <div className="flex items-center gap-2 text-xs text-content-muted mb-1">
                           <MapPin className="w-3 h-3" />
                           <span>{activation.venue}</span>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-slate-400">
+                        <div className="flex items-center gap-4 text-sm text-content-muted">
                           <span>{formatDate(activation.date)}</span>
                           {activation.impact && activation.impact !== 'N/A' && (
                             <>
@@ -468,7 +468,7 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                         </div>
                       </div>
                       {/* Click hint */}
-                      <div className="flex items-center gap-1 text-xs text-slate-600 group-hover:text-amber-500/60 transition-colors mt-1">
+                      <div className="flex items-center gap-1 text-xs text-content-muted group-hover:text-theme-primary transition-colors mt-1">
                         <span>Ver</span>
                         <ChevronRight className="w-3 h-3" />
                       </div>
@@ -480,10 +480,10 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-700/50">
+        <div className="mt-6 pt-4 border-t border-border-subtle">
           <button
             onClick={() => setShowFullCalendar(true)}
-            className="w-full text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium flex items-center justify-center gap-2"
+            className="w-full text-sm text-theme-primary hover:underline transition-colors font-medium flex items-center justify-center gap-2"
           >
             Ver Calendario Completo →
           </button>
@@ -499,30 +499,30 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
           FULL CALENDAR MODAL
           ═══════════════════════════════════════════════ */}
       {showFullCalendar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 rounded-xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-surface-card border border-border-subtle rounded-xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl">
 
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-800">
+            <div className="flex items-center justify-between p-6 border-b border-border-subtle">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-500/10 rounded-lg">
-                  <Calendar className="w-6 h-6 text-amber-500" />
+                <div className="p-2 bg-theme-primary/10 rounded-lg">
+                  <Calendar className="w-6 h-6 text-theme-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Calendario de Activaciones</h2>
-                  <p className="text-slate-400 text-sm">Historial completo y próximos eventos</p>
+                  <h2 className="text-xl font-bold text-content-main">Calendario de Activaciones</h2>
+                  <p className="text-content-muted text-sm">Historial completo y próximos eventos</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowFullCalendar(false)}
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
+                className="p-2 hover:bg-surface-card-subtle rounded-lg text-content-muted hover:text-content-main transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Filters */}
-            <div className="p-4 border-b border-slate-800 bg-slate-900/50 flex gap-2 overflow-x-auto">
+            <div className="p-4 border-b border-border-subtle bg-surface-card-subtle/50 flex gap-2 overflow-x-auto">
               {[
                 { key: 'all', label: 'Todos' },
                 { key: 'active', label: 'En Progreso' },
@@ -534,14 +534,8 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                   onClick={() => setFilterType(key)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     filterType === key
-                      ? key === 'active'
-                        ? 'bg-amber-900/50 text-amber-400 border border-amber-500/30'
-                        : key === 'scheduled'
-                          ? 'bg-blue-900/50 text-blue-400 border border-blue-500/30'
-                          : key === 'success'
-                            ? 'bg-green-900/50 text-green-400 border border-green-500/30'
-                            : 'bg-slate-700 text-white'
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-theme-primary text-white shadow-sm'
+                      : 'bg-surface-card-subtle text-content-muted border border-border-subtle hover:bg-surface-card hover:text-content-main'
                   }`}
                 >
                   {label}
@@ -552,16 +546,16 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
             {/* Scrollable List */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="relative">
-                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-800" />
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border-subtle" />
 
                 <div className="space-y-6">
                   {filteredActivations.length === 0 ? (
                     <div className="text-center py-12">
-                      <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Filter className="w-8 h-8 text-slate-500" />
+                      <div className="w-16 h-16 bg-surface-card-subtle border border-border-subtle rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Filter className="w-8 h-8 text-content-muted" />
                       </div>
-                      <h3 className="text-lg font-medium text-white mb-1">No se encontraron activaciones</h3>
-                      <p className="text-slate-400">Intenta cambiar los filtros seleccionados</p>
+                      <h3 className="text-lg font-medium text-content-main mb-1">No se encontraron activaciones</h3>
+                      <p className="text-content-muted">Intenta cambiar los filtros seleccionados</p>
                     </div>
                   ) : (
                     filteredActivations.map((activation) => (
@@ -574,40 +568,40 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                         <div className={`absolute left-5 mt-1.5 w-3 h-3 rounded-full border-2 z-10 transition-transform group-hover:scale-125 ${
                           activation.status === 'success' ? 'bg-green-500 border-green-400' :
                           activation.status === 'active' ? 'bg-amber-500 border-amber-400 animate-pulse' :
-                          'bg-slate-600 border-slate-500'
+                          'bg-slate-500 border-border-subtle'
                         }`} />
 
-                        <div className="flex-1 bg-slate-800/40 rounded-xl border border-slate-700/50 p-5 hover:border-amber-500/30 hover:bg-slate-800/60 transition-all duration-300">
+                        <div className="flex-1 bg-surface-card-subtle rounded-xl border border-border-subtle p-5 hover:border-theme-primary/30 hover:bg-surface-card transition-all duration-300">
                           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                <h4 className="text-lg text-white font-bold">
+                                <h4 className="text-lg text-content-main font-bold">
                                   {activation.asunto || activation.venue}
                                 </h4>
                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusStyles(activation.status)}`}>
                                   {getStatusLabel(activation.status)}
                                 </span>
                                 {activation.tipo_activacion && (
-                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-slate-700/40 text-slate-300 border-slate-600/40">
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-surface-card text-content-muted border-border-subtle">
                                     {activation.tipo_activacion}
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 text-slate-400 text-sm mb-2">
+                              <div className="flex items-center gap-2 text-content-muted text-sm mb-2">
                                 <MapPin className="w-3.5 h-3.5" />
                                 <span>{activation.venue}</span>
                               </div>
-                              <div className="flex items-center gap-2 text-slate-400 text-sm mb-2">
+                              <div className="flex items-center gap-2 text-content-muted text-sm mb-2">
                                 <Calendar className="w-3.5 h-3.5" />
                                 <span>{formatDate(activation.date)}</span>
                               </div>
                               {activation.descripcion && (
-                                <p className="text-sm text-slate-400 line-clamp-2 mt-1">
+                                <p className="text-sm text-content-muted line-clamp-2 mt-1">
                                   {activation.descripcion}
                                 </p>
                               )}
                               {activation.tipo_material && (
-                                <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                                <div className="flex items-center gap-2 mt-2 text-xs text-content-muted">
                                   <Layers className="w-3 h-3" />
                                   <span>{activation.tipo_material}{activation.cantidad_solicitada ? ` · ${activation.cantidad_solicitada} unid.` : ''}</span>
                                 </div>
@@ -616,13 +610,13 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
 
                             {/* Impact Section */}
                             {activation.impact && activation.impact !== 'N/A' && activation.impact !== 'TBD' && (
-                              <div className="flex items-center gap-3 bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700/50 self-start">
-                                <div className={`p-2 rounded-lg ${activation.status === 'success' ? 'bg-green-500/10' : 'bg-slate-700/50'}`}>
-                                  <TrendingUp className={`w-5 h-5 ${activation.status === 'success' ? 'text-green-400' : 'text-slate-400'}`} />
+                              <div className="flex items-center gap-3 bg-surface-card px-4 py-2 rounded-lg border border-border-subtle self-start">
+                                <div className={`p-2 rounded-lg ${activation.status === 'success' ? 'bg-green-500/10' : 'bg-surface-card-subtle'}`}>
+                                  <TrendingUp className={`w-5 h-5 ${activation.status === 'success' ? 'text-green-400' : 'text-content-muted'}`} />
                                 </div>
                                 <div>
-                                  <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Impacto</p>
-                                  <p className={`text-lg font-bold ${activation.status === 'success' ? 'text-green-400' : 'text-slate-300'}`}>
+                                  <p className="text-xs text-content-muted uppercase font-bold tracking-wider">Impacto</p>
+                                  <p className={`text-lg font-bold ${activation.status === 'success' ? 'text-green-400' : 'text-content-main'}`}>
                                     {activation.impact}
                                   </p>
                                 </div>
@@ -631,7 +625,7 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
                           </div>
 
                           {/* Ver detalles hint */}
-                          <div className="flex items-center gap-1 text-xs text-slate-600 group-hover:text-amber-500/60 transition-colors mt-3 justify-end">
+                          <div className="flex items-center gap-1 text-xs text-content-muted group-hover:text-theme-primary transition-colors mt-3 justify-end">
                             <span>Ver detalles</span>
                             <ChevronRight className="w-3 h-3" />
                           </div>
@@ -644,10 +638,10 @@ export function ActivationTimeline({ activations = [] }: ActivationTimelineProps
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end">
+            <div className="p-4 border-t border-border-subtle bg-surface-card-subtle/50 flex justify-end">
               <button
                 onClick={() => setShowFullCalendar(false)}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors font-medium"
+                className="px-6 py-2 bg-surface-card-subtle hover:bg-surface-card text-content-main border border-border-subtle rounded-lg transition-colors font-medium"
               >
                 Cerrar
               </button>

@@ -143,19 +143,19 @@ export function ProductImporter({ onImportComplete }: ProductImporterProps) {
     };
 
     return (
-        <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 mb-6">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-6 mb-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-lg bg-green-600/20 flex items-center justify-center">
-                    <FileSpreadsheet className="w-6 h-6 text-green-400" />
+                <div className="w-12 h-12 rounded-lg bg-theme-primary/10 flex items-center justify-center">
+                    <FileSpreadsheet className="w-6 h-6 text-theme-primary" />
                 </div>
                 <div>
-                    <h2 className="text-xl text-white font-semibold">Importar Productos desde Excel</h2>
-                    <p className="text-sm text-slate-400">Carga un archivo .xlsx con el catálogo de productos</p>
+                    <h2 className="text-xl text-content-main font-semibold">Importar Productos desde Excel</h2>
+                    <p className="text-sm text-content-muted">Carga un archivo .xlsx con el catálogo de productos</p>
                 </div>
             </div>
 
             <div className="mb-6">
-                <label className="block mb-2 text-sm text-slate-300">
+                <label className="block mb-2 text-sm text-content-muted">
                     Seleccionar archivo Excel (.xlsx)
                 </label>
                 <div className="relative">
@@ -172,16 +172,16 @@ export function ProductImporter({ onImportComplete }: ProductImporterProps) {
                         className={`
               flex items-center justify-center gap-3 w-full px-6 py-8 
               border-2 border-dashed rounded-lg cursor-pointer transition-all
-              ${importing ? 'opacity-50 cursor-not-allowed' : 'hover:border-green-500/50 hover:bg-slate-800/50'}
-              ${file ? 'border-green-500/50 bg-green-500/10' : 'border-slate-600'}
+              ${importing ? 'opacity-50 cursor-not-allowed' : 'hover:border-theme-primary/50 hover:bg-surface-card-subtle'}
+              ${file ? 'border-theme-primary/50 bg-theme-primary/10' : 'border-border-subtle'}
             `}
                     >
-                        <Upload className="w-6 h-6 text-slate-400" />
+                        <Upload className="w-6 h-6 text-content-muted" />
                         <div className="text-center">
-                            <p className="text-white font-medium">
+                            <p className="text-content-main font-medium">
                                 {file ? file.name : 'Haz clic para seleccionar archivo'}
                             </p>
-                            <p className="text-sm text-slate-400 mt-1">
+                            <p className="text-sm text-content-muted mt-1">
                                 Columnas: Marca | Nombre | Categoría | SKU | Presentación
                             </p>
                         </div>
@@ -191,28 +191,28 @@ export function ProductImporter({ onImportComplete }: ProductImporterProps) {
 
             {preview.length > 0 && (
                 <div className="mb-6">
-                    <h3 className="text-sm text-slate-300 font-medium mb-3">
+                    <h3 className="text-sm text-content-main font-medium mb-3">
                         Vista Previa (primeras 5 filas)
                     </h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b border-slate-700">
-                                    <th className="text-left py-2 px-3 text-slate-400 font-medium">Marca</th>
-                                    <th className="text-left py-2 px-3 text-slate-400 font-medium">Nombre</th>
-                                    <th className="text-left py-2 px-3 text-slate-400 font-medium">Categoría</th>
-                                    <th className="text-left py-2 px-3 text-slate-400 font-medium">SKU</th>
-                                    <th className="text-left py-2 px-3 text-slate-400 font-medium">Obj. Presencia</th>
+                                <tr className="border-b border-border-subtle">
+                                    <th className="text-left py-2 px-3 text-content-muted font-medium">Marca</th>
+                                    <th className="text-left py-2 px-3 text-content-muted font-medium">Nombre</th>
+                                    <th className="text-left py-2 px-3 text-content-muted font-medium">Categoría</th>
+                                    <th className="text-left py-2 px-3 text-content-muted font-medium">SKU</th>
+                                    <th className="text-left py-2 px-3 text-content-muted font-medium">Obj. Presencia</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {preview.map((row: any, idx) => (
-                                    <tr key={idx} className="border-b border-slate-800/50">
-                                        <td className="py-2 px-3 text-white">{row.marca}</td>
-                                        <td className="py-2 px-3 text-slate-300">{row.nombre}</td>
-                                        <td className="py-2 px-3 text-slate-400">{row.categoria}</td>
-                                        <td className="py-2 px-3 text-slate-400 font-mono">{row.sku || '-'}</td>
-                                        <td className="py-2 px-3 text-slate-400">{row.objetivo_presencia}%</td>
+                                    <tr key={idx} className="border-b border-border-subtle/50">
+                                        <td className="py-2 px-3 text-content-main">{row.marca}</td>
+                                        <td className="py-2 px-3 text-content-muted">{row.nombre}</td>
+                                        <td className="py-2 px-3 text-content-muted">{row.categoria}</td>
+                                        <td className="py-2 px-3 text-content-muted font-mono">{row.sku || '-'}</td>
+                                        <td className="py-2 px-3 text-content-muted">{row.objetivo_presencia}%</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -237,8 +237,8 @@ export function ProductImporter({ onImportComplete }: ProductImporterProps) {
                 className={`
           w-full py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2
           ${!file || importing || success || preview.length === 0
-                        ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg shadow-green-900/20'
+                        ? 'bg-surface-card-subtle text-content-muted border border-border-subtle cursor-not-allowed'
+                        : 'bg-theme-primary hover:brightness-95 text-white shadow-sm font-medium'
                     }
         `}
             >

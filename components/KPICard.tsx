@@ -33,7 +33,7 @@ export function KPICard({ title, label, value, icon, trend, positive, sparkline,
   const colorClasses = {
     blue: 'text-blue-400',
     green: 'text-green-400',
-    purple: 'text-purple-400',
+    purple: 'text-theme-primary',
     amber: 'text-amber-400',
     turquoise: 'text-[#40E0D0]',
   };

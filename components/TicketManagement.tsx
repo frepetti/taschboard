@@ -144,11 +144,11 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
 
   const getCategoryStyle = (cat: string) => {
     switch (cat) {
-      case 'general': return 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
-      case 'capacitacion': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      case 'accion_btl': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
-      case 'material_pop': return 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30';
-      default: return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+      case 'general': return 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+      case 'capacitacion': return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+      case 'accion_btl': return 'bg-theme-primary/10 text-theme-primary border border-theme-primary/30';
+      case 'material_pop': return 'bg-amber-500/10 text-amber-500 border border-amber-500/20';
+      default: return 'bg-theme-primary/10 text-theme-primary border border-theme-primary/30';
     }
   };
 
@@ -184,27 +184,27 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl text-white font-semibold">{t('tickets.title')}</h2>
-        <p className="text-slate-400 text-sm">{t('common.total')}: {tickets.length} {t('tickets.ticket').toLowerCase()}s</p>
+        <h2 className="text-2xl text-content-main font-semibold">{t('tickets.title')}</h2>
+        <p className="text-content-muted text-sm">{t('common.total')}: {tickets.length} {t('tickets.ticket').toLowerCase()}s</p>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
           <input
             type="text"
             placeholder={t('common.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800/50 border border-slate-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-800/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          className="bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
         >
           <option value="all">{t('common.filter_all')}</option>
           <option value="abierto">{t('tickets.status_open')}</option>
@@ -219,22 +219,22 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
         {filteredTickets.map((ticket) => (
           <div
             key={ticket.id}
-            className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-xl hover:border-slate-600/50 transition-all cursor-pointer"
+            className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-sm hover:border-theme-primary/50 transition-all cursor-pointer"
             onClick={() => setSelectedTicket(ticket)}
           >
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryStyle(ticket.category)}`}>
                     {getCategoryIcon(ticket.category)}
                     {getCategoryLabel(ticket.category)}
                   </span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(ticket.priority)
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                       : ['medium', 'media'].includes(ticket.priority)
-                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                        : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                     }`}>
                     {['high', 'alta'].includes(ticket.priority) ? '🟠 ' :
                       ['critica', 'urgent'].includes(ticket.priority) ? '🔴 ' :
@@ -242,37 +242,37 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                     {getPriorityLabel(ticket.priority)}
                   </span>
                 </div>
-                <h3 className="text-lg text-white font-semibold mb-1">{ticket.subject}</h3>
-                <p className="text-sm text-slate-400 line-clamp-2">{ticket.description}</p>
+                <h3 className="text-lg text-content-main font-semibold mb-1">{ticket.subject}</h3>
+                <p className="text-sm text-content-muted line-clamp-2">{ticket.description}</p>
               </div>
             </div>
 
             {/* User Info */}
-            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-700/50">
+            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border-subtle">
               <div>
-                <div className="text-xs text-slate-500">{t('common.user')}</div>
-                <div className="text-sm text-slate-300">{ticket.user_name}</div>
+                <div className="text-xs text-content-muted">{t('common.user')}</div>
+                <div className="text-sm text-content-main">{ticket.user_name}</div>
               </div>
               {ticket.company && (
                 <div>
-                  <div className="text-xs text-slate-500">{t('common.company')}</div>
-                  <div className="text-sm text-slate-300">{ticket.company}</div>
+                  <div className="text-xs text-content-muted">{t('common.company')}</div>
+                  <div className="text-sm text-content-main">{ticket.company}</div>
                 </div>
               )}
             </div>
 
             {/* Footer */}
             <div className="flex items-center justify-between">
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-content-muted">
                 {new Date(ticket.created_at).toLocaleDateString()}
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${ticket.status === 'abierto'
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                   : ticket.status === 'en_progreso'
-                    ? 'bg-amber-500/20 text-amber-50 border border-amber-500/30'
+                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
                     : ticket.status === 'resuelto'
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+                      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                      : 'bg-surface-card-subtle text-content-muted border border-border-subtle'
                 }`}>
                 {getStatusLabel(ticket.status)}
               </span>
@@ -282,30 +282,30 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
       </div>
 
       {filteredTickets.length === 0 && (
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-12 shadow-xl text-center">
-          <p className="text-slate-400">{t('common.no_data')}</p>
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-12 shadow-sm text-center">
+          <p className="text-content-muted">{t('common.no_data')}</p>
         </div>
       )}
 
       {/* Ticket Detail Modal */}
       {selectedTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface-card border border-border-subtle rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 p-6">
+            <div className="sticky top-0 bg-surface-card border-b border-border-subtle p-6 z-10">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-2xl text-white font-semibold mb-2">{selectedTicket.subject}</h3>
-                  <div className="flex items-center gap-2">
+                  <h3 className="text-2xl text-content-main font-semibold mb-2">{selectedTicket.subject}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryStyle(selectedTicket.category)}`}>
                       {getCategoryIcon(selectedTicket.category)}
                       {getCategoryLabel(selectedTicket.category)}
                     </span>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${['high', 'alta', 'critica', 'urgent'].includes(selectedTicket.priority)
-                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        ? 'bg-red-500/10 text-red-500 border border-red-500/20'
                         : ['medium', 'media'].includes(selectedTicket.priority)
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                          : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                          : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                       }`}>
                       {t('tickets.priority')}: {getPriorityLabel(selectedTicket.priority)}
                     </span>
@@ -313,7 +313,7 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                 </div>
                 <button
                   onClick={() => setSelectedTicket(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-content-muted hover:text-content-main transition-colors"
                 >
                   <XCircle className="w-6 h-6" />
                 </button>
@@ -324,8 +324,8 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
             <div className="p-6 space-y-6">
               {/* Description */}
               <div>
-                <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('tickets.description')}</h4>
-                <p className="text-slate-300 whitespace-pre-wrap">{selectedTicket.description}</p>
+                <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">{t('tickets.description')}</h4>
+                <p className="text-content-main whitespace-pre-wrap bg-surface-card-subtle p-4 rounded-lg border border-border-subtle">{selectedTicket.description}</p>
               </div>
 
               {/* Punto de Venta y Productos */}
@@ -333,16 +333,16 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                 <div className="grid grid-cols-2 gap-4">
                   {selectedTicket.venue_name && (
                     <div>
-                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">Punto de Venta</h4>
-                      <p className="text-white">{selectedTicket.venue_name}</p>
+                      <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">Punto de Venta</h4>
+                      <p className="text-content-main font-medium">{selectedTicket.venue_name}</p>
                     </div>
                   )}
                   {selectedTicket.productos_nombres && selectedTicket.productos_nombres.length > 0 && (
                     <div className={!selectedTicket.venue_name ? "col-span-2" : ""}>
-                      <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">Productos Involucrados</h4>
+                      <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">Productos Involucrados</h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedTicket.productos_nombres.map((prod: string, i: number) => (
-                          <span key={i} className="px-2 py-1 bg-slate-800 rounded-md text-slate-300 text-xs">{prod}</span>
+                          <span key={i} className="px-2.5 py-1 bg-surface-card-subtle rounded-md text-content-main border border-border-subtle text-xs">{prod}</span>
                         ))}
                       </div>
                     </div>
@@ -353,14 +353,14 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
               {/* User Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('common.user')}</h4>
-                  <p className="text-white">{selectedTicket.user_name}</p>
-                  <p className="text-sm text-slate-400">{selectedTicket.user_email}</p>
+                  <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">{t('common.user')}</h4>
+                  <p className="text-content-main font-medium">{selectedTicket.user_name}</p>
+                  <p className="text-sm text-content-muted">{selectedTicket.user_email}</p>
                 </div>
                 {selectedTicket.company && (
                   <div>
-                    <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('common.company')}</h4>
-                    <p className="text-white">{selectedTicket.company}</p>
+                    <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">{t('common.company')}</h4>
+                    <p className="text-content-main font-medium">{selectedTicket.company}</p>
                   </div>
                 )}
               </div>
@@ -368,26 +368,26 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
               {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('tickets.created_at')}</h4>
-                  <p className="text-slate-300">{new Date(selectedTicket.created_at).toLocaleString()}</p>
+                  <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">{t('tickets.created_at')}</h4>
+                  <p className="text-content-main">{new Date(selectedTicket.created_at).toLocaleString()}</p>
                 </div>
                 {selectedTicket.updated_at && (
                   <div>
-                    <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-2">{t('tickets.updated_at')}</h4>
-                    <p className="text-slate-300">{new Date(selectedTicket.updated_at).toLocaleString()}</p>
+                    <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-2">{t('tickets.updated_at')}</h4>
+                    <p className="text-content-main">{new Date(selectedTicket.updated_at).toLocaleString()}</p>
                   </div>
                 )}
               </div>
 
               {/* Status Update */}
               <div>
-                <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-3">{t('tickets.change_status')}</h4>
+                <h4 className="text-xs uppercase tracking-wider text-content-muted font-semibold mb-3">{t('tickets.change_status')}</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { status: 'abierto', label: t('tickets.status_open'), icon: Eye, color: 'red' },
-                    { status: 'en_progreso', label: t('tickets.status_progress'), icon: Clock, color: 'amber' },
-                    { status: 'resuelto', label: t('tickets.status_resolved'), icon: CheckCircle, color: 'green' },
-                    { status: 'cerrado', label: t('tickets.status_closed'), icon: XCircle, color: 'slate' },
+                    { status: 'abierto', label: t('tickets.status_open'), icon: Eye, activeClass: 'bg-red-500/10 border-red-500/30 text-red-500' },
+                    { status: 'en_progreso', label: t('tickets.status_progress'), icon: Clock, activeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-500' },
+                    { status: 'resuelto', label: t('tickets.status_resolved'), icon: CheckCircle, activeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' },
+                    { status: 'cerrado', label: t('tickets.status_closed'), icon: XCircle, activeClass: 'bg-surface-card-subtle border-border-subtle text-content-main ring-1 ring-border-subtle font-semibold' },
                   ].map((item) => {
                     const Icon = item.icon;
                     const isActive = selectedTicket.status === item.status;
@@ -397,8 +397,8 @@ export function TicketManagement({ session: _session, onUpdate, initialTicketId 
                         key={item.status}
                         onClick={() => handleUpdateStatus(selectedTicket.id, item.status)}
                         className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-all ${isActive
-                            ? `bg-${item.color}-500/20 border-${item.color}-500/50 text-${item.color}-400`
-                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:border-slate-600'
+                            ? item.activeClass
+                            : 'bg-surface-card-subtle border-border-subtle text-content-muted hover:text-content-main hover:bg-surface-card'
                           }`}
                       >
                         <Icon className="w-5 h-5" />

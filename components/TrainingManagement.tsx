@@ -213,7 +213,7 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
             setEditingTraining(emptyTraining);
             setShowForm(true);
           }}
-          className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2"
+          className="px-4 py-2 bg-theme-primary hover:brightness-95 text-white shadow-sm font-medium rounded-lg transition-all flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
           Nueva Capacitación
@@ -222,40 +222,40 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 shadow-sm text-content-main">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Total</p>
-              <p className="text-2xl text-white font-bold">{stats.total}</p>
+              <p className="text-content-muted text-sm">Total</p>
+              <p className="text-2xl text-content-main font-bold">{stats.total}</p>
             </div>
-            <GraduationCap className="w-8 h-8 text-amber-400" />
+            <GraduationCap className="w-8 h-8 text-theme-primary" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 backdrop-blur-sm border border-blue-700/50 rounded-xl p-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 shadow-sm text-content-main">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-400 text-sm">Programadas</p>
-              <p className="text-2xl text-white font-bold">{stats.programadas}</p>
+              <p className="text-blue-500 dark:text-blue-400 text-sm">Programadas</p>
+              <p className="text-2xl text-content-main font-bold">{stats.programadas}</p>
             </div>
-            <Calendar className="w-8 h-8 text-blue-400" />
+            <Calendar className="w-8 h-8 text-blue-500 dark:text-blue-400" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 backdrop-blur-sm border border-yellow-700/50 rounded-xl p-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 shadow-sm text-content-main">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-400 text-sm">En Curso</p>
-              <p className="text-2xl text-white font-bold">{stats.enCurso}</p>
+              <p className="text-amber-500 dark:text-amber-400 text-sm">En Curso</p>
+              <p className="text-2xl text-content-main font-bold">{stats.enCurso}</p>
             </div>
-            <Clock className="w-8 h-8 text-yellow-400" />
+            <Clock className="w-8 h-8 text-amber-500 dark:text-amber-400" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 backdrop-blur-sm border border-green-700/50 rounded-xl p-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 shadow-sm text-content-main">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-400 text-sm">Completadas</p>
-              <p className="text-2xl text-white font-bold">{stats.completadas}</p>
+              <p className="text-green-500 dark:text-green-400 text-sm">Completadas</p>
+              <p className="text-2xl text-content-main font-bold">{stats.completadas}</p>
             </div>
-            <CheckCircle className="w-8 h-8 text-green-400" />
+            <CheckCircle className="w-8 h-8 text-green-500 dark:text-green-400" />
           </div>
         </div>
       </div>
@@ -263,19 +263,19 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
       {/* Search and Filters */}
       <div className="flex gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar capacitaciones..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-amber-500/50"
+            className="w-full pl-10 pr-4 py-3 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+          className="px-4 py-3 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
         >
           <option value="all">Todos los estados</option>
           <option value="programada">Programadas</option>
@@ -288,32 +288,32 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
       {/* Trainings List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-theme-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
         <div className="space-y-4">
           {filteredTrainings.map((training) => (
             <div
               key={training.id}
-              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition-all"
+              className="bg-surface-card border border-border-subtle rounded-xl p-6 hover:border-theme-primary/40 shadow-sm transition-all text-content-main"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-600/20 to-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
-                      <GraduationCap className="w-6 h-6 text-amber-400" />
+                    <div className="w-12 h-12 rounded-lg bg-theme-primary/10 border border-theme-primary/20 flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="w-6 h-6 text-theme-primary" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div>
-                          <h3 className="text-white font-semibold text-lg mb-1">{training.titulo}</h3>
-                          <p className="text-slate-400 text-sm line-clamp-2">{training.descripcion}</p>
+                          <h3 className="text-content-main font-semibold text-lg mb-1">{training.titulo}</h3>
+                          <p className="text-content-muted text-sm line-clamp-2">{training.descripcion}</p>
                         </div>
                         {getStatusBadge(training.estado || 'programada')}
                       </div>
 
                       <div className="flex items-center gap-4 mt-3 text-sm">
-                        <div className="flex items-center gap-1.5 text-slate-400">
+                        <div className="flex items-center gap-1.5 text-content-muted">
                           <Calendar className="w-4 h-4" />
                           {new Date(training.fecha_inicio).toLocaleDateString('es-MX', {
                             day: '2-digit',
@@ -321,15 +321,15 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
                             year: 'numeric'
                           })}
                         </div>
-                        <div className="flex items-center gap-1.5 text-slate-400">
+                        <div className="flex items-center gap-1.5 text-content-muted">
                           <Clock className="w-4 h-4" />
                           {training.duracion_horas}h
                         </div>
-                        <div className="flex items-center gap-1.5 text-slate-400">
+                        <div className="flex items-center gap-1.5 text-content-muted">
                           <MapPin className="w-4 h-4" />
                           {training.modalidad === 'presencial' ? training.ubicacion : 'Virtual'}
                         </div>
-                        <div className="flex items-center gap-1.5 text-slate-400">
+                        <div className="flex items-center gap-1.5 text-content-muted">
                           <Users className="w-4 h-4" />
                           {training.asistencia_real || 0}/{training.cupo_maximo}
                         </div>
@@ -339,22 +339,22 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
 
                   {/* Additional Info */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ml-16">
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <p className="text-slate-400 text-xs mb-1">Instructor</p>
-                      <p className="text-white text-sm font-medium">{training.instructor_nombre}</p>
+                    <div className="bg-surface-card-subtle border border-border-subtle rounded-lg p-3">
+                      <p className="text-content-muted text-xs mb-1">Instructor</p>
+                      <p className="text-content-main text-sm font-medium">{training.instructor_nombre}</p>
                     </div>
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <p className="text-slate-400 text-xs mb-1">Categoría</p>
-                      <p className="text-white text-sm font-medium">{training.categoria}</p>
+                    <div className="bg-surface-card-subtle border border-border-subtle rounded-lg p-3">
+                      <p className="text-content-muted text-xs mb-1">Categoría</p>
+                      <p className="text-content-main text-sm font-medium">{training.categoria}</p>
                     </div>
-                    <div className="bg-slate-700/30 rounded-lg p-3">
-                      <p className="text-slate-400 text-xs mb-1">Nivel</p>
-                      <p className="text-white text-sm font-medium">{training.nivel}</p>
+                    <div className="bg-surface-card-subtle border border-border-subtle rounded-lg p-3">
+                      <p className="text-content-muted text-xs mb-1">Nivel</p>
+                      <p className="text-content-main text-sm font-medium">{training.nivel}</p>
                     </div>
                     {training.estado === 'completada' && training.promedio_satisfaccion && (
-                      <div className="bg-slate-700/30 rounded-lg p-3">
-                        <p className="text-slate-400 text-xs mb-1">Satisfacción</p>
-                        <p className="text-green-400 text-sm font-medium flex items-center gap-1">
+                      <div className="bg-surface-card-subtle border border-border-subtle rounded-lg p-3">
+                        <p className="text-content-muted text-xs mb-1">Satisfacción</p>
+                        <p className="text-green-500 dark:text-green-400 text-sm font-medium flex items-center gap-1">
                           <TrendingUp className="w-3.5 h-3.5" />
                           {training.promedio_satisfaccion.toFixed(1)}/10
                         </p>
@@ -370,14 +370,14 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
                       setEditingTraining(training);
                       setShowForm(true);
                     }}
-                    className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all"
+                    className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
                     title="Editar"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => training.id && handleDeleteTraining(training.id)}
-                    className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                     title="Eliminar"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -388,12 +388,12 @@ export function TrainingManagement({ session }: TrainingManagementProps) {
           ))}
 
           {filteredTrainings.length === 0 && (
-            <div className="text-center py-12">
-              <GraduationCap className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl text-white font-semibold mb-2">
+            <div className="bg-surface-card border border-border-subtle text-content-main shadow-sm rounded-xl p-12 text-center">
+              <GraduationCap className="w-16 h-16 text-content-muted mx-auto mb-4" />
+              <h3 className="text-xl text-content-main font-semibold mb-2">
                 No hay capacitaciones
               </h3>
-              <p className="text-slate-400">
+              <p className="text-content-muted">
                 {searchTerm ? 'No se encontraron resultados' : 'Crea la primera capacitación para comenzar'}
               </p>
             </div>
@@ -454,18 +454,18 @@ function TrainingForm({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 rounded-2xl shadow-2xl max-w-4xl w-full my-8">
+      <div className="bg-surface-card border border-border-subtle rounded-2xl shadow-2xl max-w-4xl w-full my-8 text-content-main">
         <form onSubmit={handleSubmit}>
           {/* Header */}
-          <div className="p-6 border-b border-slate-700/50 sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10 rounded-t-2xl">
+          <div className="p-6 border-b border-border-subtle sticky top-0 bg-surface-card/95 backdrop-blur-sm z-10 rounded-t-2xl">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl text-white font-bold">
+              <h2 className="text-2xl text-content-main font-bold">
                 {formData.id ? 'Editar Capacitación' : 'Nueva Capacitación'}
               </h2>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-content-muted hover:text-content-main transition-colors p-1.5 rounded-lg hover:bg-surface-card-subtle"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -476,46 +476,46 @@ function TrainingForm({
           <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
             {/* Información Básica */}
             <div>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-amber-400" />
+              <h3 className="text-content-main font-semibold mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-theme-primary" />
                 Información Básica
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Título *</label>
+                  <label className="block text-content-main text-sm mb-2">Título *</label>
                   <input
                     type="text"
                     required
                     value={formData.titulo}
                     onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Descripción</label>
+                  <label className="block text-content-main text-sm mb-2">Descripción</label>
                   <textarea
                     rows={3}
                     value={formData.descripcion || ''}
                     onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Objetivo de Aprendizaje</label>
+                  <label className="block text-content-main text-sm mb-2">Objetivo de Aprendizaje</label>
                   <textarea
                     rows={2}
                     value={formData.objetivo || ''}
                     onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Categoría</label>
+                    <label className="block text-content-main text-sm mb-2">Categoría</label>
                     <select
                       value={formData.categoria || ''}
                       onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
                     >
                       <option>Producto</option>
                       <option>Ventas</option>
@@ -525,11 +525,11 @@ function TrainingForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Tipo</label>
+                    <label className="block text-content-main text-sm mb-2">Tipo</label>
                     <select
                       value={formData.tipo || ''}
                       onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
                     >
                       <option>Presencial</option>
                       <option>Virtual</option>
@@ -538,11 +538,11 @@ function TrainingForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-sm mb-2">Nivel</label>
+                    <label className="block text-content-main text-sm mb-2">Nivel</label>
                     <select
                       value={formData.nivel || ''}
                       onChange={(e) => setFormData({ ...formData, nivel: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                      className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
                     >
                       <option>Básico</option>
                       <option>Intermedio</option>
@@ -558,17 +558,17 @@ function TrainingForm({
 
             {/* Ubicación */}
             <div>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-amber-400" />
+              <h3 className="text-content-main font-semibold mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-theme-primary" />
                 Ubicación
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Modalidad</label>
+                  <label className="block text-content-main text-sm mb-2">Modalidad</label>
                   <select
                     value={formData.modalidad || ''}
                     onChange={(e) => setFormData({ ...formData, modalidad: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
                   >
                     <option value="presencial">Presencial</option>
                     <option value="virtual">Virtual</option>
@@ -576,13 +576,13 @@ function TrainingForm({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Ubicación/Plataforma</label>
+                  <label className="block text-content-main text-sm mb-2">Ubicación/Plataforma</label>
                   <input
                     type="text"
                     value={formData.ubicacion || ''}
                     onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
                     placeholder="Dirección o nombre de plataforma"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
               </div>
@@ -590,28 +590,28 @@ function TrainingForm({
 
             {/* Instructor */}
             <div>
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-amber-400" />
+              <h3 className="text-content-main font-semibold mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-theme-primary" />
                 Instructor
               </h3>
               <div>
-                <label className="block text-slate-300 text-sm mb-2">Nombre *</label>
+                <label className="block text-content-main text-sm mb-2">Nombre *</label>
                 <input
                   type="text"
                   required
                   value={formData.instructor_nombre || ''}
                   onChange={(e) => setFormData({ ...formData, instructor_nombre: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                  className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                 />
               </div>
             </div>
 
             {/* Capacidad */}
             <div>
-              <h3 className="text-white font-semibold mb-4">Capacidad</h3>
+              <h3 className="text-content-main font-semibold mb-4">Capacidad</h3>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Cupo Máximo</label>
+                  <label className="block text-content-main text-sm mb-2">Cupo Máximo</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -621,11 +621,11 @@ function TrainingForm({
                       setFormData({ ...formData, cupo_maximo: val === '' ? 0 : parseInt(val) || 0 });
                     }}
                     placeholder="0"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Cupo Mínimo</label>
+                  <label className="block text-content-main text-sm mb-2">Cupo Mínimo</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -635,11 +635,11 @@ function TrainingForm({
                       setFormData({ ...formData, cupo_minimo: val === '' ? 0 : parseInt(val) || 0 });
                     }}
                     placeholder="0"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm mb-2">Asistencia Esperada</label>
+                  <label className="block text-content-main text-sm mb-2">Asistencia Esperada</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -649,30 +649,30 @@ function TrainingForm({
                       setFormData({ ...formData, asistencia_esperada: val === '' ? 0 : parseInt(val) || 0 });
                     }}
                     placeholder="0"
-                    className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                    className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50"
                   />
                 </div>
               </div>
               <div className="mt-4">
-                <label className="flex items-center gap-3">
+                <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.certificado_emitido ?? false}
                     onChange={(e) => setFormData({ ...formData, certificado_emitido: e.target.checked })}
-                    className="w-5 h-5 rounded bg-slate-800/50 border-slate-700/50 text-amber-600 focus:ring-amber-500"
+                    className="w-5 h-5 rounded bg-surface-card-subtle border-border-subtle text-theme-primary focus:ring-theme-primary"
                   />
-                  <span className="text-slate-300">Emite Certificado</span>
+                  <span className="text-content-main">Emite Certificado</span>
                 </label>
               </div>
             </div>
 
             {/* Estado */}
             <div>
-              <label className="block text-slate-300 text-sm mb-2">Estado</label>
+              <label className="block text-content-main text-sm mb-2">Estado</label>
               <select
                 value={formData.estado || ''}
                 onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+                className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
               >
                 <option value="programada">Programada</option>
                 <option value="en_curso">En Curso</option>
@@ -684,18 +684,18 @@ function TrainingForm({
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-slate-700/50 bg-slate-800/30 flex justify-end gap-3 rounded-b-2xl">
+          <div className="p-6 border-t border-border-subtle bg-surface-card-subtle/30 flex justify-end gap-3 rounded-b-2xl">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 bg-slate-700/50 text-white rounded-lg hover:bg-slate-700 transition-colors"
+              className="px-6 py-2.5 bg-surface-card-subtle text-content-muted border border-border-subtle hover:bg-surface-card hover:text-content-main rounded-lg transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={!!dateError}
-              className="px-6 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-lg hover:from-amber-500 hover:to-amber-400 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-theme-primary hover:brightness-95 text-white shadow-sm rounded-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Check className="w-4 h-4" />
               Guardar
@@ -748,15 +748,15 @@ function TrainingScheduleSection({
 
   return (
     <div>
-      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-amber-400" />
+      <h3 className="text-content-main font-semibold mb-4 flex items-center gap-2">
+        <Calendar className="w-5 h-5 text-theme-primary" />
         Programación
       </h3>
 
       {/* Fila 1: Fecha + Horario de Inicio */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-slate-300 text-sm mb-2">Fecha Inicio *</label>
+          <label className="block text-content-main text-sm mb-2">Fecha Inicio *</label>
           <input
             type="date"
             required
@@ -764,18 +764,18 @@ function TrainingScheduleSection({
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, fecha_inicio: buildIso(e.target.value, startTime) }))
             }
-            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+            className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
           />
         </div>
         <div>
-          <label className="block text-slate-300 text-sm mb-2">Horario de Inicio</label>
+          <label className="block text-content-main text-sm mb-2">Horario de Inicio</label>
           <input
             type="time"
             value={startTime}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, fecha_inicio: buildIso(startDate, e.target.value) }))
             }
-            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+            className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
           />
         </div>
       </div>
@@ -783,7 +783,7 @@ function TrainingScheduleSection({
       {/* Fila 2: Fecha Fin + Duración */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-slate-300 text-sm mb-2">Fecha Fin</label>
+          <label className="block text-content-main text-sm mb-2">Fecha Fin</label>
           <input
             type="date"
             value={endDate}
@@ -794,8 +794,8 @@ function TrainingScheduleSection({
                 fecha_fin: e.target.value ? buildIso(e.target.value, '23:59') : null,
               }))
             }
-            className={`w-full px-4 py-2 bg-slate-800/50 border rounded-lg text-white focus:outline-none focus:border-amber-500/50 ${
-              dateError ? 'border-red-500/70' : 'border-slate-700/50'
+            className={`w-full px-4 py-2 bg-surface-card-subtle border rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50 ${
+              dateError ? 'border-red-500/70' : 'border-border-subtle'
             }`}
           />
           {dateError && (
@@ -806,7 +806,7 @@ function TrainingScheduleSection({
           )}
         </div>
         <div>
-          <label className="block text-slate-300 text-sm mb-2">Duración (horas)</label>
+          <label className="block text-content-main text-sm mb-2">Duración (horas)</label>
           <input
             type="text"
             inputMode="decimal"
@@ -816,7 +816,7 @@ function TrainingScheduleSection({
               setFormData((prev) => ({ ...prev, duracion_horas: val === '' ? 0 : parseFloat(val) || 0 }));
             }}
             placeholder="0"
-            className="w-full px-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white focus:outline-none focus:border-amber-500/50"
+            className="w-full px-4 py-2 bg-surface-card-subtle border border-border-subtle rounded-lg text-content-main focus:outline-none focus:border-theme-primary/50"
           />
         </div>
       </div>

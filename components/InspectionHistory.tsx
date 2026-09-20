@@ -3,6 +3,7 @@ import { Clock, MapPin, RefreshCw, CheckCircle, XCircle, ArrowLeft, Eye, Trash2,
 import { supabase } from '../utils/supabase/client';
 import { deleteInspection } from '../utils/api-direct';
 import { toast } from 'sonner';
+import { parseInspectionCompetition } from '../utils/competitionUtils';
 
 interface InspectionHistoryProps {
   inspections: any[];
@@ -161,18 +162,18 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
   return (
     <>
       <div className="space-y-4">
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-6 shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-xl text-white font-semibold mb-2">Historial de Inspecciones</h2>
-                <p className="text-slate-400 text-sm">{filteredInspections.length} inspección{filteredInspections.length !== 1 ? 'es' : ''} encontrada{filteredInspections.length !== 1 ? 's' : ''}</p>
+                <h2 className="text-xl text-content-main font-semibold mb-2">Historial de Inspecciones</h2>
+                <p className="text-content-muted text-sm">{filteredInspections.length} inspección{filteredInspections.length !== 1 ? 'es' : ''} encontrada{filteredInspections.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 {onRefresh && (
                   <button
                     onClick={onRefresh}
-                    className="flex items-center gap-2 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 text-slate-300 px-4 py-2 rounded-lg transition-colors text-sm"
+                    className="flex items-center gap-2 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle text-content-main px-4 py-2 rounded-lg transition-colors text-sm font-medium"
                   >
                     <RefreshCw className="w-4 h-4" />
                     <span>Actualizar</span>
@@ -181,7 +182,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 {onBack && (
                   <button
                     onClick={onBack}
-                    className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                    className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-4 py-2 rounded-lg transition-all text-sm shadow-sm font-medium"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Nueva Inspección</span>
@@ -191,18 +192,18 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-700/50">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border-subtle">
               <input
                 type="text"
                 placeholder="Buscar por cliente/venue..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-slate-900/50 border border-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                className="flex-1 bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 text-sm"
               />
               <select
                 value={filterProduct}
                 onChange={(e) => setFilterProduct(e.target.value)}
-                className="flex-1 sm:max-w-xs bg-slate-900/50 border border-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-sm"
+                className="flex-1 sm:max-w-xs bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 text-sm"
               >
                 <option value="">Todos los Productos</option>
                 {filterOptions.map(p => (
@@ -222,26 +223,26 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
               <div
                 key={inspection.id}
                 onClick={() => setSelectedInspection(inspection)}
-                className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 sm:p-5 shadow-xl hover:border-amber-500/50 hover:shadow-amber-500/10 transition-all cursor-pointer group"
+                className="bg-surface-card border border-border-subtle rounded-xl p-4 sm:p-5 shadow-sm hover:border-theme-primary/50 transition-all cursor-pointer group"
               >
                 <div className="flex items-start justify-between mb-4 gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base sm:text-lg text-white font-semibold">
+                      <h3 className="text-base sm:text-lg text-content-main font-semibold">
                         Inspección #{sequentialId}
                       </h3>
                       {inspection.btl_productos && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-theme-primary/10 text-theme-primary border border-theme-primary/20">
                           {inspection.btl_productos.nombre}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 mb-2">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-content-muted mb-2">
                       <MapPin className="w-3 h-3 shrink-0" />
                       <span className="truncate">{venueNames[inspection.punto_venta_id] || 'Cargando...'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-2 text-xs text-content-muted">
                       <Clock className="w-3 h-3 shrink-0" />
                       <span>{formatDate(inspection.fecha_inspeccion || inspection.created_at)}</span>
                     </div>
@@ -249,8 +250,8 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
 
                   <div className="flex items-center gap-2 shrink-0">
                     <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 rounded-lg ${inspection.tiene_producto
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                      : 'bg-red-500/10 text-red-500 border border-red-500/20'
                       }`}>
                       {inspection.tiene_producto ? (
                         <>
@@ -264,29 +265,29 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                         </>
                       )}
                     </div>
-                    <Eye className="w-5 h-5 text-slate-500 group-hover:text-amber-400 transition-colors hidden sm:block" />
+                    <Eye className="w-5 h-5 text-content-muted group-hover:text-theme-primary transition-colors hidden sm:block" />
                   </div>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-700/50">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-border-subtle">
                   <div className="text-center">
-                    <div className="text-[10px] sm:text-xs text-slate-400 mb-1">Stock</div>
-                    <div className="text-sm sm:text-lg text-white font-semibold capitalize">
-                      {inspection.detalles?.stockLevel === 'adequate' ? 'Adecuado' :
-                        inspection.detalles?.stockLevel === 'low' ? 'Bajo' :
-                          inspection.detalles?.stockLevel === 'critical' ? 'Crítico' :
-                            inspection.detalles?.stockLevel === 'out-of-stock' ? 'Sin Stock' :
-                              inspection.stock_estimado || 'N/A'}
+                    <div className="text-[10px] sm:text-xs text-content-muted mb-1">Stock</div>
+                    <div className="text-sm sm:text-lg text-content-main font-semibold capitalize">
+                      {inspection.detalles?.stockLevel === 'adequate' || inspection.detalles?.stock_nivel === 'adequate' || inspection.stock_nivel === 'adequate' || inspection.stock_nivel === 'Adecuado' ? 'Adecuado' :
+                        inspection.detalles?.stockLevel === 'low' || inspection.detalles?.stock_nivel === 'low' || inspection.stock_nivel === 'low' || inspection.stock_nivel === 'Bajo' ? 'Bajo' :
+                          inspection.detalles?.stockLevel === 'critical' || inspection.detalles?.stock_nivel === 'critical' || inspection.stock_nivel === 'critical' || inspection.stock_nivel === 'Crítico' ? 'Crítico' :
+                            inspection.detalles?.stockLevel === 'out-of-stock' || inspection.stock_nivel === 'Agotado' || inspection.stock_nivel === 'out_of_stock' ? 'Sin Stock' :
+                              inspection.stock_estimado || (inspection.stock_unidades != null ? `${inspection.stock_unidades} un.` : 'N/A')}
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] sm:text-xs text-slate-400 mb-1">Material POP</div>
-                    <div className="text-sm sm:text-lg text-white font-semibold">
+                    <div className="text-[10px] sm:text-xs text-content-muted mb-1">Material POP</div>
+                    <div className="text-sm sm:text-lg text-content-main font-semibold">
                       {inspection.tiene_material_pop ? (
-                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mx-auto" />
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 mx-auto" />
                       ) : (
-                        <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 mx-auto" />
+                        <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mx-auto" />
                       )}
                     </div>
                   </div>
@@ -305,17 +306,17 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
             onClick={() => setSelectedInspection(null)}
           >
             <div
-              className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-surface-card border border-border-subtle rounded-xl max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto text-content-main"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md border-b border-amber-500/30 p-4 sm:p-6">
+              <div className="sticky top-0 z-10 bg-surface-card/95 backdrop-blur-md border-b border-border-subtle p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl sm:text-2xl text-white font-bold">
-                      {selectedInspection.btl_productos?.nombre} <span className="text-slate-500">#</span>{safeInspections.length - safeInspections.findIndex(i => i.id === selectedInspection.id)}
+                    <h2 className="text-xl sm:text-2xl text-content-main font-bold">
+                      {selectedInspection.btl_productos?.nombre} <span className="text-content-muted">#</span>{safeInspections.length - safeInspections.findIndex(i => i.id === selectedInspection.id)}
                     </h2>
-                    <p className="text-sm text-slate-400 mt-1">{venueNames[selectedInspection.punto_venta_id] || 'Punto de Venta'}</p>
+                    <p className="text-sm text-content-muted mt-1">{venueNames[selectedInspection.punto_venta_id] || 'Punto de Venta'}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {(userRole === 'admin' || userRole === 'superadmin') && (
@@ -323,7 +324,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                         {onEdit && (
                           <button
                             onClick={() => onEdit(selectedInspection)}
-                            className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
+                            className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
                             title="Editar Inspección"
                           >
                             <Edit2 className="w-5 h-5" />
@@ -332,7 +333,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                         <button
                           onClick={handleDelete}
                           disabled={isDeleting}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors"
+                          className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                           title="Eliminar Inspección"
                         >
                           {isDeleting ? <span className="animate-spin">⌛</span> : <Trash2 className="w-5 h-5" />}
@@ -341,7 +342,7 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                     )}
                     <button
                       onClick={() => setSelectedInspection(null)}
-                      className="text-slate-400 hover:text-white transition-colors"
+                      className="text-content-muted hover:text-content-main transition-colors"
                     >
                       <XCircle className="w-6 h-6" />
                     </button>
@@ -353,19 +354,19 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
               <div className="p-4 sm:p-6 space-y-6">
                 {/* Fecha */}
                 <div>
-                  <div className="flex items-center gap-2 text-slate-400 mb-2">
+                  <div className="flex items-center gap-2 text-content-muted mb-2">
                     <Clock className="w-4 h-4" />
-                    <span className="text-sm">Fecha de Inspección</span>
+                    <span className="text-sm font-medium">Fecha de Inspección</span>
                   </div>
-                  <p className="text-white text-lg">{formatDate(selectedInspection.fecha_inspeccion || selectedInspection.created_at)}</p>
+                  <p className="text-content-main text-lg font-semibold">{formatDate(selectedInspection.fecha_inspeccion || selectedInspection.created_at)}</p>
                 </div>
 
                 {/* Estado del Producto */}
                 <div>
-                  <h3 className="text-sm text-slate-400 mb-3">Estado del Producto</h3>
+                  <h3 className="text-xs uppercase tracking-wider font-semibold text-content-muted mb-3">Estado del Producto</h3>
                   <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${selectedInspection.tiene_producto
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-500 border border-red-500/20'
                     }`}>
                     {selectedInspection.tiene_producto ? (
                       <>
@@ -383,23 +384,23 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                    <div className="text-xs text-slate-400 mb-1">Stock</div>
-                    <div className="text-2xl text-white font-bold capitalize">
-                      {selectedInspection.detalles?.stockLevel === 'adequate' ? 'Adecuado' :
-                        selectedInspection.detalles?.stockLevel === 'low' ? 'Bajo' :
-                          selectedInspection.detalles?.stockLevel === 'critical' ? 'Crítico' :
-                            selectedInspection.detalles?.stockLevel === 'out-of-stock' ? 'Sin Stock' :
-                              selectedInspection.stock_estimado || 'N/A'}
+                  <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                    <div className="text-xs text-content-muted mb-1 font-medium">Stock</div>
+                    <div className="text-2xl text-content-main font-bold capitalize">
+                      {selectedInspection.detalles?.stockLevel === 'adequate' || selectedInspection.detalles?.stock_nivel === 'adequate' || selectedInspection.stock_nivel === 'adequate' || selectedInspection.stock_nivel === 'Adecuado' ? 'Adecuado' :
+                        selectedInspection.detalles?.stockLevel === 'low' || selectedInspection.detalles?.stock_nivel === 'low' || selectedInspection.stock_nivel === 'low' || selectedInspection.stock_nivel === 'Bajo' ? 'Bajo' :
+                          selectedInspection.detalles?.stockLevel === 'critical' || selectedInspection.detalles?.stock_nivel === 'critical' || selectedInspection.stock_nivel === 'critical' || selectedInspection.stock_nivel === 'Crítico' ? 'Crítico' :
+                            selectedInspection.detalles?.stockLevel === 'out-of-stock' || selectedInspection.stock_nivel === 'Agotado' || selectedInspection.stock_nivel === 'out_of_stock' ? 'Sin Stock' :
+                              selectedInspection.stock_estimado || (selectedInspection.stock_unidades != null ? `${selectedInspection.stock_unidades} un.` : 'N/A')}
                     </div>
                   </div>
-                  <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                    <div className="text-xs text-slate-400 mb-1">Material POP</div>
-                    <div className="text-2xl text-white font-bold">
+                  <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                    <div className="text-xs text-content-muted mb-1 font-medium">Material POP</div>
+                    <div className="text-2xl text-content-main font-bold">
                       {selectedInspection.tiene_material_pop ? (
-                        <CheckCircle className="w-8 h-8 text-green-400 mx-auto" />
+                        <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto" />
                       ) : (
-                        <XCircle className="w-8 h-8 text-red-400 mx-auto" />
+                        <XCircle className="w-8 h-8 text-red-500 mx-auto" />
                       )}
                     </div>
                   </div>
@@ -408,9 +409,9 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 {/* Material POP Details */}
                 {selectedInspection.material_pop_detalle && (
                   <div>
-                    <h3 className="text-sm text-slate-400 mb-2">Material POP Detalle</h3>
-                    <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                      <p className="text-slate-300">
+                    <h3 className="text-xs uppercase tracking-wider font-semibold text-content-muted mb-2">Material POP Detalle</h3>
+                    <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                      <p className="text-content-main">
                         {typeof selectedInspection.material_pop_detalle === 'string'
                           ? selectedInspection.material_pop_detalle
                           : JSON.stringify(selectedInspection.material_pop_detalle)}
@@ -423,15 +424,15 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 {selectedInspection.detalles && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Perfect Serve */}
-                    <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                      <h3 className="text-sm text-amber-500 font-semibold mb-3">Perfect Serve</h3>
+                    <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                      <h3 className="text-sm text-theme-primary font-semibold mb-3">Perfect Serve</h3>
                       <div className="space-y-2 text-sm">
                         {(selectedInspection.detalles.perfectServeConfig && selectedInspection.detalles.perfectServeConfig.length > 0) ? (
                           // Dynamic Perfect Serve
                           selectedInspection.detalles.perfectServeConfig.map((q: any) => (
                             <div key={q.id} className="flex justify-between items-start gap-2">
-                              <span className="text-slate-400">{q.question}:</span>
-                              <span className="text-slate-200 font-medium whitespace-nowrap">
+                              <span className="text-content-muted">{q.question}:</span>
+                              <span className="text-content-main font-medium whitespace-nowrap">
                                 {selectedInspection.detalles.perfectServeAnswers?.[q.id] ? 'Sí' : 'No'}
                               </span>
                             </div>
@@ -440,32 +441,32 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                           // Legacy Perfect Serve
                           <>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">Cristalería:</span>
-                              <span className="text-slate-200">
+                              <span className="text-content-muted">Cristalería:</span>
+                              <span className="text-content-main font-medium">
                                 {selectedInspection.detalles.properGlassware || selectedInspection.detalles.glassware ? 'Correcta' : 'Incorrecta'}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">Hielo:</span>
-                              <span className="text-slate-200">
+                              <span className="text-content-muted">Hielo:</span>
+                              <span className="text-content-main font-medium">
                                 {selectedInspection.detalles.iceQuality || selectedInspection.detalles.ice ? 'Correcto' : 'Incorrecto'}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">Garnish:</span>
-                              <span className="text-slate-200">
+                              <span className="text-content-muted">Garnish:</span>
+                              <span className="text-content-main font-medium">
                                 {selectedInspection.detalles.correctGarnish || selectedInspection.detalles.garnish ? 'Correcto' : 'Incorrecto'}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">Tónica:</span>
-                              <span className="text-slate-200">
+                              <span className="text-content-muted">Tónica:</span>
+                              <span className="text-content-main font-medium">
                                 {selectedInspection.detalles.premiumTonic || selectedInspection.detalles.tonic ? 'Premium' : 'Estándar'}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-400">Ritual:</span>
-                              <span className="text-slate-200">
+                              <span className="text-content-muted">Ritual:</span>
+                              <span className="text-content-main font-medium">
                                 {selectedInspection.detalles.serveRitual || selectedInspection.detalles.ritual ? 'Correcto' : 'Incorrecto'}
                               </span>
                             </div>
@@ -475,16 +476,16 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                     </div>
 
                     {/* Personal */}
-                    <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                      <h3 className="text-sm text-amber-500 font-semibold mb-3">Personal</h3>
+                    <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                      <h3 className="text-sm text-theme-primary font-semibold mb-3">Personal</h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Conocimiento (1-10):</span>
-                          <span className="text-slate-200">{selectedInspection.detalles.staffKnowledge || 0}</span>
+                          <span className="text-content-muted">Conocimiento (1-10):</span>
+                          <span className="text-content-main font-medium">{selectedInspection.detalles.staffKnowledge || 0}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Recomendación:</span>
-                          <span className="text-slate-200 capitalize">
+                          <span className="text-content-muted">Recomendación:</span>
+                          <span className="text-content-main font-medium capitalize">
                             {selectedInspection.detalles.brandAdvocacy === 'high' ? 'Alta' :
                               selectedInspection.detalles.brandAdvocacy === 'medium' ? 'Media' :
                                 selectedInspection.detalles.brandAdvocacy === 'low' ? 'Baja' :
@@ -492,40 +493,47 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Bartenders Cert.:</span>
-                          <span className="text-slate-200">{selectedInspection.detalles.certifiedBartenders || 0} / {selectedInspection.detalles.totalBartenders || 0}</span>
+                          <span className="text-content-muted">Bartenders Cert.:</span>
+                          <span className="text-content-main font-medium">{selectedInspection.detalles.certifiedBartenders || 0} / {selectedInspection.detalles.totalBartenders || 0}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Competencia */}
-                    <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                      <h3 className="text-sm text-amber-500 font-semibold mb-3">Competencia</h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-400">Competidor Principal:</span>
-                          <span className="text-slate-200">{selectedInspection.detalles.mainCompetitor || 'Ninguno'}</span>
+                    {(() => {
+                      const compData = parseInspectionCompetition(selectedInspection);
+                      const visLabel = compData.competitorVisibility === 'high' ? 'Alta' :
+                        compData.competitorVisibility === 'medium' ? 'Media' :
+                          compData.competitorVisibility === 'low' ? 'Baja' : 'N/A';
+
+                      const priceLabel = compData.priceComparison === 'premium' ? 'Más Alto' :
+                        compData.priceComparison === 'equal' ? 'Igual' :
+                          compData.priceComparison === 'lower' ? 'Más Bajo' : 'N/A';
+
+                      return (
+                        <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                          <h3 className="text-sm text-theme-primary font-semibold mb-3">Competencia</h3>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-content-muted">Competidor Principal:</span>
+                              <span className="text-content-main font-medium">{compData.mainCompetitor}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-content-muted">Visibilidad Comp.:</span>
+                              <span className="text-content-main font-medium capitalize">
+                                {visLabel}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-content-muted">Precio vs Comp.:</span>
+                              <span className="text-content-main font-medium capitalize">
+                                {priceLabel}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-400">Visibilidad Comp.:</span>
-                          <span className="text-slate-200 capitalize">
-                            {selectedInspection.detalles.competitorVisibility === 'high' ? 'Alta' :
-                              selectedInspection.detalles.competitorVisibility === 'medium' ? 'Media' :
-                                selectedInspection.detalles.competitorVisibility === 'low' ? 'Baja' :
-                                  selectedInspection.detalles.competitorVisibility || 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-400">Precio vs Comp.:</span>
-                          <span className="text-slate-200 capitalize">
-                            {selectedInspection.detalles.priceComparison === 'premium' ? 'Más Alto' :
-                              selectedInspection.detalles.priceComparison === 'equal' ? 'Igual' :
-                                selectedInspection.detalles.priceComparison === 'lower' ? 'Más Bajo' :
-                                  selectedInspection.detalles.priceComparison || 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -539,18 +547,18 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                     <div className="space-y-6">
                       {cleanObservaciones && (
                         <div>
-                          <h3 className="text-sm text-slate-400 mb-2">Observaciones</h3>
-                          <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30">
-                            <p className="text-slate-300 italic whitespace-pre-wrap">&ldquo;{cleanObservaciones}&rdquo;</p>
+                          <h3 className="text-xs uppercase tracking-wider font-semibold text-content-muted mb-2">Observaciones</h3>
+                          <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle">
+                            <p className="text-content-main italic whitespace-pre-wrap">&ldquo;{cleanObservaciones}&rdquo;</p>
                           </div>
                         </div>
                       )}
 
                       {cleanRecomendaciones && (
                         <div>
-                          <h3 className="text-sm text-amber-400 mb-2">Recomendaciones</h3>
-                          <div className="bg-amber-900/10 rounded-lg p-4 border border-amber-500/20">
-                            <p className="text-slate-300 whitespace-pre-wrap">{cleanRecomendaciones}</p>
+                          <h3 className="text-xs uppercase tracking-wider font-semibold text-amber-500 mb-2">Recomendaciones</h3>
+                          <div className="bg-amber-500/10 rounded-lg p-4 border border-amber-500/20">
+                            <p className="text-content-main whitespace-pre-wrap">{cleanRecomendaciones}</p>
                           </div>
                         </div>
                       )}
@@ -561,10 +569,10 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 {/* Photos */}
                 {selectedInspection.fotos_urls && selectedInspection.fotos_urls.length > 0 && (
                   <div>
-                    <h3 className="text-sm text-slate-400 mb-3">Fotos ({selectedInspection.fotos_urls.length})</h3>
+                    <h3 className="text-xs uppercase tracking-wider font-semibold text-content-muted mb-3">Fotos ({selectedInspection.fotos_urls.length})</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {selectedInspection.fotos_urls.map((url: string, idx: number) => (
-                        <div key={idx} className="aspect-square bg-slate-700 rounded-lg overflow-hidden">
+                        <div key={idx} className="aspect-square bg-surface-card-subtle border border-border-subtle rounded-lg overflow-hidden">
                           <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
                         </div>
                       ))}

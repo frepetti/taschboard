@@ -3,6 +3,7 @@ import { Search, MapPin, Plus } from 'lucide-react';
 import { getVenues, createVenue } from '../utils/api-direct';
 import { useLanguage } from '../utils/LanguageContext';
 import { VenueLocationPicker } from './VenueLocationPicker';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface VenueSelectionFormProps {
   onVenueSelect: (venue: any) => void;
@@ -176,8 +177,8 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl text-content-main font-semibold">{t('inspector.select_venue')}</h2>
           {!loading && venues.length > 0 && (
-            <span className="px-3 py-1 rounded-full text-xs bg-green-600/20 text-green-400 border border-green-600/30 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+            <span className="bg-theme-primary/10 text-theme-primary border border-theme-primary/20 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-2">
+              <span className="w-2 h-2 bg-theme-primary rounded-full animate-pulse"></span>
               {venues.length} {t('inspector.venues_available')}
             </span>
           )}
@@ -186,8 +187,7 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
         {/* Loading State */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-12 h-12 border-4 border-theme-primary/30 border-t-theme-primary rounded-full animate-spin mb-4"></div>
-            <p className="text-content-muted">{t('common.loading')}</p>
+            <LoadingSpinner size="lg" text={t('common.loading')} />
           </div>
         )}
 

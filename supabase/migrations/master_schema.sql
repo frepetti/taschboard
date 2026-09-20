@@ -1,8 +1,8 @@
 -- ==============================================================================
 -- MASTER SCHEMA: BTL DASHBOARD SAAS (Complete Database Reconstruction)
 -- ==============================================================================
--- Fecha: 2026-02-17
--- Versión: 2.0 (Fixed RLS Policies & Schema Issues)
+-- Fecha: Septiembre 2026
+-- Versión: 2.1 (Schema Drift Sincronizado)
 -- Descripción: Script maestro para generar toda la estructura de base de datos.
 --              Incluye tablas, relaciones, políticas RLS, triggers y funciones.
 --              Ejecutar este script en el SQL Editor de Supabase.
@@ -112,8 +112,8 @@ CREATE TABLE btl_productos (
   descripcion TEXT,
   activo BOOLEAN DEFAULT TRUE,
   orden_visualizacion INTEGER DEFAULT 0,
-  configuracion JSONB DEFAULT '{"perfect_serve": []}'::jsonb,
-  competidores TEXT[] DEFAULT '{}'::text[],
+  configuracion JSONB DEFAULT '{}'::jsonb,
+  competidores JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -170,10 +170,12 @@ CREATE TABLE btl_inspecciones (
   tiene_producto BOOLEAN DEFAULT false,
   stock_nivel VARCHAR(50), -- 'Alto', 'Medio', 'Bajo', 'Agotado'
   stock_unidades INTEGER,
+  stock_estimado TEXT,
   precio_venta DECIMAL(10,2), -- Precio de carta/menú observado en el punto de venta durante la inspección
   en_promocion BOOLEAN DEFAULT FALSE,
   visibilidad_score DECIMAL(5,2),
   global_score NUMERIC DEFAULT 0,
+  compliance_score NUMERIC DEFAULT 0,
   
   -- Material POP (Point of Purchase)
   tiene_material_pop BOOLEAN DEFAULT false,

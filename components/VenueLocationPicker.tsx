@@ -285,17 +285,17 @@ export function VenueLocationPicker({
     <div className="space-y-3">
       {/* ── Dirección ── */}
       <div>
-        <label className="block text-sm font-medium text-slate-400 mb-1">
+        <label className="block text-sm font-medium text-content-main mb-1">
           Dirección Completa
         </label>
         <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-muted pointer-events-none" />
           <input
             type="text"
             value={address}
             onChange={(e) => handleAddressChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-amber-500 transition-colors"
+            className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg pl-10 pr-4 py-2 text-content-main placeholder:text-content-muted focus:outline-none focus:border-theme-primary/50 transition-colors"
           />
         </div>
         <StatusIndicator />
@@ -305,7 +305,7 @@ export function VenueLocationPicker({
       {showCoordinateInputs && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-content-muted mb-1">
               Latitud
             </label>
             <input
@@ -313,11 +313,11 @@ export function VenueLocationPicker({
               value={latInput}
               onChange={(e) => handleLatChange(e.target.value)}
               placeholder="-34.603700"
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-3 py-2 text-content-main placeholder:text-content-muted text-sm font-mono focus:outline-none focus:border-theme-primary/50 transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">
+            <label className="block text-xs font-medium text-content-muted mb-1">
               Longitud
             </label>
             <input
@@ -325,23 +325,23 @@ export function VenueLocationPicker({
               value={lngInput}
               onChange={(e) => handleLngChange(e.target.value)}
               placeholder="-58.381600"
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm font-mono focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full bg-surface-card-subtle border border-border-subtle rounded-lg px-3 py-2 text-content-main placeholder:text-content-muted text-sm font-mono focus:outline-none focus:border-theme-primary/50 transition-colors"
             />
           </div>
         </div>
       )}
 
       {/* ── Mini-mapa (colapsable) ── */}
-      <div className="rounded-xl overflow-hidden border border-slate-700/50">
+      <div className="rounded-xl overflow-hidden border border-border-subtle">
         {/* Header del mapa — siempre visible en modo colapsable */}
         {collapsible && (
           <button
             type="button"
             onClick={handleToggleMap}
-            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors text-sm font-medium"
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-surface-card-subtle hover:bg-surface-card text-content-main transition-colors text-sm font-medium"
           >
             <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-amber-500" />
+              <MapPin className="w-4 h-4 text-theme-primary" />
               {isMapOpen ? 'Ocultar mapa de ubicación' : 'Ver mapa de ubicación'}
             </span>
             {isMapOpen ? (
@@ -354,7 +354,7 @@ export function VenueLocationPicker({
 
         {/* Contenedor del mapa */}
         {isMapOpen && (
-          <div className="relative bg-slate-950">
+          <div className="relative bg-surface-card-subtle">
             <style>{`
               @keyframes pulse {
                 0%, 100% { opacity: 0.6; transform: scale(1); }
@@ -362,21 +362,21 @@ export function VenueLocationPicker({
               }
               .venue-picker-icon { background: transparent !important; border: none !important; }
               .leaflet-control-zoom {
-                border: 1px solid rgba(51,65,85,0.8) !important;
+                border: 1px solid var(--border-subtle, rgba(51,65,85,0.8)) !important;
                 border-radius: 8px !important;
                 overflow: hidden;
               }
               .leaflet-control-zoom a {
-                background: rgba(15,23,42,0.9) !important;
-                color: #94a3b8 !important;
-                border-bottom: 1px solid rgba(51,65,85,0.5) !important;
+                background: var(--surface-card, rgba(15,23,42,0.9)) !important;
+                color: var(--content-muted, #94a3b8) !important;
+                border-bottom: 1px solid var(--border-subtle, rgba(51,65,85,0.5)) !important;
                 width: 28px !important;
                 height: 28px !important;
                 line-height: 28px !important;
               }
               .leaflet-control-zoom a:hover {
-                background: rgba(30,41,59,0.95) !important;
-                color: #fff !important;
+                background: var(--surface-card-subtle, rgba(30,41,59,0.95)) !important;
+                color: var(--content-main, #fff) !important;
               }
             `}</style>
             <div
@@ -386,7 +386,7 @@ export function VenueLocationPicker({
             />
             {/* Hint drag */}
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[500] pointer-events-none">
-              <span className="text-[10px] bg-slate-900/80 text-slate-400 px-2 py-1 rounded-full backdrop-blur-sm border border-slate-700/40">
+              <span className="text-[10px] bg-surface-card/90 text-content-muted px-2.5 py-1 rounded-full backdrop-blur-sm border border-border-subtle shadow-sm">
                 Arrastrá el pin para ajustar la posición
               </span>
             </div>

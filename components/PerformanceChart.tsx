@@ -9,21 +9,23 @@ interface PerformanceChartProps {
   dateFilter?: string;
   regionFilter?: string;
   isDemo?: boolean;
+  productId?: string | null;
 }
 
 export function PerformanceChart({
   inspections = [],
   dateFilter = '6M',
   regionFilter = 'all',
-  isDemo = false
+  isDemo = false,
+  productId = null
 }: PerformanceChartProps) {
   const { t } = useLanguage();
   const [metric, setMetric] = useState('compliance');
 
   // Construir o rebanar la serie activa y el período anterior
   const { currentData, previousData } = useMemo(() => {
-    // Si estamos en modo demo o no hay inspecciones reales, usar dataset histórico estandarizado
-    if (isDemo || !inspections || inspections.length === 0) {
+    // Modo demo: utilizar exclusivamente el dataset simulado centralizado
+    if (isDemo) {
       const demoResult = getDemoPerformanceData(dateFilter, regionFilter);
       return {
         currentData: demoResult.currentData,
@@ -31,65 +33,92 @@ export function PerformanceChart({
       };
     }
 
-    // Modo real: filtrar inspecciones según región seleccionada
-    let filteredInspections = inspections;
+    // Modo real: filtrar inspecciones según producto y región seleccionada
+    let filteredInspections = Array.isArray(inspections) ? inspections : [];
+
+    if (productId && productId !== 'all') {
+      filteredInspections = filteredInspections.filter((insp: any) => insp.producto_id === productId);
+    }
+
     if (regionFilter && regionFilter !== 'all') {
-      filteredInspections = inspections.filter((insp: any) => {
+      filteredInspections = filteredInspections.filter((insp: any) => {
         const rId = insp.btl_puntos_venta?.region_id || insp.region_id;
         return rId === regionFilter;
       });
     }
 
-    // Agrupar inspecciones reales por mes calendario
-    const monthMap = new Map<string, { month: string; compliance: number[]; hasProduct: number; hasMaterial: number; count: number }>();
+    // Agrupar inspecciones reales por mes calendario (clave: YYYY-MM)
+    const monthMap = new Map<string, { compliance: number[]; hasProduct: number; hasMaterial: number; count: number }>();
 
     for (const insp of filteredInspections) {
+      if (!insp.fecha_inspeccion) continue;
       const date = new Date(insp.fecha_inspeccion);
+      if (isNaN(date.getTime())) continue;
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const label = date.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }).toLowerCase();
 
       if (!monthMap.has(key)) {
-        monthMap.set(key, { month: label, compliance: [], hasProduct: 0, hasMaterial: 0, count: 0 });
+        monthMap.set(key, { compliance: [], hasProduct: 0, hasMaterial: 0, count: 0 });
       }
       const entry = monthMap.get(key)!;
       entry.count++;
-      if (insp.compliance_score != null) entry.compliance.push(insp.compliance_score);
+      if (insp.compliance_score != null) entry.compliance.push(Number(insp.compliance_score));
       if (insp.tiene_producto) entry.hasProduct++;
       if (insp.tiene_material_pop) entry.hasMaterial++;
     }
 
-    const aggregated = Array.from(monthMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, v]) => ({
-        month: v.month,
-        compliance: v.compliance.length > 0
-          ? Math.round(v.compliance.reduce((a, b) => a + b, 0) / v.compliance.length)
-          : 0,
-        presencia: v.count > 0 ? Math.round((v.hasProduct / v.count) * 100) : 0,
-        material: v.count > 0 ? Math.round((v.hasMaterial / v.count) * 100) : 0,
-        visitas: v.count,
-      }));
-
+    // Determinar cantidad de meses n para el período seleccionado
+    const now = new Date();
     let n = 6;
     if (dateFilter === '1M') n = 1;
     else if (dateFilter === '3M') n = 3;
     else if (dateFilter === '6M') n = 6;
     else if (dateFilter === '1Y') n = 12;
     else if (dateFilter === 'YTD') {
-      const currentYear = new Date().getFullYear();
-      const thisYearMonths = Array.from(monthMap.keys()).filter(k => k.startsWith(String(currentYear))).length;
-      n = Math.max(1, thisYearMonths);
+      n = Math.max(1, now.getMonth() + 1);
+    } else if (dateFilter === 'all') {
+      if (filteredInspections.length > 0) {
+        const oldest = new Date(Math.min(...filteredInspections.map((i: any) => new Date(i.fecha_inspeccion).getTime())));
+        const monthsDiff = (now.getFullYear() - oldest.getFullYear()) * 12 + (now.getMonth() - oldest.getMonth()) + 1;
+        n = Math.max(12, Math.min(60, monthsDiff));
+      } else {
+        n = 12;
+      }
     }
 
-    const total = aggregated.length;
-    const curr = aggregated.slice(Math.max(0, total - n));
-    const prev = aggregated.slice(Math.max(0, total - (2 * n)), Math.max(0, total - n));
+    // Opción B: Construir serie continua de 2 * n meses (prev y curr)
+    // Cuando el producto activo no tenga inspecciones asociadas, cada punto se inicializa explícitamente en 0.
+    const prev: Array<{ month: string; fullDate: string; compliance: number; presencia: number; material: number; visitas: number }> = [];
+    const curr: Array<{ month: string; fullDate: string; compliance: number; presencia: number; material: number; visitas: number }> = [];
+
+    for (let i = 2 * n - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('es-MX', { month: 'short', year: '2-digit' }).replace('.', '').toLowerCase();
+      const entry = monthMap.get(key);
+
+      const point = {
+        month: label,
+        fullDate: `${key}-01`,
+        compliance: entry && entry.compliance.length > 0
+          ? Math.round(entry.compliance.reduce((a, b) => a + b, 0) / entry.compliance.length)
+          : 0,
+        presencia: entry && entry.count > 0 ? Math.round((entry.hasProduct / entry.count) * 100) : 0,
+        material: entry && entry.count > 0 ? Math.round((entry.hasMaterial / entry.count) * 100) : 0,
+        visitas: entry ? entry.count : 0,
+      };
+
+      if (i >= n) {
+        prev.push(point);
+      } else {
+        curr.push(point);
+      }
+    }
 
     return {
       currentData: curr,
       previousData: prev
     };
-  }, [inspections, isDemo, dateFilter, regionFilter]);
+  }, [inspections, isDemo, dateFilter, regionFilter, productId]);
 
   const metrics = [
     { id: 'compliance', label: t('charts.execution_index') },
@@ -199,7 +228,8 @@ export function PerformanceChart({
             stroke="var(--text-muted, #64748b)"
             tick={{ fill: 'var(--text-muted, #64748b)' }}
             axisLine={{ stroke: 'var(--border-subtle, #e2e8f0)' }}
-            domain={metric === 'visitas' ? ['auto', 'auto'] : [0, 100]}
+            domain={metric === 'visitas' ? [0, 'auto'] : [0, 100]}
+            tickFormatter={(val) => (metric === 'visitas' ? `${val}` : `${val}%`)}
           />
           <Tooltip
             contentStyle={{

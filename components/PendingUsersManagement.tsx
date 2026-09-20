@@ -170,10 +170,10 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-      case 'inspector': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'client': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      default: return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+      case 'admin': return 'bg-theme-primary/10 text-theme-primary border-theme-primary/30';
+      case 'inspector': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'client': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+      default: return 'bg-surface-card-subtle text-content-muted border-border-subtle';
     }
   };
 
@@ -222,8 +222,8 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl text-white font-semibold">Solicitudes Pendientes</h2>
-          <p className="text-slate-400 text-sm">
+          <h2 className="text-2xl text-content-main font-semibold">Solicitudes Pendientes</h2>
+          <p className="text-content-muted text-sm">
             {filteredUsers.length === 0 ? (
               'No hay solicitudes pendientes'
             ) : (
@@ -234,8 +234,8 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
 
         {pendingUsers.length > 0 && (
           <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <span className="text-sm text-amber-300 font-medium">
+            <Clock className="w-4 h-4 text-amber-500" />
+            <span className="text-sm text-amber-600 dark:text-amber-300 font-medium">
               {pendingUsers.length} pendiente{pendingUsers.length !== 1 ? 's' : ''}
             </span>
           </div>
@@ -246,11 +246,11 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       <div className="rounded-xl bg-blue-500/10 border border-blue-500/30 p-4">
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <AlertCircle className="w-5 h-5 text-blue-400" />
+            <AlertCircle className="w-5 h-5 text-blue-500" />
           </div>
           <div className="flex-1">
-            <h4 className="text-white font-semibold mb-1">Sistema de Aprobación de Usuarios</h4>
-            <p className="text-sm text-slate-300">
+            <h4 className="text-content-main font-semibold mb-1">Sistema de Aprobación de Usuarios</h4>
+            <p className="text-sm text-content-muted">
               Los nuevos usuarios deben ser aprobados por un administrador antes de poder acceder al sistema.
               Revisa cada solicitud cuidadosamente y verifica que el email corporativo y la información sean correctos.
             </p>
@@ -261,27 +261,27 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       {/* Search */}
       {pendingUsers.length > 0 && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
           <input
             type="text"
             placeholder="Buscar por nombre, email o rol..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800/50 border border-slate-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
           />
         </div>
       )}
 
       {/* Pending Users List */}
       {filteredUsers.length === 0 ? (
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-12 text-center">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-12 text-center shadow-sm">
           <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-            <UserCheck className="w-8 h-8 text-green-400" />
+            <UserCheck className="w-8 h-8 text-green-500" />
           </div>
-          <h3 className="text-xl text-white font-semibold mb-2">
+          <h3 className="text-xl text-content-main font-semibold mb-2">
             {searchQuery ? 'No se encontraron solicitudes' : '¡Todo al día!'}
           </h3>
-          <p className="text-slate-400">
+          <p className="text-content-muted">
             {searchQuery
               ? 'Intenta con otros términos de búsqueda'
               : 'No hay solicitudes de registro pendientes de aprobación'
@@ -293,31 +293,31 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:border-slate-600/50 transition-all"
+              className="bg-surface-card border border-border-subtle rounded-xl p-6 hover:border-theme-primary/40 transition-all shadow-sm"
             >
               <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
                 {/* User Info */}
                 <div className="flex-1 space-y-3">
                   {/* Name and Role */}
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-lg">
+                    <div className="w-12 h-12 rounded-full bg-theme-primary/10 text-theme-primary border border-theme-primary/20 flex items-center justify-center flex-shrink-0">
+                      <span className="font-bold text-lg">
                         {user.nombre.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-white font-semibold text-lg">{user.nombre}</h3>
+                        <h3 className="text-content-main font-semibold text-lg">{user.nombre}</h3>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.rol)}`}>
                           {getRoleLabel(user.rol)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                      <div className="flex items-center gap-2 text-content-muted text-sm mt-1">
                         <Mail className="w-4 h-4" />
                         <span className="break-all">{user.email}</span>
                       </div>
                       {user.empresa && (
-                        <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
+                        <div className="flex items-center gap-2 text-content-muted text-sm mt-1">
                           <Briefcase className="w-4 h-4" />
                           <span>{user.empresa}</span>
                         </div>
@@ -335,7 +335,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
                   <button
                     onClick={() => handleApproveUser(user)}
                     disabled={processingUserId === user.id}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-surface-card-subtle disabled:text-content-muted disabled:border disabled:border-border-subtle text-white px-4 py-2.5 rounded-lg transition-all font-medium shadow-sm"
                   >
                     {processingUserId === user.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -347,7 +347,7 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
                   <button
                     onClick={() => openRejectionModal(user)}
                     disabled={processingUserId === user.id}
-                    className="flex items-center gap-2 bg-red-600/80 hover:bg-red-600 disabled:bg-slate-700 disabled:text-slate-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium"
+                    className="flex items-center gap-2 bg-red-600/80 hover:bg-red-600 disabled:bg-surface-card-subtle disabled:text-content-muted disabled:border disabled:border-border-subtle text-white px-4 py-2.5 rounded-lg transition-all font-medium shadow-sm"
                   >
                     <X className="w-4 h-4" />
                     <span className="hidden sm:inline">Rechazar</span>
@@ -372,27 +372,27 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
       {/* Rejection Modal */}
       {showRejectionModal && selectedUser && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 rounded-xl max-w-md w-full p-6 shadow-2xl">
+          <div className="bg-surface-card border border-border-subtle rounded-xl max-w-md w-full p-6 shadow-2xl text-content-main">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <X className="w-5 h-5 text-red-400" />
+                <X className="w-5 h-5 text-red-500" />
               </div>
               <div>
-                <h3 className="text-lg text-white font-semibold">Rechazar Solicitud</h3>
-                <p className="text-sm text-slate-400">{selectedUser.nombre}</p>
+                <h3 className="text-lg text-content-main font-semibold">Rechazar Solicitud</h3>
+                <p className="text-sm text-content-muted">{selectedUser.nombre}</p>
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm text-slate-300 mb-2">
-                Razón del rechazo <span className="text-red-400">*</span>
+              <label className="block text-sm text-content-main font-medium mb-2">
+                Razón del rechazo <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={rejectionNote}
                 onChange={(e) => setRejectionNote(e.target.value)}
                 placeholder="Explica brevemente por qué se rechaza esta solicitud..."
                 rows={4}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 resize-none"
               />
             </div>
 
@@ -404,14 +404,14 @@ export function PendingUsersManagement({ session, onUpdate }: PendingUsersManage
                   setRejectionNote('');
                 }}
                 disabled={processingUserId !== null}
-                className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-600 text-white px-4 py-2.5 rounded-lg transition-colors font-medium"
+                className="flex-1 bg-surface-card-subtle hover:bg-surface-card border border-border-subtle text-content-muted hover:text-content-main px-4 py-2.5 rounded-lg transition-colors font-medium"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleRejectUser}
                 disabled={processingUserId !== null || !rejectionNote.trim()}
-                className="flex-1 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-500 text-white px-4 py-2.5 rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+                className="flex-1 bg-red-600 hover:bg-red-500 disabled:bg-surface-card-subtle disabled:text-content-muted disabled:border disabled:border-border-subtle text-white px-4 py-2.5 rounded-lg transition-all font-medium flex items-center justify-center gap-2 shadow-sm"
               >
                 {processingUserId === selectedUser.id ? (
                   <>

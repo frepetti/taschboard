@@ -178,17 +178,17 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
   console.log('Role filter:', roleFilter);
 
   const getRoleBadgeStyle = (role: string, isActive: boolean = true) => {
-    if (!isActive) return 'bg-transparent text-slate-500 border-slate-700 border hover:border-slate-500';
+    if (!isActive) return 'bg-transparent text-content-muted border-border-subtle border hover:border-content-muted';
 
     switch (role) {
       case 'admin':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30 border';
+        return 'bg-theme-primary/10 text-theme-primary border-theme-primary/30 border';
       case 'inspector':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30 border';
+        return 'bg-blue-500/10 text-blue-500 border-blue-500/20 border';
       case 'client':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30 border';
+        return 'bg-amber-500/10 text-amber-500 border-amber-500/20 border';
       default:
-        return 'bg-slate-500/20 text-slate-300 border-slate-500/30 border';
+        return 'bg-surface-card-subtle text-content-muted border-border-subtle border';
     }
   };
 
@@ -197,17 +197,17 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
   };
 
   const getStatusBadgeStyle = (status: string, isActive: boolean = true) => {
-    if (!isActive) return 'bg-transparent text-slate-500 border-slate-700 border hover:border-slate-500';
+    if (!isActive) return 'bg-transparent text-content-muted border-border-subtle border hover:border-content-muted';
 
     switch (status) {
       case 'pending':
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/30 border';
+        return 'bg-amber-500/10 text-amber-500 border-amber-500/20 border';
       case 'approved':
-        return 'bg-green-500/20 text-green-300 border-green-500/30 border';
+        return 'bg-green-500/10 text-green-500 border-green-500/20 border';
       case 'rejected':
-        return 'bg-red-500/20 text-red-300 border-red-500/30 border';
+        return 'bg-red-500/10 text-red-500 border-red-500/20 border';
       default:
-        return 'bg-slate-500/20 text-slate-300 border-slate-500/30 border';
+        return 'bg-surface-card-subtle text-content-muted border-border-subtle border';
     }
   };
 
@@ -241,12 +241,12 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl text-white font-semibold">Gestión de Usuarios</h2>
-          <p className="text-slate-400 text-sm">Total: {users.length} usuarios</p>
+          <h2 className="text-2xl text-content-main font-semibold">Gestión de Usuarios</h2>
+          <p className="text-content-muted text-sm">Total: {users.length} usuarios</p>
         </div>
         <button
           onClick={() => setShowNewUserModal(true)}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-theme-primary hover:brightness-95 text-white px-4 py-2.5 rounded-lg transition-all shadow-sm font-medium"
         >
           <UserPlus className="w-4 h-4" />
           <span>Nuevo Usuario</span>
@@ -255,22 +255,22 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-content-muted" />
         <input
           type="text"
           placeholder="Buscar por nombre, email o rol..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-slate-800/50 border border-slate-700 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+          className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
         />
       </div>
 
       {/* Filters */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 space-y-4 sm:space-y-0 sm:flex sm:items-start sm:gap-8">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-4 space-y-4 sm:space-y-0 sm:flex sm:items-start sm:gap-8 shadow-sm">
 
         {/* Status Filters */}
         <div className="flex flex-col gap-3">
-          <span className="text-slate-300 text-sm font-medium">Filtrar por estado:</span>
+          <span className="text-content-main text-sm font-medium">Filtrar por estado:</span>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setStatusFilter({ ...statusFilter, approved: !statusFilter.approved })}
@@ -294,11 +294,11 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
         </div>
 
         {/* Separator for desktop */}
-        <div className="hidden sm:block w-px h-16 bg-slate-700/50"></div>
+        <div className="hidden sm:block w-px h-16 bg-border-subtle"></div>
 
         {/* Role Filters */}
         <div className="flex flex-col gap-3">
-          <span className="text-slate-300 text-sm font-medium">Filtrar por rol:</span>
+          <span className="text-content-main text-sm font-medium">Filtrar por rol:</span>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setRoleFilter({ ...roleFilter, admin: !roleFilter.admin })}
@@ -323,31 +323,31 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
       </div>
 
       {/* Users Table */}
-      <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl overflow-hidden">
+      <div className="bg-surface-card border border-border-subtle rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700/50">
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Usuario</th>
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Email</th>
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Rol</th>
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Estado</th>
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Empresa</th>
-                <th className="text-left text-xs uppercase tracking-wider text-slate-400 p-4">Creado</th>
-                <th className="text-right text-xs uppercase tracking-wider text-slate-400 p-4">Acciones</th>
+              <tr className="border-b border-border-subtle bg-surface-card-subtle">
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Usuario</th>
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Email</th>
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Rol</th>
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Estado</th>
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Empresa</th>
+                <th className="text-left text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Creado</th>
+                <th className="text-right text-xs uppercase tracking-wider text-content-muted font-semibold p-4">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-b border-slate-700/30 hover:bg-slate-800/30 cursor-pointer transition-colors"
+                  className="border-b border-border-subtle hover:bg-surface-card-subtle/60 cursor-pointer transition-colors"
                   onClick={() => setSelectedUser(user)}
                 >
                   <td className="p-4">
-                    <div className="text-white font-medium">{user.name}</div>
+                    <div className="text-content-main font-medium">{user.name}</div>
                   </td>
-                  <td className="p-4 text-slate-300">{user.email}</td>
+                  <td className="p-4 text-content-main">{user.email}</td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleBadge(user.role)}`}>
                       {user.role === 'admin' ? 'Admin' : user.role === 'inspector' ? 'Inspector' : 'Cliente'}
@@ -358,8 +358,8 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                       {getStatusLabel(user.estado_aprobacion)}
                     </span>
                   </td>
-                  <td className="p-4 text-slate-300">{user.company || '-'}</td>
-                  <td className="p-4 text-slate-400 text-sm">
+                  <td className="p-4 text-content-muted">{user.company || '-'}</td>
+                  <td className="p-4 text-content-muted text-sm">
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="p-4 text-right">
@@ -370,7 +370,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                           setSecurityUser(user);
                           setShowSecurityModal(true);
                         }}
-                        className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-amber-400 transition-colors"
+                        className="p-2 hover:bg-surface-card-subtle rounded-lg text-content-muted hover:text-amber-500 transition-colors"
                         title="Gestionar Contraseña"
                       >
                         <Key className="w-4 h-4" />
@@ -380,7 +380,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                           e.stopPropagation();
                           setSelectedUser(user);
                         }}
-                        className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+                        className="p-2 hover:bg-surface-card-subtle rounded-lg text-content-muted hover:text-content-main transition-colors"
                         title="Editar"
                       >
                         <Edit className="w-4 h-4" />
@@ -390,7 +390,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
                           e.stopPropagation();
                           handleDeleteUser(user);
                         }}
-                        className="p-2 hover:bg-red-600/20 rounded-lg text-red-400 transition-colors"
+                        className="p-2 hover:bg-red-500/10 rounded-lg text-content-muted hover:text-red-500 transition-colors"
                         title="Eliminar"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -404,7 +404,7 @@ export function UserManagement({ session, onUpdate }: UserManagementProps) {
         </div>
 
         {filteredUsers.length === 0 && (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-content-muted">
             No se encontraron usuarios
           </div>
         )}
@@ -550,20 +550,20 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 shadow-2xl rounded-xl w-full max-w-md overflow-hidden">
+      <div className="bg-surface-card border border-border-subtle shadow-2xl rounded-xl w-full max-w-md overflow-hidden text-content-main">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between">
+        <div className="p-5 border-b border-border-subtle bg-surface-card flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-              <Key className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+              <Key className="w-5 h-5 text-amber-500" />
             </div>
             <div>
-              <h3 className="text-lg text-white font-bold">Seguridad de Usuario</h3>
-              <p className="text-slate-400 text-xs truncate max-w-[200px]">{user.email}</p>
-              {isSelfUpdate && <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">Usuario Actual</span>}
+              <h3 className="text-lg text-content-main font-bold">Seguridad de Usuario</h3>
+              <p className="text-content-muted text-xs truncate max-w-[200px]">{user.email}</p>
+              {isSelfUpdate && <span className="text-[10px] bg-theme-primary/10 text-theme-primary px-1.5 py-0.5 rounded border border-theme-primary/20">Usuario Actual</span>}
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-content-muted hover:text-content-main transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -571,27 +571,27 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Option 1: Email Reset (Recommended) */}
-          <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50 hover:border-purple-500/30 transition-colors">
-            <h4 className="text-white font-medium mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-400"></span>
+          <div className="bg-surface-card-subtle rounded-lg p-4 border border-border-subtle transition-colors">
+            <h4 className="text-content-main font-medium mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               Enviar Código de Acceso (OTP)
             </h4>
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-sm text-content-muted mb-4">
               El usuario recibirá un código numérico para acceder. Debe usarlo en la opción "Olvidé mi contraseña" de la pantalla de login.
             </p>
             <button
               onClick={handleSendResetEmail}
               disabled={loading}
-              className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-theme-primary hover:brightness-95 disabled:bg-surface-card-subtle disabled:text-content-muted text-white rounded-lg transition-all font-medium flex items-center justify-center gap-2 shadow-sm"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar Código OTP'}
             </button>
           </div>
 
           <div className="relative flex items-center gap-2 py-2">
-            <div className="h-px bg-slate-800 flex-1"></div>
-            <span className="text-xs text-slate-600 font-medium uppercase">Opciones Avanzadas</span>
-            <div className="h-px bg-slate-800 flex-1"></div>
+            <div className="h-px bg-border-subtle flex-1"></div>
+            <span className="text-xs text-content-muted font-medium uppercase">Opciones Avanzadas</span>
+            <div className="h-px bg-border-subtle flex-1"></div>
           </div>
 
           {/* Option 2: Manual Update (Admin Override) */}
@@ -599,40 +599,40 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
             {!showManualInput ? (
               <button
                 onClick={() => setShowManualInput(true)}
-                className="w-full py-2 border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 rounded-lg text-sm transition-colors"
+                className="w-full py-2 border border-border-subtle text-content-muted hover:text-content-main hover:bg-surface-card-subtle rounded-lg text-sm transition-colors"
               >
                 Establecer contraseña manualmente
               </button>
             ) : (
-              <form onSubmit={handleManualUpdate} className="space-y-3 bg-slate-800/20 p-4 rounded-lg border border-slate-700/50">
+              <form onSubmit={handleManualUpdate} className="space-y-3 bg-surface-card-subtle p-4 rounded-lg border border-border-subtle">
                 <div>
-                  <label className="block text-sm text-slate-300 mb-1.5">Nueva Contraseña</label>
+                  <label className="block text-sm text-content-main mb-1.5">Nueva Contraseña</label>
                   <input
                     type="text"
                     value={manualPassword}
                     onChange={(e) => setManualPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full bg-slate-900 border border-slate-700 text-white px-3 py-2 rounded focus:outline-none focus:border-amber-500 text-sm"
+                    className="w-full bg-surface-card border border-border-subtle text-content-main px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-theme-primary/50 text-sm"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowManualInput(false)}
-                    className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm transition-colors"
+                    className="flex-1 py-2 bg-surface-card border border-border-subtle hover:bg-surface-card-subtle text-content-muted hover:text-content-main rounded text-sm transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={loading || manualPassword.length < 6}
-                    className="flex-1 py-2 bg-amber-600/80 hover:bg-amber-500 text-white rounded text-sm transition-colors font-medium"
+                    className="flex-1 py-2 bg-amber-600 hover:brightness-95 text-white rounded text-sm transition-all font-medium"
                   >
                     {loading ? 'Procesando...' : 'Cambiar'}
                   </button>
                 </div>
                 {!isSelfUpdate && (
-                  <p className="text-[10px] text-red-400 flex items-start gap-1 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
+                  <p className="text-[10px] text-red-500 flex items-start gap-1 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
                     <Store className="w-3 h-3 mt-0.5 shrink-0" />
                     <span>Nota: Solo el propio usuario puede cambiar su contraseña directamente desde aquí. Para otros usuarios, usa el correo de recuperación.</span>
                   </p>
@@ -682,26 +682,26 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 shadow-2xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-surface-card border border-border-subtle shadow-2xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden text-content-main">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+        <div className="p-6 border-b border-border-subtle flex items-center justify-between bg-surface-card">
           <div>
-            <h3 className="text-xl text-white font-bold">Editar Usuario</h3>
-            <p className="text-slate-400 text-sm mt-1">{user.email}</p>
+            <h3 className="text-xl text-content-main font-bold">Editar Usuario</h3>
+            <p className="text-content-muted text-sm mt-1">{user.email}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-content-muted hover:text-content-main transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs (only for clients) */}
         {role === 'client' && (
-          <div className="flex border-b border-slate-800 px-6">
+          <div className="flex border-b border-border-subtle px-6">
             <button
               onClick={() => setActiveTab('profile')}
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'profile'
-                ? 'border-purple-500 text-purple-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-theme-primary text-theme-primary font-semibold'
+                : 'border-transparent text-content-muted hover:text-content-main'
                 }`}
             >
               Perfil
@@ -709,8 +709,8 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
             <button
               onClick={() => setActiveTab('venues')}
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'venues'
-                ? 'border-amber-500 text-amber-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-500 text-amber-500 font-semibold'
+                : 'border-transparent text-content-muted hover:text-content-main'
                 }`}
             >
               Asignar Venues
@@ -724,29 +724,29 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
             <form id="edit-user-form" onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Nombre</label>
+                  <label className="block text-sm font-medium text-content-muted mb-2">Nombre</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Email (Solo lectura)</label>
+                  <label className="block text-sm font-medium text-content-muted mb-2">Email (Solo lectura)</label>
                   <input
                     type="text"
                     value={user.email}
                     disabled
-                    className="w-full bg-slate-900/50 border border-slate-800 text-slate-500 px-4 py-2.5 rounded-lg cursor-not-allowed"
+                    className="w-full bg-surface-card-subtle/50 border border-border-subtle text-content-muted px-4 py-2.5 rounded-lg cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Rol</label>
+                  <label className="block text-sm font-medium text-content-muted mb-2">Rol</label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
                   >
                     <option value="inspector">Inspector</option>
                     <option value="client">Cliente</option>
@@ -754,11 +754,11 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Estado</label>
+                  <label className="block text-sm font-medium text-content-muted mb-2">Estado</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
                   >
                     <option value="pending">Pendiente</option>
                     <option value="approved">Aprobado</option>
@@ -767,12 +767,12 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
                 </div>
                 {role === 'client' && (
                   <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-slate-400 mb-2">Empresa</label>
+                    <label className="block text-sm font-medium text-content-muted mb-2">Empresa</label>
                     <input
                       type="text"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
-                      className="w-full bg-slate-800/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
                     />
                   </div>
                 )}
@@ -790,10 +790,10 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50 flex justify-end gap-3">
+        <div className="p-4 border-t border-border-subtle bg-surface-card flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors font-medium"
+            className="px-4 py-2 bg-surface-card-subtle border border-border-subtle hover:bg-surface-card text-content-muted hover:text-content-main rounded-lg transition-colors font-medium"
           >
             Cancelar
           </button>
@@ -802,7 +802,7 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
               type="submit"
               form="edit-user-form"
               disabled={loading}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+              className="px-6 py-2 bg-theme-primary hover:brightness-95 disabled:bg-surface-card-subtle disabled:text-content-muted text-white rounded-lg transition-all font-medium flex items-center gap-2 shadow-sm"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Guardar Cambios
@@ -811,7 +811,7 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
           {activeTab === 'venues' && (
             <button
               onClick={() => setActiveTab('profile')}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors font-medium"
+              className="px-6 py-2 bg-theme-primary hover:brightness-95 text-white rounded-lg transition-all font-medium shadow-sm"
             >
               Volver al Perfil
             </button>
@@ -846,55 +846,55 @@ function NewUserModal({ session: _session, onClose, onSuccess }: any) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-2xl max-w-md w-full">
-        <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
-          <h3 className="text-xl text-white font-semibold">Nuevo Usuario</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">
+      <div className="bg-surface-card border border-border-subtle rounded-xl shadow-2xl max-w-md w-full text-content-main">
+        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
+          <h3 className="text-xl text-content-main font-semibold">Nuevo Usuario</h3>
+          <button onClick={onClose} className="text-content-muted hover:text-content-main">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Nombre</label>
+            <label className="block text-sm text-content-muted font-medium mb-2">Nombre</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Email</label>
+            <label className="block text-sm text-content-muted font-medium mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
+            <label className="block text-sm text-content-muted font-medium mb-2">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-slate-300 mb-2">Rol</label>
+            <label className="block text-sm text-content-muted font-medium mb-2">Rol</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
             >
               <option value="inspector">Inspector</option>
               <option value="client">Cliente</option>
@@ -904,12 +904,12 @@ function NewUserModal({ session: _session, onClose, onSuccess }: any) {
 
           {role === 'client' && (
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Empresa</label>
+              <label className="block text-sm text-content-muted font-medium mb-2">Empresa</label>
               <input
                 type="text"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-2.5 rounded-lg"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
               />
             </div>
           )}
@@ -918,14 +918,14 @@ function NewUserModal({ session: _session, onClose, onSuccess }: any) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-700/50 hover:bg-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="flex-1 bg-surface-card-subtle border border-border-subtle hover:bg-surface-card text-content-muted hover:text-content-main px-4 py-2.5 rounded-lg transition-colors font-medium"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-lg"
+              className="flex-1 bg-theme-primary hover:brightness-95 disabled:bg-surface-card-subtle disabled:text-content-muted text-white px-4 py-2.5 rounded-lg transition-all shadow-sm font-medium"
             >
               {loading ? 'Creando...' : 'Crear Usuario'}
             </button>

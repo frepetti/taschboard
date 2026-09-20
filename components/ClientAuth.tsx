@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../utils/supabase/client';
-import { Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react';
 import { authAPI } from '../utils/api';
 
 interface ClientAuthProps {
@@ -212,12 +212,12 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-app flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <a
           href="/"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-content-muted hover:text-content-main transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Volver al Inicio</span>
@@ -225,43 +225,15 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-xl bg-theme-primary/10 border border-theme-primary/30 flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">📊</span>
           </div>
-          <h1 className="text-3xl text-white font-bold mb-2">Client Login</h1>
-          <p className="text-slate-400">Acceso al Dashboard Ejecutivo</p>
+          <h1 className="text-3xl text-content-main font-bold mb-2">Client Login</h1>
+          <p className="text-content-muted">Acceso al Dashboard Ejecutivo</p>
         </div>
 
         {/* Auth Form */}
-        <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-8 shadow-2xl">
-          {/* Mode Tabs - DISABLED (Sign Up removed from UI) */}
-          {/*
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setMode('login')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                mode === 'login'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Login</span>
-            </button>
-            <button
-              onClick={() => setMode('signup')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
-                mode === 'signup'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800'
-              }`}
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Sign Up</span>
-            </button>
-          </div>
-          */}
-
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-8 shadow-2xl">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-start gap-3">
@@ -275,33 +247,43 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
           {/* Success Message */}
           {successMessage && (
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-green-400">{successMessage}</p>
               </div>
             </div>
           )}
 
-          {/* Form */}
+          {/* Forgot Password Flow */}
           {mode === 'forgot_password' ? (
-            <div className="space-y-4">
+            <div>
+              <div className="mb-6 text-center">
+                <h3 className="text-xl text-content-main font-semibold mb-2">Recuperar Contraseña</h3>
+                <p className="text-sm text-content-muted">
+                  {resetStep === 'email'
+                    ? 'Ingresa tu email para recibir un código de recuperación'
+                    : 'Ingresa el código que enviamos a tu email'
+                  }
+                </p>
+              </div>
+
               {resetStep === 'email' ? (
                 <form onSubmit={handleSendRecoveryCode} className="space-y-4">
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Email</label>
+                    <label className="block text-sm text-content-muted mb-2">Email</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="tu@empresa.com"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Mail className="w-5 h-5" />
                     <span>{loading ? 'Enviando...' : 'Enviar Código de Recuperación'}</span>
@@ -309,33 +291,33 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
                   <button
                     type="button"
                     onClick={handleSkipToOtp}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 mt-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 mt-2"
                   >
                     ¿Ya tienes un código? Ingrésalo aquí
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyCode} className="space-y-4">
-                  <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg mb-4">
-                    <p className="text-sm text-amber-300 text-center">
+                  <div className="p-4 bg-theme-primary/10 border border-theme-primary/30 rounded-lg mb-4">
+                    <p className="text-sm text-theme-primary text-center">
                       {successMessage || <>Ingresa el código enviado a <strong>{email}</strong></>}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Código de Verificación</label>
+                    <label className="block text-sm text-content-muted mb-2">Código de Verificación</label>
                     <input
                       type="text"
                       value={otpToken}
                       onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 8))}
                       placeholder="123456"
                       required
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-center text-2xl tracking-widest font-mono"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50 text-center text-2xl tracking-widest font-mono"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading || otpToken.length < 6}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-green-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+                    className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
                     <Lock className="w-5 h-5" />
                     <span>{loading ? 'Verificando...' : 'Verificar y Cambiar Password'}</span>
@@ -347,7 +329,7 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
                       setOtpToken('');
                       setError('');
                     }}
-                    className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
+                    className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2"
                   >
                     Volver a ingresar email
                   </button>
@@ -361,7 +343,7 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
                   setError('');
                   setSuccessMessage('');
                 }}
-                className="w-full text-sm text-slate-400 hover:text-white transition-colors py-2 border-t border-slate-700/50 mt-4"
+                className="w-full text-sm text-content-muted hover:text-content-main transition-colors py-2 border-t border-border-subtle mt-4"
               >
                 Volver al Login
               </button>
@@ -371,44 +353,44 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
               {mode === 'signup' && (
                 <>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Nombre Completo</label>
+                    <label className="block text-sm text-content-muted mb-2">Nombre Completo</label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Tu nombre"
                       required={mode === 'signup'}
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-300 mb-2">Empresa</label>
+                    <label className="block text-sm text-content-muted mb-2">Empresa</label>
                     <input
                       type="text"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="Nombre de tu empresa"
                       required={mode === 'signup'}
-                      className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                     />
                   </div>
                 </>
               )}
 
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Email</label>
+                <label className="block text-sm text-content-muted mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@empresa.com"
                   required
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-300 mb-2">Contraseña</label>
+                <label className="block text-sm text-content-muted mb-2">Contraseña</label>
                 <input
                   type="password"
                   value={password}
@@ -416,10 +398,10 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50"
                 />
                 {mode === 'signup' && (
-                  <p className="text-xs text-slate-500 mt-1">Mínimo 6 caracteres</p>
+                  <p className="text-xs text-content-muted mt-1">Mínimo 6 caracteres</p>
                 )}
                 {mode === 'login' && (
                   <div className="flex justify-end mt-1">
@@ -430,7 +412,7 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
                         setError('');
                         setSuccessMessage('');
                       }}
-                      className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                      className="text-xs text-theme-primary hover:underline transition-colors"
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -441,7 +423,7 @@ export function ClientAuth({ onAuthSuccess }: ClientAuthProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-amber-500/20 disabled:shadow-none"
+                className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm"
               >
                 {loading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
               </button>

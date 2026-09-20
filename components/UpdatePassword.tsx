@@ -55,18 +55,18 @@ export function UpdatePassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-        <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-8 max-w-md w-full text-center backdrop-blur-sm">
+      <div className="min-h-screen bg-surface-app flex items-center justify-center p-4">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-8 max-w-md w-full text-center shadow-2xl">
           <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-2xl text-white font-bold mb-4">¡Contraseña Actualizada!</h2>
-          <p className="text-slate-400 mb-6">
+          <h2 className="text-2xl text-content-main font-bold mb-4">¡Contraseña Actualizada!</h2>
+          <p className="text-content-muted mb-6">
             Tu contraseña ha sido modificada exitosamente. Serás redirigido al inicio de sesión en unos segundos.
           </p>
           <button
             onClick={() => window.location.href = '/'}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-medium transition-colors w-full"
+            className="bg-theme-primary hover:brightness-95 text-white px-6 py-3 rounded-lg font-medium transition-colors w-full shadow-sm"
           >
             Ir al Inicio
           </button>
@@ -76,17 +76,17 @@ export function UpdatePassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface-app flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-xl bg-theme-primary/10 flex items-center justify-center mx-auto mb-4 border border-theme-primary/30">
+            <Lock className="w-8 h-8 text-theme-primary" />
           </div>
-          <h1 className="text-3xl text-white font-bold mb-2">Nueva Contraseña</h1>
-          <p className="text-slate-400">Ingresa tu nueva contraseña para recuperar el acceso</p>
+          <h1 className="text-3xl text-content-main font-bold mb-2">Nueva Contraseña</h1>
+          <p className="text-content-muted">Ingresa tu nueva contraseña para recuperar el acceso</p>
         </div>
 
-        <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-8 backdrop-blur-sm shadow-xl">
+        <div className="bg-surface-card border border-border-subtle rounded-xl p-8 shadow-xl">
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
@@ -98,7 +98,7 @@ export function UpdatePassword() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Nueva Contraseña</label>
+              <label className="block text-sm text-content-muted mb-2">Nueva Contraseña</label>
               <input
                 type="password"
                 value={password}
@@ -106,12 +106,12 @@ export function UpdatePassword() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-slate-300 mb-2">Confirmar Contraseña</label>
+              <label className="block text-sm text-content-muted mb-2">Confirmar Contraseña</label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -119,14 +119,14 @@ export function UpdatePassword() {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full bg-slate-950/50 border border-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main placeholder:text-content-muted px-4 py-3 rounded-lg focus:outline-none focus:border-theme-primary/50 transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:from-slate-700 disabled:to-slate-700 disabled:text-slate-500 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 disabled:shadow-none flex items-center justify-center gap-2"
+              className="w-full bg-theme-primary hover:brightness-95 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -142,8 +142,8 @@ export function UpdatePassword() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-700/50 text-center">
-            <a href="/" className="text-sm text-slate-400 hover:text-white transition-colors inline-flex items-center gap-2">
+          <div className="mt-6 pt-6 border-t border-border-subtle text-center">
+            <a href="/" className="text-sm text-content-muted hover:text-content-main transition-colors inline-flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" />
               <span>Volver al inicio</span>
             </a>

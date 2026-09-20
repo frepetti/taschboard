@@ -137,5 +137,73 @@
 - [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 20)
 
+## Fase 21: Barrido Integral de Refactorización y Saneamiento Visual
+- [x] Auditoría automatizada por regex (identificación y mapeo de clases `purple/indigo` y `slate/zinc` fijas)
+- [x] Desacople de acentos violetas en botones de acción primaria e iconografía en paneles admin
+- [x] Tokenización de superficies, tablas, listados e inputs en `UserManagement.tsx` y `VenueManager.tsx`
+- [x] Tokenización de tarjetas, paneles de configuración y estados vacíos en `RegionManager.tsx`, `ProductManagement.tsx`, `TicketManagement.tsx`, `PendingUsersManagement.tsx` y `SettingsManagement.tsx`
+- [x] Calibración del badge contador en `VenueSelectionForm.tsx` con `bg-theme-primary/10` y cards en `ClientSelectionForm.tsx`
+- [x] Saneamiento de tarjetas de historial e inline modal de detalle en `InspectionHistory.tsx`
+- [x] Tokenización integral del modal de edición de producto en `ProductManagement.tsx` (general, perfect serve, cocktails)
+- [x] Validación estática estricta con `npx tsc --noEmit` (0 errores)
+- [x] Verificación final con regex scan (0 clases estáticas no deseadas)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 21)
 
+## Fase 22: Saneamiento Exhaustivo de Flujos de Inspección, Capacitaciones, Calendario y Auditoría Global Regex
+- [x] Auditoría terminal exhaustiva (identificación completa de clases hardcodeadas en `components/` y `src/`)
+- [x] Refactorización del flujo de selección de producto (`ProductSelectorInspection.tsx` y `ProductSelector.tsx`)
+- [x] Refactorización integral de pestañas, checklists e inputs en formulario de inspección (`InspectionForm.tsx`)
+- [x] Refactorización del módulo de capacitaciones y modal de alta (`TrainingManagement.tsx`, `TrainingList.tsx`)
+- [x] Normalización de inputs geográficos y mapa en modal de venue (`VenueLocationPicker.tsx`)
+- [x] Refactorización de widget y modal del Calendario de Activaciones (`ActivationTimeline.tsx`)
+- [x] Saneamiento de componentes auxiliares detectados por regex (`ClientProductManagement.tsx`, `ProductImporter.tsx`, `VenueImporter.tsx`, `SecurityStatus.tsx`, `UpdatePassword.tsx`, `InsightCard.tsx`, `AdminDashboard.tsx`, `KPICard.tsx`, `ConfirmDialog.tsx`, `OpportunityMap.tsx`, `VenueDetail.tsx`)
+- [x] Saneamiento de pantallas de autenticación (`AdminAuth.tsx`, `ClientAuth.tsx`, `InspectorAuth.tsx`, `DebugPanel.tsx`)
+- [x] Verificación estática con `npx tsc --noEmit` (0 errores)
+- [x] Doble escaneo regex final comprobando 0 coincidencias en toda la base de componentes
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 22)
+
+## Fase 23: Auditoría y Normalización de Tubería de Datos en PerformanceChart (Opción B)
+- [x] Auditoría de trazabilidad e identificación de causa raíz de datos ficticios en `PerformanceChart.tsx`
+- [x] Propagación de prop `productId` desde `ManagerDashboard.tsx` a `<PerformanceChart />` con filtrado defensivo
+- [x] Desacople de fallback a `getDemoPerformanceData` en modo real (`!isDemo`)
+- [x] Construcción de serie temporal continua mensual plana en 0% ante ausencia de inspecciones (Opción B)
+- [x] Calibración de eje `YAxis` (`domain={[0, 100]}`) y formateo porcentual
+- [x] Sincronización de KPIs de pie de gráfico (`Actual: 0%`, `vs Periodo Anterior: 0.0%` o `—` neutro, `Meses: N`)
+- [x] Verificación estática de compilación TypeScript (`npx tsc --noEmit` = 0 errores)
+- [x] Actualización y completitud técnica en `walkthrough.md` (Sprint 23)
+
+## Fase 24: Reconciliación de Base de Datos y Resolución de Schema Drift (master_schema.sql v2.1)
+- [x] Parseo e introspección exhaustiva de `schema_supabase.json` (206 columnas en 15 tablas)
+- [x] Creación de script de auditoría automatizado (`scripts/audit_schema_drift.cjs`) y detección de discrepancias exactas
+- [x] Actualización del encabezado de `master_schema.sql` a Versión 2.1 (Septiembre 2026 - Schema Drift Sincronizado)
+- [x] Incorporación de `stock_estimado TEXT` y `compliance_score NUMERIC DEFAULT 0` en `CREATE TABLE btl_inspecciones`
+- [x] Actualización de tipos en `btl_productos`: `competidores JSONB DEFAULT '[]'::jsonb` y `configuracion JSONB DEFAULT '{}'::jsonb`
+- [x] Certificación de paridad cero discrepancias con script de auditoría automatizado
+- [x] Verificación de integridad de TypeScript con `npx tsc --noEmit` (0 errores)
+- [x] Eliminación de script temporal de auditoría
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 24)
+
+## Fase 25: Integración Polimórfica de Competencia y Normalización Entera de Scores (Estrella Heineken)
+- [x] Creación de `utils/competitionUtils.ts` con parser polimórfico `parseInspectionCompetition`
+- [x] Integración de parser polimórfico en `InspectionHistory.tsx` (modal de detalle de inspección)
+- [x] Integración de parser polimórfico en `CompetitionChart.tsx` (frecuencia y visibilidad)
+- [x] Integración de parser polimórfico en `PricePositioningChart.tsx` (posicionamiento de precio vs competencia)
+- [x] Sincronización de campos legacy y array en `InspectionForm.tsx` al guardar competidores
+- [x] Normalización de scores a enteros y refactorización de estrella roja Heineken en `VenueDetail.tsx` con `<text>` vectorial SVG auto-escalable
+- [x] Revisión y blindaje de redondeo a enteros en `OpportunityMap.tsx`, `VenueTable.tsx` y `ManagerDashboard.tsx`
+- [x] Verificación estática con `npx tsc --noEmit` (0 errores)
+- [x] Generación de query SQL de saneamiento para registros existentes en Supabase
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 25)
+
+## Fase 26: Agregación Estricta por Presencia, Desregulación Muestral y Reactividad
+- [x] Auditoría y blindaje de presencia booleana en `utils/competitionUtils.ts` (`NormalizedCompetitor.present`)
+- [x] Conteo condicional por presencia (`c.present === true`) en `components/CompetitionChart.tsx`
+- [x] Filtrado de competidores ausentes (`comp.present === false`) en `components/PricePositioningChart.tsx`
+- [x] Remoción de límite estático `.limit(100)` por `.limit(5000)` en `components/ManagerDashboard.tsx`
+- [x] Incorporación de opción "Histórico Completo" (`all`) en filtros desktop y móviles de `components/ManagerDashboard.tsx`
+- [x] Integración de botón interactivo "Actualizar" (`RefreshCw`) con estado de carga en `components/ManagerDashboard.tsx`
+- [x] Leyenda dinámica contextualizada según período activo en `components/CompetitionChart.tsx`
+- [x] Adaptación defensiva de `dateFilter === 'all'` en serie temporal de `components/PerformanceChart.tsx`
+- [x] Verificación estática con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 26)
 
