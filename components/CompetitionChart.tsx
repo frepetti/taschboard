@@ -1,14 +1,37 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useLanguage } from '../utils/LanguageContext';
-import { parseInspectionCompetition } from '../utils/competitionUtils';
+import { parseInspectionCompetition, isValidCompetitorName } from '../utils/competitionUtils';
 
 interface CompetitionChartProps {
   inspections?: any[];
   isDemo?: boolean;
   dateFilter?: string;
+  productId?: string | null;
 }
 
-export function CompetitionChart({ inspections = [], isDemo = false, dateFilter }: CompetitionChartProps) {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  language: string;
+}
+
+const CustomTooltip = ({ active, payload, label, language }: CustomTooltipProps) => {
+  if (active && payload && payload.length > 0) {
+    const value = payload[0].value;
+    return (
+      <div className="bg-surface-card border border-border-subtle rounded-lg shadow-lg p-2.5">
+        <p className="text-content-primary font-semibold text-xs mb-1">{label}</p>
+        <p className="text-content-secondary font-medium text-xs">
+          {language === 'es' ? 'Inspecciones' : 'Inspections'}: <span className="text-content-primary font-bold">{value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+export function CompetitionChart({ inspections = [], isDemo = false, dateFilter, productId }: CompetitionChartProps) {
   const { language } = useLanguage();
 
   // Demo data — only shown in demo mode
@@ -33,7 +56,10 @@ export function CompetitionChart({ inspections = [], isDemo = false, dateFilter 
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle, #d5d9e2)" opacity={0.5} />
             <XAxis type="number" stroke="var(--text-muted, #64748b)" tick={{ fill: 'var(--text-muted, #64748b)' }} axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }} />
             <YAxis type="category" dataKey="brand" stroke="var(--text-muted, #64748b)" tick={{ fill: 'var(--text-muted, #64748b)' }} axisLine={{ stroke: 'var(--border-subtle, #d5d9e2)' }} width={120} />
-            <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }} />
+            <Tooltip
+              content={<CustomTooltip language={language} />}
+              cursor={{ fill: 'var(--bg-card-subtle, rgba(255,255,255,0.05))', opacity: 0.4 }}
+            />
             <Bar dataKey="count" fill="#DA407C" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -44,17 +70,22 @@ export function CompetitionChart({ inspections = [], isDemo = false, dateFilter 
     );
   }
 
+  // Filtrado defensivo en memoria por producto seleccionado
+  const targetInspections = inspections.filter(
+    (i) => !productId || productId === 'all' || i.producto_id === productId
+  );
+
   // Real mode: compute competitor frequency from inspection data
   const competitorMap = new Map<string, number>();
   const visibilityMap = { Alta: 0, Media: 0, Baja: 0 };
 
-  for (const insp of inspections) {
+  for (const insp of targetInspections) {
     const compData = parseInspectionCompetition(insp);
 
     if (compData.competitors && compData.competitors.length > 0) {
       compData.competitors.forEach((c) => {
-        // Conteo condicionado estrictamente a presencia física afirmativa
-        if (c.name && c.name !== 'Ninguno' && c.name !== 'N/A' && c.present === true) {
+        // Conteo condicionado estrictamente a presencia física afirmativa y nombre válido
+        if (isValidCompetitorName(c.name) && c.present === true) {
           competitorMap.set(c.name, (competitorMap.get(c.name) || 0) + 1);
 
           if (c.visibility === 'high') visibilityMap.Alta++;
@@ -62,7 +93,7 @@ export function CompetitionChart({ inspections = [], isDemo = false, dateFilter 
           else if (c.visibility === 'low') visibilityMap.Baja++;
         }
       });
-    } else if (compData.mainCompetitor && compData.mainCompetitor !== 'Ninguno' && compData.mainCompetitor !== 'N/A') {
+    } else if (isValidCompetitorName(compData.mainCompetitor)) {
       competitorMap.set(compData.mainCompetitor, (competitorMap.get(compData.mainCompetitor) || 0) + 1);
       if (compData.competitorVisibility === 'high') visibilityMap.Alta++;
       else if (compData.competitorVisibility === 'medium') visibilityMap.Media++;
@@ -160,8 +191,8 @@ export function CompetitionChart({ inspections = [], isDemo = false, dateFilter 
             width={130}
           />
           <Tooltip
-            contentStyle={{ backgroundColor: 'var(--bg-card, #ffffff)', border: '1px solid var(--border-subtle, #d5d9e2)', borderRadius: '8px', color: 'var(--text-main, #0f172a)' }}
-            formatter={(value: any) => [value, language === 'es' ? 'Inspecciones' : 'Inspections']}
+            content={<CustomTooltip language={language} />}
+            cursor={{ fill: 'var(--bg-card-subtle, rgba(255,255,255,0.05))', opacity: 0.4 }}
           />
           <Bar dataKey="count" radius={[0, 4, 4, 0]}>
             {chartData.map((entry, index) => (
@@ -173,8 +204,8 @@ export function CompetitionChart({ inspections = [], isDemo = false, dateFilter 
 
       <div className="mt-4 pt-4 border-t border-border-subtle text-sm text-content-muted">
         {language === 'es'
-          ? `Basado en ${inspections.length} inspecciones registradas ${periodLabel}`.trim()
-          : `Based on ${inspections.length} recorded inspections ${periodLabel}`.trim()}
+          ? `Basado en ${targetInspections.length} inspecciones registradas ${periodLabel}`.trim()
+          : `Based on ${targetInspections.length} recorded inspections ${periodLabel}`.trim()}
       </div>
     </div>
   );

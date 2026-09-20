@@ -61,6 +61,31 @@ export const normalizePriceComparison = (
   return 'N/A';
 };
 
+export const INVALID_COMPETITOR_NAMES = new Set([
+  'ninguno',
+  'n/a',
+  'na',
+  'none',
+  'no hay',
+  'no hay competencia',
+  'no aplica',
+  'sin competencia',
+  'no posee',
+  'no registra',
+  '-',
+  '--',
+  '---'
+]);
+
+export function isValidCompetitorName(name: any): boolean {
+  if (!name || typeof name !== 'string') return false;
+  const trimmed = name.trim().toLowerCase();
+  if (!trimmed) return false;
+  if (INVALID_COMPETITOR_NAMES.has(trimmed)) return false;
+  if (/^[-_./\s]+$/.test(trimmed)) return false;
+  return true;
+}
+
 /**
  * Parsea e integra de manera polimórfica los datos de competencia de una inspección.
  * Soporta:
@@ -93,7 +118,7 @@ export function parseInspectionCompetition(inspection: any): NormalizedCompetiti
   for (const item of rawList) {
     if (!item) continue;
     const name = String(item.nombre || item.name || '').trim();
-    if (!name || name.toLowerCase() === 'ninguno' || name.toUpperCase() === 'N/A') continue;
+    if (!isValidCompetitorName(name)) continue;
 
     // Resolución booleana blindada de presencia física
     const rawPresence = item.presente ?? item.present;
@@ -149,7 +174,7 @@ export function parseInspectionCompetition(inspection: any): NormalizedCompetiti
       ''
     ).trim();
 
-    if (flatName && flatName.toLowerCase() !== 'ninguno' && flatName.toUpperCase() !== 'N/A') {
+    if (isValidCompetitorName(flatName)) {
       const rawPresence = detalles.competitorPresent ?? inspection.presencia_competidor ?? inspection.presencia_competencia;
       let flatPresent = true;
       if (rawPresence !== undefined) {

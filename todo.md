@@ -226,3 +226,16 @@
 - [x] Persistencia limpia de `empresa` en `btl_usuarios` para todos los roles (eliminación de reseteo a null en no-clientes)
 - [x] Verificación estática con `npx tsc --noEmit` (0 errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 28)
+
+## Fase 29: Blindaje de Carga Inicial, Desacople Theming vs Productos y CustomTooltip Semántico
+- [x] Desacople arquitectónico estricto: Theming (`empresa`) independiente del selector de productos (`btl_cliente_productos`)
+- [x] Guarda de carga y prevención de montaje con `productId=null` en `components/ClientDashboard.tsx` con `LoadingSpinner`
+- [x] Eliminación de opción "Todos los productos" (`all`) para clientes en `components/ProductMetrics.tsx`
+- [x] Blindaje de consulta `loadDashboardData` en `components/ManagerDashboard.tsx` evitando queries abiertas cuando `readOnly` es true
+- [x] Control de secuencia y cleanup con flag `active` en `useEffect` de `components/ManagerDashboard.tsx`
+- [x] Propagación de prop `productId` y filtrado defensivo en memoria en `components/CompetitionChart.tsx`
+- [x] Depuración y descarte de competidores residuales con `isValidCompetitorName` en `utils/competitionUtils.ts` y `CompetitionChart.tsx`
+- [x] Popover `CustomTooltip` en `CompetitionChart.tsx` utilizando exclusivamente tokens semánticos del sistema (`bg-surface-card`, `border-border-subtle`, `text-content-primary`, `text-content-secondary`)
+- [x] Verificación estática de compilación TypeScript (`npx tsc --noEmit` = 0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 29)
+

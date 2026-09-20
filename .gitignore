@@ -9,3 +9,4 @@ tsc_output.txt
 extract_data
 sync-data.cjs
 supabase\migrations\sync-data.cjs
+scratch/

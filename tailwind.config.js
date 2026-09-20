@@ -39,6 +39,8 @@ export default {
         content: {
           main: 'var(--text-main)',
           muted: 'var(--text-muted)',
+          primary: 'var(--text-main)',
+          secondary: 'var(--text-muted)',
         },
         slate: {
           ...colors.slate,

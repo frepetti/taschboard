@@ -45,6 +45,7 @@ interface ProductMetricsProps {
 }
 
 export function ProductMetrics({
+  isAdmin = false,
   dateFilter = '6M',
   regionFilter = 'all',
   products = [],
@@ -315,11 +316,11 @@ export function ProductMetrics({
             <ChevronDown className="w-4 h-4" />
           </div>
           <select
-            value={selectedProductId || 'all'}
+            value={selectedProductId || (isAdmin ? 'all' : (products[0]?.id || ''))}
             onChange={(e) => onProductSelect && onProductSelect(e.target.value)}
             className="w-full bg-surface-card-subtle border border-border-subtle text-content-main pl-4 pr-10 py-2.5 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-theme-primary/50 cursor-pointer hover:bg-surface-card transition-colors"
           >
-            <option value="all" className="bg-surface-card text-content-main">Todos los productos</option>
+            {isAdmin && <option value="all" className="bg-surface-card text-content-main">Todos los productos</option>}
             {products.map((product) => (
               <option key={product.id} value={product.id} className="bg-surface-card text-content-main">
                 {product.marca} - {product.nombre}

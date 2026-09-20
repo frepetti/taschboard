@@ -1857,5 +1857,76 @@ WHERE empresa IS NOT NULL AND TRIM(empresa) = '';
   7. Validación estática con `npx tsc --noEmit` (**0 errores**).
 - **Paso Inmediato:** Aplicar el script DML de normalización en Supabase SQL Editor si se requiere vincular usuarios existentes a Heineken, y validar el inicio de sesión con una cuenta de cliente e inspector para comprobar la asignación automática del tema corporativo.
 
+---
+
+# Sprint 29: Blindaje de Carga Inicial, Desacople Theming vs Productos y CustomTooltip Semántico
+
+## Resumen Ejecutivo
+En el Sprint 29 se diagnosticaron y resolvieron las dos discrepancias analíticas y de diseño reportadas en el Dashboard de Cliente y el Panel de Administrador:
+1. **Condición de Carrera en Carga Inicial (`CompetitionChart` y `ManagerDashboard`):** Al iniciar sesión, `selectedProductId` inicializaba en `null`, provocando que `ManagerDashboard` montara de inmediato y disparara una consulta sin filtro a `btl_inspecciones` que cargaba las 339 inspecciones globales de todas las categorías (incluyendo competidores de bebidas espirituosas ajenos como *Havana Club* y *Martini*). Al interactuar posteriormente con la escala de tiempo, el gráfico se normalizaba porque `selectedProductId` ya disponía del ID del producto. Se eliminó esta condición de carrera introduciendo una guarda con `LoadingSpinner` en `ClientDashboard.tsx`, un bloqueo estricto en `ManagerDashboard.tsx` que cancela queries abiertas en modo cliente, y un control de secuencia con bandera `active` para evitar que respuestas lentas sobreescriban el estado.
+2. **Desacople Arquitectónico Estricto (Theming vs Filtrado de Datos):** Se verificó y aseguró que la identidad visual, temas corporativos y logos se mantengan regidos exclusivamente por `btl_usuarios.empresa` a través de `ThemeContext`, mientras que la selección de productos asignados (`btl_cliente_productos`) pertenece de forma aislada a la capa de negocio y filtrado de datos analíticos.
+3. **Erradicación de Estilos Hardcodeados en Tooltip (`CompetitionChart.tsx`):** Se sustituyeron clases e inline styles estáticos en Recharts mediante la creación de un `CustomTooltip` conectado al sistema de diseño con tokens semánticos (`bg-surface-card`, `border-border-subtle`, `text-content-primary`, `text-content-secondary`) y variables CSS de cursor.
+4. **Saneamiento de Marcas Residuales:** Se creó la función `isValidCompetitorName` en `utils/competitionUtils.ts` para descartar sistemáticamente etiquetas residuales (`'No hay'`, `'no hay'`, `'ninguno'`, `'none'`, `'n/a'`, `'-'`).
+
+---
+
+## Análisis Técnico y Diagnóstico de Causa Raíz
+
+### 1. Condición de Carrera en Carga Inicial vs Normalización con Filtro de Tiempo
+- **Archivo:** `components/ClientDashboard.tsx` y `components/ManagerDashboard.tsx`
+- **Diagnóstico:** En `ClientDashboard.tsx`, `selectedProductId` inicializaba en `null` mientras se ejecutaba la función asíncrona `loadProducts()`. `ManagerDashboard.tsx` se montaba en el primer render recibiendo `productId = null`. La función `loadDashboardData()` evaluaba `if (productId && productId !== 'all')` como falso, ejecutando un query sin cláusula `.eq('producto_id', ...)` que recuperaba las 339 inspecciones registradas en toda la base de datos viva. La respuesta masiva lenta sobreescribía la memoria. Cuando el usuario modificaba el filtro de escala de tiempo (ej. 6M o 1Y), `productId` ya contenía el ID de Heineken (o del producto asignado), ejecutando la consulta con filtro exacto y normalizándose a las 70 o 120 inspecciones de la marca.
+- **Solución Implementada:**
+  - En `ClientDashboard.tsx`: Se incorporó la bandera `loadingProducts`. Si el dashboard no es demo y los productos se están cargando o `selectedProductId` es nulo, se muestra un `<LoadingSpinner size="lg" text="Cargando métricas de producto..." />`. `ManagerDashboard` **nunca se monta con parámetros nulos**.
+  - En `ManagerDashboard.tsx`: Si `readOnly` es true y `productId` no está definido, se aborta inmediatamente cualquier llamada a Supabase. Se implementó una bandera de limpieza `active` en el `useEffect` para descartar respuestas asíncronas de consultas anteriores.
+  - En `CompetitionChart.tsx`: Se propagó `productId` y se aplicó un filtro defensivo en memoria (`targetInspections = inspections.filter(i => !productId || productId === 'all' || i.producto_id === productId)`).
+
+### 2. Desacople Arquitectónico de Theming
+- **Archivo:** `context/ThemeContext.tsx`
+- **Diagnóstico:** La tematización visual corporativa (colores primario, secundario, acento, estrella de scoring y header) debe gobernarse exclusivamente por la identidad empresarial (`empresa` en `btl_usuarios`) y no mutar cuando el usuario cambia de producto dentro de su cartera.
+- **Solución Implementada:** Se certificó que `ThemeContext` permanezca desacoplado de la selección de productos. Conmutar productos asignados (`selectedProductId`) opera estrictamente en la tubería de datos y métricas analíticas.
+
+### 3. Popover / Tooltip Semántico y Saneamiento de Nombres
+- **Archivos:** `components/CompetitionChart.tsx` y `utils/competitionUtils.ts`
+- **Diagnóstico:** El popover de Recharts utilizaba estilos en línea y clases no estandarizadas, y las inspecciones que contenían etiquetas residuales como `'No hay'` podían contabilizarse como marcas competidoras.
+- **Solución Implementada:**
+  - Se implementó `isValidCompetitorName(name)` descartando `['ninguno', 'n/a', 'na', 'none', 'no hay', 'no hay competencia', 'no aplica', 'sin competencia', 'no posee', 'no registra', '-', '--', '---']` y secuencias de puntuación.
+  - Se construyó el componente `CustomTooltip` en `CompetitionChart.tsx` utilizando `bg-surface-card`, `border-border-subtle`, `text-content-primary` y `text-content-secondary`.
+  - Se añadieron alias `primary` y `secondary` bajo `content` en `tailwind.config.js` apuntando a `var(--text-main)` y `var(--text-muted)`.
+
+---
+
+## Archivos Intervenidos
+
+1. [`components/ClientDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ClientDashboard.tsx): Guarda de montaje con estado `loadingProducts`, renderizado de `LoadingSpinner` durante la carga inicial y protección contra parámetros nulos en `ManagerDashboard`.
+2. [`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx): Aborto de consulta abierta ante ausencia de `productId` en modo `readOnly`, control de secuencia con flag `active` en `useEffect`, y propagación de `productId` a `CompetitionChart`.
+3. [`components/ProductMetrics.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ProductMetrics.tsx): Restricción de la opción "Todos los productos" exclusivamente a usuarios administradores (`isAdmin`), evitando mezclas de categorías en la vista de cliente.
+4. [`components/CompetitionChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/CompetitionChart.tsx): Integración de prop `productId`, filtrado defensivo en memoria, descarte de marcas residuales mediante `isValidCompetitorName` y nuevo `CustomTooltip` gobernado por tokens semánticos.
+5. [`utils/competitionUtils.ts`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/competitionUtils.ts): Definición de `INVALID_COMPETITOR_NAMES` y función `isValidCompetitorName(name)` para saneamiento polimórfico en array y claves planas.
+6. [`tailwind.config.js`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/tailwind.config.js): Exposición de utilidades semánticas `text-content-primary` y `text-content-secondary`.
+7. [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md): Registro y completitud de las tareas de la Fase 29.
+8. [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md): Documentación técnica y funcional del Sprint 29.
+
+---
+
+## Verificación Estática
+- Compilación TypeScript: `npx tsc --noEmit` completada con **0 errores**.
+- Reglas operativas: Cero emulación de navegadores ni manipulación del DOM conforme a las directivas estrictas de ejecución.
+
+---
+
+## 🚀 Project Walkthrough (Sprint 29)
+
+- **Progreso Actual del Proyecto:** El pipeline de datos del Dashboard de Cliente está completamente blindado contra condiciones de carrera. El gráfico de competidores procesa exclusivamente las inspecciones correspondientes al producto activo sin contaminarse con marcas de otras categorías, el popover cumple al 100% con los tokens semánticos del sistema de diseño, y la arquitectura mantiene un desacople estricto entre el theming corporativo y el filtrado analítico por producto.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Implementación de guarda de ciclo de vida en `ClientDashboard.tsx` para impedir el montaje de `ManagerDashboard` con `productId=null`.
+  2. Blindaje de `loadDashboardData` en `ManagerDashboard.tsx` con control de secuencia y aborto ante consultas sin filtro en modo cliente.
+  3. Propagación de `productId` y filtrado defensivo en memoria en `CompetitionChart.tsx`.
+  4. Saneamiento de etiquetas no válidas con `isValidCompetitorName` en `competitionUtils.ts`.
+  5. Refactorización de `CustomTooltip` en `CompetitionChart.tsx` con tokens `bg-surface-card`, `border-border-subtle`, `text-content-primary` y `text-content-secondary`.
+  6. Restricción de opción `'all'` en `ProductMetrics.tsx` solo para administradores.
+  7. Validación estática integral con `npx tsc --noEmit` (**0 errores**).
+- **Paso Inmediato:** Validación visual y funcional en el navegador por parte del usuario final iniciando sesión como cliente para comprobar la carga inicial inmediata y la coherencia del gráfico de competidores.
+
+
 
 

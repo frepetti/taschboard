@@ -64,6 +64,8 @@ export function ManagerDashboard({
   }, []);
 
   useEffect(() => {
+    let active = true;
+
     if (isDemo) {
       // Usar datos de demo
       setKpis(DEMO_DATA.kpis);
@@ -71,8 +73,17 @@ export function ManagerDashboard({
       setActivations(DEMO_DATA.activations);
       setLoading(false);
     } else {
-      loadDashboardData();
+      if (readOnly && !productId) {
+        setInspections([]);
+        setLoading(false);
+        return;
+      }
+      loadDashboardData(() => active);
     }
+
+    return () => {
+      active = false;
+    };
   }, [dateFilter, regionFilter, isDemo, productId]);
 
   const loadRegions = async () => {
@@ -129,7 +140,11 @@ export function ManagerDashboard({
     }
   };
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = async (isActive?: () => boolean) => {
+    if (readOnly && !productId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       // 1. Cargar Inspecciones
@@ -145,6 +160,10 @@ export function ManagerDashboard({
 
       if (productId && productId !== 'all') {
         inspectionsQuery = inspectionsQuery.eq('producto_id', productId);
+      } else if (readOnly) {
+        // En vista de cliente / readOnly, nunca ejecutar query sin filtro de producto
+        setLoading(false);
+        return;
       }
 
       const date = new Date();
@@ -154,13 +173,14 @@ export function ManagerDashboard({
       else if (dateFilter === '1Y') date.setDate(date.getDate() - 365);
       else if (dateFilter === 'YTD') date.setMonth(0, 1); // Jan 1st of current year
 
-      if (dateFilter !== 'all') { // Asumiendo que podr├¡a haber un filtro 'all' aunque no est├í en el state inicial
+      if (dateFilter !== 'all') { // Asumiendo que podría haber un filtro 'all' aunque no esté en el state inicial
         inspectionsQuery = inspectionsQuery.gte('fecha_inspeccion', date.toISOString());
       }
 
       const { data: inspectionsData, error: inspectionsError } = await inspectionsQuery;
       if (inspectionsError) throw inspectionsError;
 
+      if (isActive && !isActive()) return;
       setInspections(inspectionsData || []);
 
       // 2. Cargar Tickets de Activación BTL (Todos los estados)
@@ -267,6 +287,8 @@ export function ManagerDashboard({
       // Contar activaciones completadas desde tickets BTL
       const totalActivations = (ticketsData || []).filter((t: any) => getTicketStatus(t.estado) === 'success').length;
 
+      if (isActive && !isActive()) return;
+      setActivations(allActivations);
       setKpis({
         visitedVenues: totalVenues,
         visitedVenuesTrend: 0,
@@ -280,9 +302,13 @@ export function ManagerDashboard({
       });
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      if (!isActive || isActive()) {
+        console.error('Error loading dashboard data:', error);
+      }
     } finally {
-      setLoading(false);
+      if (!isActive || isActive()) {
+        setLoading(false);
+      }
     }
   };
 
@@ -493,7 +519,7 @@ export function ManagerDashboard({
             isDemo={isDemo}
             productId={productId}
           />
-          <CompetitionChart inspections={inspections} isDemo={isDemo} dateFilter={dateFilter} />
+          <CompetitionChart inspections={inspections} isDemo={isDemo} dateFilter={dateFilter} productId={productId} />
         </div>
 
         {/* Donut Charts Grid: Price Positioning & Opportunity Breakdown */}
