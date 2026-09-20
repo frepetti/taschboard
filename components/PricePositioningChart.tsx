@@ -45,7 +45,18 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
   const total = counts.premium + counts.equal + counts.lower;
 
   if (total < 3) {
-    return null; // Not enough data to show
+    return (
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl min-w-0 overflow-hidden h-full flex flex-col justify-center items-center gap-3 min-h-[340px]">
+        <h3 className="text-lg text-content-main font-semibold mb-1 text-center">
+          {language === 'es' ? 'Posicionamiento de Precio vs Competencia' : 'Price Positioning vs Competition'}
+        </h3>
+        <p className="text-content-muted text-sm text-center">
+          {language === 'es'
+            ? 'Datos insuficientes para calcular la distribución de precios vs competidores.'
+            : 'Insufficient data to calculate price distribution vs competitors.'}
+        </p>
+      </div>
+    );
   }
 
   const data = [
@@ -55,17 +66,19 @@ export function PricePositioningChart({ inspections }: PricePositioningChartProp
   ].filter(d => d.value > 0);
 
   return (
-    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl min-w-0 overflow-hidden">
-      <h3 className="text-lg text-content-main font-semibold mb-1">
-        {language === 'es' ? 'Posicionamiento de Precio vs Competencia' : 'Price Positioning vs Competition'}
-      </h3>
-      <p className="text-xs text-content-muted mb-6">
-        {language === 'es'
-          ? 'Distribución del precio de nuestro producto respecto a competidores observados'
-          : 'Our product price distribution relative to observed competitors'}
-      </p>
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl min-w-0 overflow-hidden h-full flex flex-col justify-between">
+      <div>
+        <h3 className="text-lg text-content-main font-semibold mb-1">
+          {language === 'es' ? 'Posicionamiento de Precio vs Competencia' : 'Price Positioning vs Competition'}
+        </h3>
+        <p className="text-xs text-content-muted mb-6">
+          {language === 'es'
+            ? 'Distribución del precio de nuestro producto respecto a competidores observados'
+            : 'Our product price distribution relative to observed competitors'}
+        </p>
+      </div>
 
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={280} minHeight={280}>
         <PieChart>
           <Pie
             data={data}

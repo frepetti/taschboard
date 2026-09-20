@@ -1,15 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { Palette, Check, ChevronDown } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../utils/AuthContext';
 
 interface ThemeSelectorProps {
   className?: string;
 }
 
 export function ThemeSelector({ className = '' }: ThemeSelectorProps) {
+  const { dbRole } = useAuth();
   const { themes, currentTheme, setTheme, loading } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Strictly hidden for non-admins
+  if (dbRole !== 'admin') {
+    return null;
+  }
 
   // Close dropdown on outside click
   useEffect(() => {

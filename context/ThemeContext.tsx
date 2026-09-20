@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '../utils/supabase/client';
+import { useAuth } from '../utils/AuthContext';
 
 export interface ThemeConfig {
   badge_style?: 'default' | 'heineken_star' | string;
@@ -63,6 +64,24 @@ export const FALLBACK_THEMES: Theme[] = [
 const THEME_STORAGE_KEY = 'taschboard_active_theme';
 const COLOR_SCHEME_STORAGE_KEY = 'taschboard_color_scheme';
 
+/**
+ * Normalizes empresa name and resolves it against the active themes list.
+ * Fallback to 'default' if empty or not matched.
+ */
+export function resolveThemeForUser(empresa: string | null | undefined, themeList: Theme[]): Theme {
+  const defaultTheme = themeList.find(t => t.slug === 'default') || themeList[0] || FALLBACK_THEMES[0];
+  if (!empresa) return defaultTheme;
+
+  const normalized = empresa.trim().toLowerCase();
+  if (!normalized) return defaultTheme;
+
+  const matched = themeList.find(
+    t => t.slug.toLowerCase() === normalized || t.nombre.toLowerCase() === normalized
+  );
+
+  return matched || defaultTheme;
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function applyColorSchemeVariables(scheme: ColorScheme) {
@@ -116,6 +135,7 @@ export function applyThemeVariables(theme: Theme) {
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { dbUser, dbRole } = useAuth();
   const [themes, setThemes] = useState<Theme[]>(FALLBACK_THEMES);
   const [currentTheme, setCurrentThemeState] = useState<Theme>(FALLBACK_THEMES[0]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -162,13 +182,34 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         setThemes(mappedThemes);
 
-        // Re-evaluate active theme against new list
-        const savedSlug = localStorage.getItem(THEME_STORAGE_KEY);
-        const matched = mappedThemes.find(t => t.slug === savedSlug || t.id === savedSlug);
-        if (matched) {
-          setCurrentThemeState(matched);
-        } else if (!mappedThemes.some(t => t.slug === currentTheme.slug)) {
-          setCurrentThemeState(mappedThemes[0]);
+        // Re-evaluate active theme against new list and user role
+        if (dbRole && dbRole !== 'admin' && dbUser) {
+          localStorage.removeItem(THEME_STORAGE_KEY);
+          const resolved = resolveThemeForUser(dbUser.empresa, mappedThemes);
+          setCurrentThemeState(resolved);
+          applyThemeVariables(resolved);
+        } else if (dbRole === 'admin') {
+          const savedSlug = localStorage.getItem(THEME_STORAGE_KEY);
+          const matched = mappedThemes.find(t => t.slug === savedSlug || t.id === savedSlug);
+          if (matched) {
+            setCurrentThemeState(matched);
+            applyThemeVariables(matched);
+          } else {
+            const resolved = resolveThemeForUser(dbUser?.empresa, mappedThemes);
+            setCurrentThemeState(resolved);
+            applyThemeVariables(resolved);
+          }
+        } else {
+          const savedSlug = localStorage.getItem(THEME_STORAGE_KEY);
+          const matched = mappedThemes.find(t => t.slug === savedSlug || t.id === savedSlug);
+          if (matched) {
+            setCurrentThemeState(matched);
+            applyThemeVariables(matched);
+          } else {
+            const defaultTheme = mappedThemes.find(t => t.slug === 'default') || mappedThemes[0];
+            setCurrentThemeState(defaultTheme);
+            applyThemeVariables(defaultTheme);
+          }
         }
       } else {
         setThemes(FALLBACK_THEMES);
@@ -179,34 +220,55 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } finally {
       setLoading(false);
     }
-  }, [currentTheme.slug]);
+  }, [dbRole, dbUser]);
 
-  // Initial load
+  // Initial load: setup color scheme & fetch live themes
   useEffect(() => {
-    // 1. Initial cached theme preference
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    if (savedTheme) {
-      const initial = FALLBACK_THEMES.find(t => t.slug === savedTheme || t.id === savedTheme);
-      if (initial) {
-        setCurrentThemeState(initial);
-        applyThemeVariables(initial);
-      }
-    } else {
-      applyThemeVariables(FALLBACK_THEMES[0]);
-    }
-
-    // 2. Initial cached color scheme preference (default: 'dark')
+    // Initial color scheme preference (default: 'dark')
     const savedScheme = localStorage.getItem(COLOR_SCHEME_STORAGE_KEY) as ColorScheme | null;
     const initialScheme: ColorScheme = savedScheme === 'light' || savedScheme === 'dark' ? savedScheme : 'dark';
     setColorSchemeState(initialScheme);
     applyColorSchemeVariables(initialScheme);
 
-    // 3. Fetch live data
+    // Fetch live themes
     refreshThemes();
   }, [refreshThemes]);
 
+  // Synchronize theme dynamically when dbUser, dbRole, or themes change
+  useEffect(() => {
+    if (dbUser && dbRole) {
+      if (dbRole !== 'admin') {
+        localStorage.removeItem(THEME_STORAGE_KEY);
+        const resolved = resolveThemeForUser(dbUser.empresa, themes);
+        setCurrentThemeState(resolved);
+        applyThemeVariables(resolved);
+      } else {
+        const savedSlug = localStorage.getItem(THEME_STORAGE_KEY);
+        const matched = themes.find(t => t.slug === savedSlug || t.id === savedSlug);
+        if (matched) {
+          setCurrentThemeState(matched);
+          applyThemeVariables(matched);
+        } else {
+          const resolved = resolveThemeForUser(dbUser.empresa, themes);
+          setCurrentThemeState(resolved);
+          applyThemeVariables(resolved);
+        }
+      }
+    } else if (!dbUser && !localStorage.getItem(THEME_STORAGE_KEY)) {
+      const defaultTheme = themes.find(t => t.slug === 'default') || themes[0] || FALLBACK_THEMES[0];
+      setCurrentThemeState(defaultTheme);
+      applyThemeVariables(defaultTheme);
+    }
+  }, [dbUser, dbRole, themes]);
+
   const setTheme = useCallback(
     (slugOrId: string) => {
+      // Role protection: Only admins can manually override theme
+      if (dbRole && dbRole !== 'admin') {
+        console.warn(`[ThemeContext] Theme switching is disabled for role: ${dbRole}`);
+        return;
+      }
+
       const found = themes.find(t => t.slug === slugOrId || t.id === slugOrId);
       if (found) {
         setCurrentThemeState(found);
@@ -216,7 +278,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.warn(`⚠️ Theme '${slugOrId}' not found in active themes`);
       }
     },
-    [themes]
+    [themes, dbRole]
   );
 
   const toggleColorScheme = useCallback(() => {

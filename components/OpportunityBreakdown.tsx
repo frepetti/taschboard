@@ -19,12 +19,12 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
       { name: 'Previous Activations', value: 15, color: COLORS[3] },
     ];
     return (
-      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl h-full flex flex-col justify-between">
         <div className="mb-4">
           <h3 className="text-lg text-content-main font-semibold mb-2">Opportunity Score</h3>
           <div className="text-5xl text-amber-500 font-bold">8.2<span className="text-2xl text-content-muted">/10</span></div>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={280} minHeight={280}>
           <PieChart>
             <Pie data={demoData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
               {demoData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -56,7 +56,7 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
 
   if (total === 0) {
     return (
-      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex items-center justify-center min-h-[200px]">
+      <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl flex items-center justify-center min-h-[340px] h-full">
         <p className="text-content-muted text-sm text-center">
           {language === 'es'
             ? 'Sin inspecciones para calcular oportunidades.'
@@ -113,7 +113,7 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
   const allZero = data.every(d => d.value === 0);
 
   return (
-    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl">
+    <div className="bg-surface-card border border-border-subtle rounded-xl p-6 shadow-xl h-full flex flex-col justify-between">
       <div className="mb-4">
         <h3 className="text-lg text-content-main font-semibold mb-2">
           {language === 'es' ? 'Análisis de Oportunidades' : 'Opportunity Analysis'}
@@ -130,14 +130,14 @@ export function OpportunityBreakdown({ inspections = [], isDemo = false }: Oppor
       </div>
 
       {allZero ? (
-        <div className="py-8 text-center text-content-muted text-sm">
+        <div className="py-8 text-center text-content-muted text-sm my-auto">
           {language === 'es'
             ? 'Los datos de oportunidad se calcularán cuando haya inspecciones con métricas registradas.'
             : 'Opportunity data will be calculated once inspections with metrics are recorded.'}
         </div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={280} minHeight={280}>
             <PieChart>
               <Pie
                 data={data}

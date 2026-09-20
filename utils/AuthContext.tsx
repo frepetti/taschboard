@@ -9,6 +9,7 @@ interface UserDbData {
   estado_aprobacion: string;
   nombre: string | null;
   email: string;
+  empresa?: string | null;
 }
 
 interface AuthContextType {
@@ -69,16 +70,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRoleLoading(true);
     supabase
       .from('btl_usuarios')
-      .select('rol, estado_aprobacion, nombre, email')
+      .select('rol, estado_aprobacion, nombre, email, empresa')
       .eq('auth_user_id', session.user.id)
       .single()
-      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string | null; nombre: string; email: string } | null; error: any }) => {
+      .then(({ data, error }: { data: { rol: string; estado_aprobacion: string | null; nombre: string; email: string; empresa: string | null } | null; error: any }) => {
         if (error || !data) {
           console.warn('⚠️ AuthContext: Could not fetch DB role for user', session.user.id, error?.message);
           setDbRole(null);
           setDbUser(null);
         } else {
-          console.log('✅ AuthContext: DB role fetched:', data.rol, '| approval:', data.estado_aprobacion);
+          console.log('✅ AuthContext: DB role fetched:', data.rol, '| approval:', data.estado_aprobacion, '| empresa:', data.empresa);
           setDbRole(data.rol as UserRole);
           setDbUser(data as UserDbData);
         }

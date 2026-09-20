@@ -496,8 +496,15 @@ export function ManagerDashboard({
           <CompetitionChart inspections={inspections} isDemo={isDemo} dateFilter={dateFilter} />
         </div>
 
-        {/* Price Positioning Chart — only rendered when there's sufficient data */}
-        <PricePositioningChart inspections={inspections} />
+        {/* Donut Charts Grid: Price Positioning & Opportunity Breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
+          <div className="w-full h-full flex flex-col">
+            <PricePositioningChart inspections={inspections} />
+          </div>
+          <div className="w-full h-full flex flex-col">
+            <OpportunityBreakdown inspections={inspections} isDemo={isDemo} />
+          </div>
+        </div>
 
         {/* Map Section */}
         <OpportunityMap
@@ -506,13 +513,10 @@ export function ManagerDashboard({
           isDemo={isDemo}
           demoVenues={isDemo ? (DEMO_DATA as any).demoVenues : []}
           onVenueSelect={(venue) => {
-            console.log('­ƒù║´©Å Map selected venue:', venue);
+            console.log('🗺️ Map selected venue:', venue);
             setSelectedVenue(venue);
           }}
         />
-
-        {/* Opportunity Breakdown */}
-        <OpportunityBreakdown inspections={inspections} isDemo={isDemo} />
 
         {/* Venue Table */}
         <VenueTable

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Loader2, UserPlus, X, Store, Key } from 'lucide-react';
 import { supabase } from '../utils/supabase/client';
 import { authAPI, adminAPI } from '../utils/api';
+import { useTheme } from '../context/ThemeContext';
 import { ClientVenueManager } from './ClientVenueManager';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
@@ -647,12 +648,15 @@ function SecurityModal({ user, currentUser, onClose }: { user: any, currentUser:
 }
 
 function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () => void, onSuccess: () => void }) {
+  const { themes } = useTheme();
   const [name, setName] = useState(user.name || '');
   const [role, setRole] = useState(user.role || 'inspector');
   const [company, setCompany] = useState(user.company || '');
   const [status, setStatus] = useState(user.estado_aprobacion || 'approved');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'venues'>('profile');
+
+  const availableThemes = themes.filter(t => t.activo);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -663,7 +667,7 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
         .update({
           nombre: name,
           rol: role,
-          empresa: role === 'client' ? company : null,
+          empresa: company ? company.trim() : null,
           estado_aprobacion: status
         })
         .eq('id', user.id);
@@ -765,17 +769,50 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
                     <option value="rejected">Rechazado</option>
                   </select>
                 </div>
-                {role === 'client' && (
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-content-muted mb-2">Empresa</label>
-                    <input
-                      type="text"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
-                    />
-                  </div>
-                )}
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-content-muted mb-2">Empresa / Marca Tenant</label>
+                  <input
+                    type="text"
+                    list="edit-user-companies"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="Ej: Heineken"
+                    className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50 transition-all"
+                  />
+                  <datalist id="edit-user-companies">
+                    {availableThemes.map(t => (
+                      <option key={t.id || t.slug} value={t.nombre} />
+                    ))}
+                  </datalist>
+
+                  {/* Quick selection chips */}
+                  {availableThemes.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <span className="text-xs text-content-muted mr-1">Temas activos:</span>
+                      {availableThemes.map(t => {
+                        const isSelected = company.trim().toLowerCase() === t.nombre.toLowerCase() || company.trim().toLowerCase() === t.slug.toLowerCase();
+                        return (
+                          <button
+                            key={t.id || t.slug}
+                            type="button"
+                            onClick={() => setCompany(t.nombre)}
+                            className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all ${
+                              isSelected
+                                ? 'bg-theme-primary/20 border-theme-primary text-content-main font-semibold'
+                                : 'bg-surface-card border-border-subtle text-content-muted hover:text-content-main hover:border-theme-primary/40'
+                            }`}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: t.primary_color }}
+                            />
+                            <span>{t.nombre}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </form>
           ) : (
@@ -823,6 +860,7 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
 }
 
 function NewUserModal({ session: _session, onClose, onSuccess }: any) {
+  const { themes } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -830,12 +868,14 @@ function NewUserModal({ session: _session, onClose, onSuccess }: any) {
   const [company, setCompany] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const availableThemes = themes.filter(t => t.activo);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await authAPI.signup(email, password, name, role, company || undefined);
+      await authAPI.signup(email, password, name, role, company ? company.trim() : undefined);
       toast.success('Usuario creado exitosamente');
       onSuccess();
     } catch (error: any) {
@@ -902,17 +942,50 @@ function NewUserModal({ session: _session, onClose, onSuccess }: any) {
             </select>
           </div>
 
-          {role === 'client' && (
-            <div>
-              <label className="block text-sm text-content-muted font-medium mb-2">Empresa</label>
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-sm text-content-muted font-medium mb-2">Empresa / Marca Tenant</label>
+            <input
+              type="text"
+              list="new-user-companies"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Ej: Heineken"
+              className="w-full bg-surface-card-subtle border border-border-subtle text-content-main px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary/50"
+            />
+            <datalist id="new-user-companies">
+              {availableThemes.map(t => (
+                <option key={t.id || t.slug} value={t.nombre} />
+              ))}
+            </datalist>
+
+            {/* Quick selection chips */}
+            {availableThemes.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-xs text-content-muted mr-1">Temas activos:</span>
+                {availableThemes.map(t => {
+                  const isSelected = company.trim().toLowerCase() === t.nombre.toLowerCase() || company.trim().toLowerCase() === t.slug.toLowerCase();
+                  return (
+                    <button
+                      key={t.id || t.slug}
+                      type="button"
+                      onClick={() => setCompany(t.nombre)}
+                      className={`text-xs px-2.5 py-1 rounded-md border flex items-center gap-1.5 transition-all ${
+                        isSelected
+                          ? 'bg-theme-primary/20 border-theme-primary text-content-main font-semibold'
+                          : 'bg-surface-card border-border-subtle text-content-muted hover:text-content-main hover:border-theme-primary/40'
+                      }`}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: t.primary_color }}
+                      />
+                      <span>{t.nombre}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <div className="flex gap-3 pt-4">
             <button

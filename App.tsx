@@ -804,14 +804,21 @@ function InspectorAppContent() {
             </div>
 
             {/* Centered Dominant Branding */}
-            {currentTheme.slug === 'heineken' && (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
-                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
-                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+            {currentTheme?.slug === 'heineken' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none select-none">
+                <img
+                  src="/heineken.svg"
+                  alt="Heineken"
+                  className="h-6 sm:h-8 w-auto max-w-[120px] sm:max-w-[160px] object-contain transition-all drop-shadow-sm"
+                />
+              </div>
+            ) : currentTheme?.slug && currentTheme.slug !== 'default' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none select-none">
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm truncate max-w-[140px] sm:max-w-[200px]">
                   {currentTheme.nombre}
                 </span>
               </div>
-            )}
+            ) : null}
             <div className="flex items-center gap-2">
               {isAdmin && <ThemeSelector />}
               <ColorSchemeToggle />
@@ -899,14 +906,21 @@ function ClientAppContent() {
             </div>
 
             {/* Centered Dominant Branding */}
-            {currentTheme.slug === 'heineken' && (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
-                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
-                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+            {currentTheme?.slug === 'heineken' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none select-none">
+                <img
+                  src="/heineken.svg"
+                  alt="Heineken"
+                  className="h-6 sm:h-8 w-auto max-w-[120px] sm:max-w-[160px] object-contain transition-all drop-shadow-sm"
+                />
+              </div>
+            ) : currentTheme?.slug && currentTheme.slug !== 'default' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none select-none">
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm truncate max-w-[140px] sm:max-w-[200px]">
                   {currentTheme.nombre}
                 </span>
               </div>
-            )}
+            ) : null}
             <div className="flex items-center gap-2">
               {isAdmin && <ThemeSelector />}
               <ColorSchemeToggle />
@@ -1016,9 +1030,11 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
           {/* Title and Logout Row */}
           <div className="relative flex items-center justify-between gap-2 mb-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-lg">⚙️</span>
-              </div>
+              <img 
+                src="/tasch_perfil.png" 
+                alt="Tasch" 
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover shadow-sm border border-border-subtle shrink-0" 
+              />
               <div className="min-w-0 flex-1">
                 <h1 className="text-base sm:text-lg text-theme-header-text font-semibold truncate">
                   {currentView === 'admin' && 'Panel de Administración'}
@@ -1032,17 +1048,24 @@ function AdminAppContent({ initialTicketId }: { initialTicketId?: string | null 
             </div>
 
             {/* Centered Dominant Branding */}
-            {currentTheme.slug === 'heineken' && (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 pointer-events-none select-none">
-                <span className="text-red-500 text-2xl sm:text-3xl leading-none">★</span>
-                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm">
+            {currentTheme?.slug === 'heineken' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none select-none">
+                <img
+                  src="/heineken.svg"
+                  alt="Heineken"
+                  className="h-6 sm:h-8 w-auto max-w-[120px] sm:max-w-[160px] object-contain transition-all drop-shadow-sm"
+                />
+              </div>
+            ) : currentTheme?.slug && currentTheme.slug !== 'default' ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none select-none">
+                <span className="text-xl sm:text-2xl font-black tracking-widest text-white uppercase drop-shadow-sm truncate max-w-[140px] sm:max-w-[200px]">
                   {currentTheme.nombre}
                 </span>
               </div>
-            )}
+            ) : null}
 
             <div className="flex items-center gap-2 shrink-0">
-              <ThemeSelector />
+              {isAdmin && <ThemeSelector />}
               <ColorSchemeToggle />
               <LanguageSwitcher />
 

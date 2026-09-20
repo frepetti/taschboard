@@ -96,24 +96,41 @@ export function AdminStats({ stats }: AdminStatsProps) {
         <h3 className="text-lg text-content-main font-semibold mb-6">Distribución de Usuarios por Rol</h3>
         <div className="space-y-4">
           {[
-            { role: 'inspector', label: 'Inspectores', count: stats?.usersByRole?.inspector || 0, color: 'blue' },
-            { role: 'client', label: 'Clientes', count: stats?.usersByRole?.client || 0, color: 'amber' },
-            { role: 'admin', label: 'Administradores', count: stats?.usersByRole?.admin || 0, color: 'purple' },
+            {
+              role: 'inspector',
+              label: 'Inspectores',
+              count: stats?.usersByRole?.inspector || 0,
+              textClass: 'text-blue-500 dark:text-blue-400',
+              barClass: 'bg-blue-500'
+            },
+            {
+              role: 'client',
+              label: 'Clientes',
+              count: stats?.usersByRole?.client || 0,
+              textClass: 'text-amber-500 dark:text-amber-400',
+              barClass: 'bg-amber-500'
+            },
+            {
+              role: 'admin',
+              label: 'Administradores',
+              count: ((stats?.usersByRole?.admin || 0) + (stats?.usersByRole?.administrador || 0)),
+              textClass: 'text-emerald-500 dark:text-emerald-400',
+              barClass: 'bg-emerald-500'
+            },
           ].map((item) => {
             const percentage = stats?.totalUsers > 0 ? Math.round((item.count / stats.totalUsers) * 100) : 0;
-            const colors = colorMap[item.color];
 
             return (
               <div key={item.role}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-content-muted text-sm">{item.label}</span>
-                  <span className={`text-sm font-semibold ${colors.text}`}>
+                  <span className={`text-sm font-semibold ${item.textClass}`}>
                     {item.count} ({percentage}%)
                   </span>
                 </div>
-                <div className="w-full bg-surface-card-subtle rounded-full h-2">
+                <div className="w-full bg-surface-card-subtle rounded-full h-2.5 overflow-hidden">
                   <div
-                    className={`${colors.bg} h-2 rounded-full transition-all`}
+                    className={`${item.barClass} h-2.5 rounded-full transition-all`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

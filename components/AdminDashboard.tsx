@@ -89,7 +89,7 @@ export function AdminDashboard({ session, initialTicketId }: AdminDashboardProps
       const usersByRole = {
         inspector: usersData?.filter(u => u.rol === 'inspector').length || 0,
         client: usersData?.filter(u => u.rol === 'client').length || 0,
-        admin: usersData?.filter(u => u.rol === 'admin').length || 0,
+        admin: usersData?.filter(u => u.rol === 'admin' || u.rol === 'administrador').length || 0,
       };
 
       // Tickets by status

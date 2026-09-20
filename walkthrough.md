@@ -1666,6 +1666,8 @@ En este Sprint 26 se auditaron y corrigieron dos anomalías críticas en el grá
 
 ---
 
+---
+
 ## 🚀 Project Walkthrough (Sprint 26)
 
 - **Progreso Actual del Proyecto:** El módulo de competencia (`CompetitionChart.tsx` y `PricePositioningChart.tsx`) discrimina con exactitud las marcas presentes físicamente de aquellas ausentes (`present === false`), eliminando el 100% artificial de apariciones. El dashboard permite consultar tanto ventanas móviles (1M, 3M, 6M, 1Y, YTD) como el histórico íntegro (`all`), cargando hasta 5,000 inspecciones sin truncamiento artificial, y provee un botón interactivo de actualización en tiempo real para invalidar caché al instante.
@@ -1678,4 +1680,182 @@ En este Sprint 26 se auditaron y corrigieron dos anomalías críticas en el grá
   6. Leyenda dinámica contextualizada del período activo en pie de gráfico.
   7. Validación estática con `npx tsc --noEmit` (**0 errores**).
 - **Paso Inmediato:** Validación funcional en pantalla por parte del usuario en el navegador inspeccionando el gráfico de competidores y probando el filtro "Histórico" junto con el botón de actualización.
+
+---
+
+# Sprint 27: Refinamiento de UI/UX, Branding e Identidad Visual (Logo Heineken SVG, Barra Admins, Layout Donas y Avatar Tasch)
+
+## Resumen Ejecutivo
+En este Sprint 27 se ejecutaron 4 mejoras visuales y de branding fundamentales para consolidar la identidad visual del producto:
+
+1. **Logo Oficial Heineken SVG en Cabeceras:** Se migró el asset vectorial oficial desde `dist/heineken.svg` a `public/heineken.svg` (y `public/logo_heineken.svg`). Se reemplazó el texto tipográfico central de marca en las 3 cabeceras del sistema (`App.tsx`: Inspector, Cliente y Administrador) por el logo SVG responsivo con escalabilidad fluida (`h-6 sm:h-8 w-auto max-w-[120px] sm:max-w-[160px] object-contain`) cuando el tema activo es Heineken, preservando el fallback dinámico para otros temas.
+2. **Reparación de Barra de Progreso de Administradores:** Se corrigió el bug de invisibilidad en el widget "Distribución de Usuarios por Rol" en `AdminStats.tsx`. La causa raíz radicaba en la reutilización de clases de fondo con baja opacidad (`bg-theme-primary/20`) pensadas originalmente para contenedores de tarjetas, lo que generaba barras casi transparentes sobre fondos sutiles. Se asignaron clases sólidas y contrastantes (`bg-emerald-500` para Administradores, `bg-blue-500` para Inspectores y `bg-amber-500` para Clientes) con altura uniforme `h-2.5 rounded-full overflow-hidden`, y se amplió el filtro en `AdminDashboard.tsx` para contemplar tanto `rol === 'admin'` como `rol === 'administrador'`.
+3. **Reestructuración de Gráficos de Dona en Grid Responsivo:** Se reorganizaron los componentes "Posicionamiento de Precio vs Competencia" (`PricePositioningChart.tsx`) y "Análisis de Oportunidades" (`OpportunityBreakdown.tsx`) dentro de un grid simétrico de 2 columnas en escritorio (`lg:grid-cols-2`) y 1 columna apilada en móvil (`grid-cols-1`) en `ManagerDashboard.tsx`. Ambas tarjetas fueron estandarizadas con layout flex vertical completo (`h-full flex flex-col justify-between`) y una altura mínima uniforme de `minHeight={280}` en sus `ResponsiveContainer`, garantizando alineación visual perfecta. Asimismo, se dotó a `PricePositioningChart.tsx` de una tarjeta contenedora de estado neutro cuando la muestra es menor a 3 comparaciones para prevenir espacios vacíos.
+4. **Avatar Tasch en Cabecera Admin:** Se sustituyó el ícono de engranaje `⚙️` en la esquina superior izquierda del panel de administración en `App.tsx` por la imagen corporativa `/tasch_perfil.png` con bordes redondeados y sombra sutil (`w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover shadow-sm border border-border-subtle`).
+
+---
+
+## Análisis Técnico y Causa Raíz
+
+### 1. Barra de Administradores Invisible en `AdminStats.tsx`
+- **Archivo:** `components/AdminStats.tsx` (líneas 61–65 y 114–119)
+- **Causa Raíz:** El mapeo de estilos `colorMap.purple` utilizaba `bg-theme-primary/20`. Al renderizar el elemento `<div className={`${colors.bg} h-2 rounded-full`} />`, Tailwind aplicaba un 20% de opacidad sobre la barra de progreso. En temas claros o sobre superficies `bg-surface-card-subtle`, el contraste era nulo o imperceptible. Adicionalmente, el conteo en `AdminDashboard.tsx` solo filtraba por `u.rol === 'admin'`, sin tolerar variaciones semánticas como `'administrador'`.
+- **Solución Implementada:**
+  - En `AdminDashboard.tsx`: `admin: usersData?.filter(u => u.rol === 'admin' || u.rol === 'administrador').length || 0`.
+  - En `AdminStats.tsx`: Asignación directa de clases sólidas de barra (`bg-emerald-500`, `bg-blue-500`, `bg-amber-500`) y tipografía accesible en modo claro/oscuro (`text-emerald-500 dark:text-emerald-400`), asegurando visibilidad óptima en todos los temas.
+
+### 2. Grid Simétrico y Altura Uniforme para Donas
+- **Archivos:** `components/ManagerDashboard.tsx`, `components/PricePositioningChart.tsx`, `components/OpportunityBreakdown.tsx`
+- **Causa Raíz:** Las dos tarjetas se renderizaban de forma dispersa: `PricePositioningChart` se ubicaba a ancho completo sobre el mapa y `OpportunityBreakdown` debajo del mapa. Además, tenían alturas dispares (`height={260}` vs `height={200}`).
+- **Solución Implementada:**
+  - Se agruparon en `<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">`.
+  - Se configuraron los `ResponsiveContainer` con `height={280} minHeight={280}` en ambos componentes.
+  - Se dotó a las tarjetas de `h-full flex flex-col justify-between`.
+
+---
+
+## Archivos Intervenidos y Assets Reubicados
+1. [`public/heineken.svg`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/public/heineken.svg) y [`public/logo_heineken.svg`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/public/logo_heineken.svg): Asset vectorial oficial de Heineken migrado desde `dist/` a `public/` para persistencia en builds.
+2. [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx): Reemplazo de texto por `<img src="/heineken.svg" />` en los 3 headers y reemplazo del engranaje por `<img src="/tasch_perfil.png" />` en la cabecera admin.
+3. [`components/AdminDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminDashboard.tsx): Soporte tolerante de roles `'admin' | 'administrador'`.
+4. [`components/AdminStats.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/AdminStats.tsx): Corrección de color sólido (`bg-emerald-500`) y contraste para la barra de progreso de administradores.
+5. [`components/ManagerDashboard.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ManagerDashboard.tsx): Agrupación en grid 2 columnas de las tarjetas de donas.
+6. [`components/PricePositioningChart.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/PricePositioningChart.tsx): Altura calibrada a 280px, layout `h-full flex flex-col` y fallback resiliente.
+7. [`components/OpportunityBreakdown.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/OpportunityBreakdown.tsx): Altura calibrada a 280px y layout `h-full flex flex-col`.
+8. [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md): Registro y completitud de las tareas de la Fase 27.
+9. [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md): Documentación integral del Sprint 27.
+
+---
+
+## Verificación Estática
+- Compilación TypeScript: `npx tsc --noEmit` completada con **0 errores**.
+- Reglas operativas: Cero pruebas sobre DOM / emulador de navegador.
+
+---
+
+## 🚀 Project Walkthrough (Sprint 27)
+
+- **Progreso Actual del Proyecto:** La plataforma incorpora la identidad visual oficial de Heineken con su logotipo vectorial en cabecera de forma responsiva, el avatar corporativo de Tasch en el panel de administración, visibilidad total y contrastante en la distribución de roles de usuarios, y una disposición simétrica en cuadrícula de dos columnas para los análisis de posicionamiento de precios y oportunidades.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Migración segura de assets SVG de Heineken a `public/`.
+  2. Implementación de `<img src="/heineken.svg" />` responsivo en los 3 headers de `App.tsx`.
+  3. Reemplazo del engranaje por `<img src="/tasch_perfil.png" />` en la cabecera admin.
+  4. Saneamiento de colores de barras de rol en `AdminStats.tsx` y soporte para variaciones de rol en `AdminDashboard.tsx`.
+  5. Reestructuración en CSS Grid 2 columnas (`lg:grid-cols-2`) para gráficos de dona en `ManagerDashboard.tsx`.
+  6. Calibración de alturas (`minHeight={280}`) y tarjetas flex en `PricePositioningChart.tsx` y `OpportunityBreakdown.tsx`.
+  7. Validación estática exitosa con `npx tsc --noEmit` (**0 errores**).
+- **Paso Inmediato:** Validación visual en pantalla por parte del usuario en el navegador inspeccionando las cabeceras, la barra de administradores y la cuadrícula de gráficos de dona.
+
+---
+
+# Sprint 28: Arquitectura Multi-tenant Theming Vinculada a Empresa y Control de Acceso por Rol
+
+## Resumen Ejecutivo
+En el Sprint 28 se diseñó e implementó la arquitectura integral de **Multi-tenant Theming**, desacoplando la apariencia de la aplicación de selecciones estáticas y vinculándola de forma nativa al atributo de identidad empresarial existente: la columna `empresa TEXT` de la tabla `btl_usuarios`.
+
+Se resolvieron los requerimientos arquitectónicos y de negocio sin introducir redundancia en la base de datos (evitando columnas artificiales como `client_group`):
+1. **Resolución Automática de Marca/Tenant:** En `context/ThemeContext.tsx`, se implementó la función pura `resolveThemeForUser(empresa, themeList)`. Al iniciar sesión o refrescar el catálogo de temas desde `btl_temas`, la aplicación normaliza el valor de `empresa` (`trim().toLowerCase()`) y lo contrasta de manera polimórfica contra el `slug` y el `nombre` de los temas activos. En caso de ausencia, valor nulo o no coincidencia, se aplica el tema `'default'`.
+2. **Control de Acceso Estricto por Rol:**
+   - **Clientes e Inspectores (`client`, `inspector`):** El tema queda estrictamente bloqueado a la marca asociada a su usuario en `btl_usuarios`. Se elimina cualquier rastro previo en almacenamiento local (`localStorage.removeItem('taschboard_active_theme')`), se bloquea el método `setTheme` ante llamadas no autorizadas, y el selector visual `<ThemeSelector />` retorna `null` de forma inmediata.
+   - **Administradores (`admin`):** Se inicializan con el tema de su empresa (o `'default'`), pero retienen visibilidad total de `<ThemeSelector />` en los encabezados y tienen la libertad de alternar dinámicamente entre cualquier tema activo para realizar tareas de auditoría y soporte visual.
+3. **Estandarización de Gestión de Usuarios (`UserManagement.tsx`):** En `EditUserModal` y `NewUserModal`, el campo de empresa fue homologado con un elemento `<input>` vinculado a un `<datalist>` dinámico alimentado por los temas activos de Supabase y una fila de chips interactivos para selección rápida con paleta de color. Se corrigió el guardado en la base de datos para que `empresa: company ? company.trim() : null` aplique a todos los roles sin blanquearse a `null` al editar inspectores o administradores.
+
+---
+
+## Análisis Técnico y Causa Raíz
+
+### 1. Inclusión de `empresa` en el Contexto de Autenticación
+- **Archivo:** `utils/AuthContext.tsx`
+- **Diagnóstico:** Previamente, la interfaz `UserDbData` y la consulta a `btl_usuarios` solo recuperaban `rol, estado_aprobacion, nombre, email`. El campo `empresa` no estaba disponible en el estado global de la sesión, impidiendo que los proveedores dependientes resolvieran el tenant del usuario.
+- **Implementación:** Se tipó `empresa?: string | null` en `UserDbData` y se actualizó la consulta `.select('rol, estado_aprobacion, nombre, email, empresa')`.
+
+### 2. Resolución Automática y Reactiva en `ThemeContext.tsx`
+- **Archivo:** `context/ThemeContext.tsx`
+- **Diagnóstico:** El contexto dependía exclusivamente de `localStorage` para determinar el tema actual, permitiendo que usuarios no administradores mantuvieran selecciones arbitrarias o heredadas de sesiones previas en el mismo navegador.
+- **Implementación:**
+  - Se consumió `useAuth()` (`dbUser`, `dbRole`) dentro de `ThemeProvider`.
+  - Se definió la función `resolveThemeForUser`:
+    ```typescript
+    export function resolveThemeForUser(empresa: string | null | undefined, themeList: Theme[]): Theme {
+      const defaultTheme = themeList.find(t => t.slug === 'default') || themeList[0] || FALLBACK_THEMES[0];
+      if (!empresa) return defaultTheme;
+
+      const normalized = empresa.trim().toLowerCase();
+      if (!normalized) return defaultTheme;
+
+      const matched = themeList.find(
+        t => t.slug.toLowerCase() === normalized || t.nombre.toLowerCase() === normalized
+      );
+
+      return matched || defaultTheme;
+    }
+    ```
+  - Se sincronizó reactivamente el tema en un `useEffect([dbUser, dbRole, themes])`. Para no-admins, se expurga `localStorage` y se aplica el tema resuelto. Para administradores, se respeta `localStorage` si existe selección manual activa, o bien se inicializa con el tema resuelto de su empresa.
+  - Se blindó `setTheme`: cualquier intento de mutación por parte de un usuario con rol distinto de `'admin'` es rechazado.
+
+### 3. Ocultamiento y Protección del Selector de Temas
+- **Archivos:** `components/ThemeSelector.tsx` y `App.tsx`
+- **Diagnóstico:** El selector de temas era accesible o visible en las cabeceras independientemente de la política de tenanting de la marca.
+- **Implementación:**
+  - En `components/ThemeSelector.tsx`, se integró `const { dbRole } = useAuth(); if (dbRole !== 'admin') return null;`.
+  - En `App.tsx`, se envolvieron las tres instancias del encabezado bajo la condición `{isAdmin && <ThemeSelector />}`.
+
+### 4. Experiencia de Asignación de Empresa en Modales de Usuario
+- **Archivo:** `components/UserManagement.tsx`
+- **Diagnóstico:** En `EditUserModal`, la persistencia contenía `empresa: role === 'client' ? company : null`, lo que provocaba la pérdida inmediata del valor de `empresa` si un usuario era asignado o editado con rol inspector o admin. Adicionalmente, el campo era un input de texto plano sin orientación de los temas configurados en el sistema.
+- **Implementación:**
+  - Se removió la restricción condicional, persistiendo `empresa: company ? company.trim() : null` de forma consistente.
+  - Se integró `useTheme()` en `EditUserModal` y `NewUserModal`.
+  - Se agregó `<datalist>` con los nombres de temas activos y botones tipo chip con el color primario de cada tema para selección instantánea en un clic.
+
+---
+
+## Archivos Intervenidos
+1. [`utils/AuthContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/utils/AuthContext.tsx): Extensión de `UserDbData` con `empresa?: string | null` e inclusión en la consulta `.select()` de Supabase.
+2. [`context/ThemeContext.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/context/ThemeContext.tsx): Lógica de resolución de tenant `resolveThemeForUser`, sincronización reactiva por rol y bloqueo de `setTheme` para no administradores.
+3. [`components/ThemeSelector.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/ThemeSelector.tsx): Ocultamiento defensivo (`return null`) para cualquier rol que no sea `'admin'`.
+4. [`App.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/App.tsx): Homologación de `{isAdmin && <ThemeSelector />}` en la cabecera principal de administración.
+5. [`components/UserManagement.tsx`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/components/UserManagement.tsx): Datalist y chips interactivos de selección de empresa según `btl_temas`, y preservación limpia de `empresa` para todos los roles en `EditUserModal` y `NewUserModal`.
+6. [`todo.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/todo.md): Registro y completitud de las tareas de la Fase 28.
+7. [`walkthrough.md`](file:///c:/Users/Franco/OneDrive/Documents/Clientes/Santi%20Guasch/Taschboard/dashboard/walkthrough.md): Documentación integral del Sprint 28.
+
+---
+
+## Script SQL de Normalización de Datos Existentes
+Para estandarizar y normalizar los registros existentes en la tabla `btl_usuarios` de Supabase vinculándolos limpiamente a la marca Heineken o saneando cadenas en blanco, se provee el siguiente script DML:
+
+```sql
+-- Normalizar espacios y homogeneizar registros de Heineken existentes
+UPDATE btl_usuarios
+SET empresa = 'Heineken'
+WHERE LOWER(TRIM(empresa)) IN ('heineken', 'heineken beer', 'cerveza heineken');
+
+-- Limpiar cadenas vacías o espacios a NULL para garantizar fallback exacto a 'default'
+UPDATE btl_usuarios
+SET empresa = NULL
+WHERE empresa IS NOT NULL AND TRIM(empresa) = '';
+```
+
+---
+
+## Verificación Estática
+- Compilación TypeScript: `npx tsc --noEmit` completada con **0 errores**.
+- Reglas operativas: Cero emulación de navegador o pruebas visuales automatizadas de acuerdo a las directivas de ejecución.
+
+---
+
+## 🚀 Project Walkthrough (Sprint 28)
+
+- **Progreso Actual del Proyecto:** El sistema dispone de tematización dinámica multi-tenant gobernada estrictamente por la columna `empresa` de `btl_usuarios`. Clientes e inspectores experimentan la interfaz configurada para su marca sin selector de temas visible ni posibilidad de manipulación en almacenamiento local, mientras que los administradores conservan control global sobre las variantes temáticas del ecosistema.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Extensión de `AuthContext` para propagar `empresa` en el perfil de sesión.
+  2. Implementación de `resolveThemeForUser` en `ThemeContext.tsx` con mapeo polimórfico contra `slug` y `nombre`.
+  3. Purga automática de `localStorage` y bloqueo de temas para roles `client` e `inspector`.
+  4. Ocultamiento total de `<ThemeSelector />` para usuarios no administradores.
+  5. Estandarización de inputs de empresa con `<datalist>` y chips en `UserManagement.tsx`.
+  6. Persistencia libre de pérdida para `empresa` en `btl_usuarios` a través de todos los roles.
+  7. Validación estática con `npx tsc --noEmit` (**0 errores**).
+- **Paso Inmediato:** Aplicar el script DML de normalización en Supabase SQL Editor si se requiere vincular usuarios existentes a Heineken, y validar el inicio de sesión con una cuenta de cliente e inspector para comprobar la asignación automática del tema corporativo.
+
+
 

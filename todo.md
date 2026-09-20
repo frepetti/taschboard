@@ -207,3 +207,22 @@
 - [x] Verificación estática con `npx tsc --noEmit` (0 errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 26)
 
+## Fase 27: UI/UX, Branding e Identidad Visual (Heineken SVG, Barra Admins, Grid Donas y Avatar Tasch)
+- [x] Migración segura de assets (`dist/heineken.svg` y `tasch_perfil.png` a `public/`)
+- [x] Renderizado responsivo de Logo SVG oficial de Heineken en headers de `App.tsx`
+- [x] Corrección de visibilidad y color sólido en barra de "Administradores" (`AdminStats.tsx` y `AdminDashboard.tsx`)
+- [x] Reestructuración en CSS Grid 2 columnas (`lg:grid-cols-2`) para gráficos de dona (`ManagerDashboard.tsx`)
+- [x] Homologación de dimensiones mínimas y flex layout en `PricePositioningChart.tsx` y `OpportunityBreakdown.tsx`
+- [x] Sustitución del ícono de engranaje por avatar Tasch (`/tasch_perfil.png`) en cabecera admin (`App.tsx`)
+- [x] Verificación estática de compilación TypeScript (`npx tsc --noEmit` = 0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 27)
+
+## Fase 28: Multi-tenant Theming Vinculado a Empresa y Control por Rol
+- [x] Inclusión de `empresa` en `UserDbData` y query de autenticación en `utils/AuthContext.tsx`
+- [x] Función de resolución de tema multi-tenant `resolveThemeForUser` en `context/ThemeContext.tsx`
+- [x] Sincronización automática de tema según perfil (`dbUser.empresa`) y bloqueo estricto para no administradores (`client`, `inspector`)
+- [x] Protección de selector visual `<ThemeSelector />` (oculto completamente para roles sin privilegios de admin)
+- [x] Estandarización de selector de empresa/tenant con `<datalist>` y chips de temas activos en modales de usuario (`components/UserManagement.tsx`)
+- [x] Persistencia limpia de `empresa` en `btl_usuarios` para todos los roles (eliminación de reseteo a null en no-clientes)
+- [x] Verificación estática con `npx tsc --noEmit` (0 errores)
+- [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 28)
