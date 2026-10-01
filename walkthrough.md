@@ -1927,6 +1927,153 @@ En el Sprint 29 se diagnosticaron y resolvieron las dos discrepancias analítica
   7. Validación estática integral con `npx tsc --noEmit` (**0 errores**).
 - **Paso Inmediato:** Validación visual y funcional en el navegador por parte del usuario final iniciando sesión como cliente para comprobar la carga inicial inmediata y la coherencia del gráfico de competidores.
 
+---
 
+# Sprint 30: Auditoría y Sincronización Integral de Documentación Maestra (v1.8.3)
 
+## Resumen Ejecutivo
+En el Sprint 30 se llevó a cabo una auditoría integral de la documentación del proyecto frente a la base de código real y la evolución histórica de 29 sprints, actualizando y sincronizando [`README.md`](README.md), [`DEPLOY.md`](DEPLOY.md) y [`ADMIN_MANUAL.md`](ADMIN_MANUAL.md) a la versión oficial **v1.8.3** (Septiembre 2026):
+1. **Manual del Administrador ([`ADMIN_MANUAL.md`](ADMIN_MANUAL.md)):** Rediseñado y ampliado en su totalidad. Se añadieron guías paso a paso para la gestión de temas multi-tenant (pestaña "Ajustes" / `btl_temas`), asignación de `empresa` a perfiles, asignación de productos por cliente (`btl_cliente_productos`), precios de referencia y semáforo de desvíos, selector interactivo de geolocalización de venues con mapa (`VenueLocationPicker`), importaciones masivas desde Excel, catálogo de regiones, auditoría de competencia y conmutación de esquemas de color claro/oscuro.
+2. **Guía de Despliegue ([`DEPLOY.md`](DEPLOY.md)):** Se incorporó la variable de entorno opcional `VITE_CARTO_API_KEY` para la capa cartográfica libre de marcas de agua, se documentó la creación e inicialización de semillas idempotentes en `master_schema.sql`, se actualizó el script de bootstrap SQL del Administrador inicial incluyendo la columna `empresa`, y se documentó el flujo continuo de CI/CD (`develop` $\to$ `main` $\to$ Vercel).
+3. **Documento Principal ([`README.md`](README.md)):** Se actualizó el árbol de componentes (incorporando `PricePositioningChart`, `SettingsManagement`, `ThemeSelector`, `ColorSchemeToggle`, `VenueLocationPicker`, `LoadingSpinner`), la tabla de esquemas de base de datos (`btl_temas`), las capacidades de theming corporativo desacoplado de analítica, y la matriz de responsabilidades por rol.
+
+---
+
+## Detalle de Documentos Modificados
+
+| Documento | Versión | Cambios Clave Incorporados |
+|---|:---:|---|
+| [`ADMIN_MANUAL.md`](ADMIN_MANUAL.md) | **v1.8.3** | Reescritura integral (de 68 a más de 170 líneas): Branding Multi-Tenant en pestaña Ajustes, selector `<ThemeSelector />` para admins, asignación granular de SKUs en `btl_cliente_productos`, configuración de `precio_referencia`, geolocalizador con pin interactivo CARTO Positron, importación masiva de venues y productos desde Excel, auditoría de competencia y conmutador Claro/Oscuro. |
+| [`DEPLOY.md`](DEPLOY.md) | **v1.8.3** | Inclusión de variable `VITE_CARTO_API_KEY`, detalle de tablas `btl_temas` y seeds idempotentes, actualización de snippet SQL de bootstrap inicial con columna `empresa`, y documentación del pipeline Git (`develop` build test $\to$ merge a `main` $\to$ Vercel). |
+| [`README.md`](README.md) | **v1.8.3** | Sincronización del inventario de componentes UI, tabla `btl_temas`, detalle de arquitectura desacoplada (Theming vs Analítica), soporte de mapas CARTO Positron, saneamiento de competencia y métricas de pricing. |
+
+---
+
+## Verificación de Integridad y Tipado
+- **Compilación TypeScript:** Verificación estática con `npx tsc --noEmit` completada con **0 errores**.
+- **Consistencia de Enlaces:** Verificación de rutas relativas y compatibilidad de formato Markdown en todo el conjunto de documentación.
+
+---
+
+## 🚀 Project Walkthrough (Sprint 30)
+
+- **Progreso Actual del Proyecto:** La documentación técnica, operativa y de infraestructura del sistema Taschboard se encuentra 100% alineada y sincronizada con el estado real del código en producción (v1.8.3). Cada funcionalidad desarrollada entre los Sprints 1 al 29 cuenta con respaldo documental riguroso tanto para administradores y dueños de procesos como para el equipo de infraestructura.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Auditoría exhaustiva de discrepancias entre código fuente y documentación previa.
+  2. Overhaul integral de [`ADMIN_MANUAL.md`](ADMIN_MANUAL.md) documentando 11 áreas operativas completas.
+  3. Actualización de [`DEPLOY.md`](DEPLOY.md) con variables de entorno de mapas, bootstrap multi-tenant y CI/CD.
+  4. Sincronización de [`README.md`](README.md) con árbol de componentes completo, arquitectura desacoplada y versión 1.8.3.
+  5. Ejecución y aprobación de `npx tsc --noEmit`.
+- **Paso Inmediato:** Continuar con los requerimientos operativos o evolutivos del backlog del cliente sobre la versión v1.8.3.
+
+---
+
+# Sprint 31: Arquitectura de Asignación de PDVs (N:M) y Privacidad Estricta de Historial para Inspectores
+
+## Resumen Ejecutivo
+En el Sprint 31 se implementó la arquitectura completa de **Asignación de Puntos de Venta (PDVs) y Privacidad Estricta de Historial para Inspectores**. Todo el diseño relacional DDL, scripts de migración SQL, políticas de seguridad RLS a nivel de fila y componentes React de la aplicación fueron desarrollados y verificados estáticamente:
+
+1. **Modelo de Datos de Asignación (N:M):**
+   Se creó la tabla intermedia `btl_inspector_puntos_venta` que permite vincular múltiples inspectores a múltiples puntos de venta con claves foráneas (`ON DELETE CASCADE`), marcas de tiempo (`created_at`), restricción de unicidad (`UNIQUE(inspector_id, punto_venta_id)`) e índices de rendimiento compuestos.
+
+2. **Políticas de Seguridad a Nivel de Fila (RLS) en Supabase:**
+   - **En `btl_inspector_puntos_venta`:** Habilitación de RLS con permisos totales (`ALL`) para administradores mediante `is_admin()` y permisos de consulta (`SELECT`) para inspectores sobre sus propias asignaciones (`inspector_id = current_user_id()`).
+   - **En `btl_puntos_venta` (`venues_inspector_read`):** Refactorización de la política de lectura para restringir la visibilidad de los usuarios con rol `inspector` únicamente a los puntos de venta asignados en la tabla `btl_inspector_puntos_venta`. Administradores y Clientes mantienen sus niveles de visibilidad preexistentes.
+   - **En `btl_inspecciones` (`inspecciones_inspector_read_own`):** Refactorización de la política de consulta para aislar la lectura del historial de relevamientos estrictamente a las inspecciones propias del inspector (`usuario_id = current_user_id()`), preservando intactos los permisos de inserción (`INSERT`).
+
+3. **Módulo de Asignación Administrativa (`InspectorVenueManager.tsx`):**
+   Se diseñó e implementó el componente modal/embebido `InspectorVenueManager.tsx`, que soporta doble modalidad operativa:
+   - **Modo Inspector:** Permite seleccionar un inspector en `UserManagement.tsx` y gestionar de manera intuitiva los locales asignados vs. disponibles.
+   - **Modo Punto de Venta:** Permite seleccionar un venue en `VenueDetail.tsx` o `VenueManager.tsx` y gestionar la lista de inspectores asignados con mutaciones en tiempo real.
+
+4. **Experiencia Operativa del Inspector:**
+   - **`InspectorDashboard.tsx` & `VenueSelectionForm.tsx`:** Adaptación del consumo de puntos de venta a los asignados por RLS y renderizado de un estado vacío consistente cuando un inspector no posee locales asignados a su ruta.
+   - **`InspectionHistory.tsx`:** Incorporación de un filtro defensivo en el cliente por `usuario_id` para respaldar la política de aislamiento RLS del motor y gestión de renderizado de lista vacía en caso de no registrar inspecciones históricas.
+
+---
+
+## Archivos Creados e Intervenidos
+
+| Archivo | Tipo | Descripción de la Intervención |
+|---|:---:|---|
+| `supabase/migrations/master_schema.sql` | Modificado | Auditoría e integración de la tabla `btl_inspector_puntos_venta`, índices compuestos, RLS habilitado y políticas de lectura para inspectores en `btl_puntos_venta` e `btl_inspecciones`. |
+| `supabase/migrations/20261001_inspector_venues_rls.sql` | Creado | Script de migración SQL independiente para ejecutar directamente en el SQL Editor de Supabase. |
+| `types/index.ts` | Creado | Tipado estricto en TypeScript para `InspectorVenueAssignment`, `Venue`, `Inspection` y `User`. |
+| `utils/api-direct.ts` | Modificado | Incorporación de funciones helper de API directa (`getInspectorVenues`, `assignVenueToInspector`, `unassignVenueFromInspector`, `getVenueInspectors`). |
+| `components/InspectorVenueManager.tsx` | Creado | Componente de UI para la gestión bidireccional N:M de asignación de inspectores por PDV e inspector. |
+| `components/UserManagement.tsx` | Modificado | Integración de la pestaña "Asignar Venues" en el modal de edición para usuarios con rol `inspector`. |
+| `components/VenueDetail.tsx` | Modificado | Incorporación del botón modal "Asignar Inspectores" para administradores en el encabezado del detalle del venue. |
+| `components/VenueManager.tsx` | Modificado | Incorporación del botón de acción "Asignar Inspectores" en la tabla administrativa de puntos de venta. |
+| `components/VenueSelectionForm.tsx` | Modificado | Implementación de estado vacío con mensaje descriptivo cuando la ruta del inspector carece de PDVs asignados. |
+| `components/InspectionHistory.tsx` | Modificado | Implementación de filtro defensivo por `usuario_id` del inspector activo y manejo de estado vacío para historial sin registros. |
+| `todo.md` | Modificado | Registro ordenado de tareas de la Fase 31. |
+| `walkthrough.md` | Modificado | Documentación detallada del diseño DDL, políticas RLS, componentes y validaciones estáticas del Sprint 31. |
+
+---
+
+## Estructura DDL y Políticas RLS Implementadas
+
+### DDL de la Tabla Intermedia
+```sql
+CREATE TABLE IF NOT EXISTS btl_inspector_puntos_venta (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    inspector_id UUID REFERENCES btl_usuarios(id) ON DELETE CASCADE,
+    punto_venta_id UUID REFERENCES btl_puntos_venta(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(inspector_id, punto_venta_id)
+);
+
+CREATE INDEX idx_inspector_puntos_venta_inspector ON btl_inspector_puntos_venta(inspector_id);
+CREATE INDEX idx_inspector_puntos_venta_venue ON btl_inspector_puntos_venta(punto_venta_id);
+CREATE INDEX idx_inspector_puntos_venta_composite ON btl_inspector_puntos_venta(inspector_id, punto_venta_id);
+```
+
+### Políticas RLS Configuradas
+```sql
+-- RLS para la tabla intermedia
+ALTER TABLE btl_inspector_puntos_venta ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "inspector_venues_admin_all" ON btl_inspector_puntos_venta 
+  FOR ALL USING (is_admin());
+
+CREATE POLICY "inspector_venues_read_own" ON btl_inspector_puntos_venta 
+  FOR SELECT USING (inspector_id = current_user_id());
+
+-- RLS en btl_puntos_venta para inspectores
+CREATE POLICY "venues_inspector_read" ON btl_puntos_venta 
+  FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM btl_inspector_puntos_venta ipv
+      WHERE ipv.punto_venta_id = btl_puntos_venta.id
+      AND ipv.inspector_id = current_user_id()
+    )
+  );
+
+-- RLS en btl_inspecciones para inspectores
+CREATE POLICY "inspecciones_inspector_read_own" ON btl_inspecciones 
+  FOR SELECT USING (usuario_id = current_user_id());
+```
+
+---
+
+## Verificación Estática y Resultado de TypeScript
+- **Comando Ejecutado:** `npx tsc --noEmit`
+- **Estado de Salida:** **0 errores de compilación TypeScript**
+- **Restricción de Pruebas:** Se cumplió estrictamente con la RESTRICCIÓN DE TESTING, limitando toda validación al análisis estático y compilación TypeScript sin pruebas sobre el DOM, herramientas de emulación de navegador o screenshots.
+
+---
+
+## 🚀 Project Walkthrough (Sprint 31)
+
+- **Progreso Actual del Proyecto:** El sistema Taschboard cuenta ahora con un modelo relacional N:M completo y seguro para la asignación de Puntos de Venta (PDVs) a inspectores, garantizando a nivel de base de datos (RLS) y en la capa UI que cada inspector opere estrictamente sobre sus locales asignados y su historial propio relevado. Los administradores disponen de herramientas dedicadas en el catálogo de usuarios, tabla de venues y detalle del venue para gestionar asignaciones dinámicas.
+- **Pasos Lógicos/Arquitectónicos Recién Completados:**
+  1. Definición del modelo relacional DDL e índices compuestos en `master_schema.sql` y script de migración SQL.
+  2. Implementación y refactorización de políticas RLS en `btl_inspector_puntos_venta`, `btl_puntos_venta` y `btl_inspecciones`.
+  3. Declaración de tipos e interfaces estrictas en `types/index.ts` e integración de métodos API en `utils/api-direct.ts`.
+  4. Creación del componente de asignación bidireccional `InspectorVenueManager.tsx` e integración en `UserManagement.tsx`, `VenueDetail.tsx` y `VenueManager.tsx`.
+  5. Adaptación defensiva de la experiencia del inspector y manejo de estados vacíos en `VenueSelectionForm.tsx` e `InspectionHistory.tsx`.
+  6. Certificación de paridad estática con `npx tsc --noEmit` (0 errores).
+  7. Actualización de `todo.md` y `walkthrough.md`.
+- **Paso Inmediato:** Presentación del informe final estructurado al usuario.
 

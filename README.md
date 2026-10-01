@@ -1,42 +1,40 @@
-# 🥃 Dashboard SaaS Premium - Trade Marketing & BTL
+# 🥃 Dashboard SaaS Premium - Trade Marketing & BTL (v1.8.3)
 
 ## 🎯 Descripción
 
-Dashboard premium para agencias de marketing que atienden marcas de bebidas alcohólicas. Sistema completo de gestión de inspecciones de campo, analytics ejecutivos, gestión de productos y capacitaciones, y administración multi-usuario.
+Dashboard premium para agencias de trade marketing y activaciones BTL que atienden marcas líderes de bebidas y consumo masivo. Sistema integral de gestión de inspecciones de campo, analítica ejecutiva de pricing y competencia, gestión de productos, geolocalización de puntos de venta y administración multi-tenant.
 
 ### ✨ Características Principales
 
-- 🎨 **Diseño Premium** - Estética oscura y lujosa con acentos dorados/ámbar
-- 👥 **Multi-Usuario** - 3 roles diferenciados (Inspector, Cliente, Admin)
-- 📊 **Analytics Completos** - KPIs, gráficos, mapas interactivos y reportes ejecutivos
-- 📦 **Gestión de Productos** - Catálogo con competidores, métricas por producto y objetivos
-- 🗺️ **Mapa Inteligente** - Filtrado por producto, coloreado por score de inspección
-- 🎓 **Capacitaciones** - Gestión completa de entrenamientos con asistencia y evaluaciones
-- 📱 **Responsive** - Adaptado para desktop y mobile
-- 🔐 **Autenticación Segura** - Supabase Auth con RLS, aprobación de usuarios y roles
-- 📍 **Gestión de Venues** - Importación desde Excel, asignación a clientes, y gestión completa
-- 🎫 **Sistema de Tickets** - Soporte y seguimiento integrado con comentarios
-- 🌐 **Multi-idioma** - Soporte para español e inglés
-- 🛡️ **Protección contra Extensiones** - Bloqueo de MetaMask y extensiones Web3
+- 🎨 **Multi-Tenant Theming & Branding** - Identidad visual corporativa por empresa (`btl_temas`), soporte de esquemas claro/oscuro, logos SVG oficiales y tokens de color semánticos.
+- 👥 **Control de Acceso Multi-Rol** - 3 roles diferenciados (Inspector, Cliente, Administrador) regidos por políticas RLS y aprobación manual.
+- 📊 **Analytics Ejecutivos y de Pricing** - KPIs de ejecución, desviación porcentual de precios (`precio_referencia` vs `precio_venta`), y gráfico de dona de posicionamiento de mercado.
+- 📦 **Gestión de Catálogo y Asignación N:M** - Administración de SKUs con competidores directos y asignación granular de productos por cliente (`btl_cliente_productos`).
+- 🗺️ **Mapeo Cartográfico CARTO Positron** - Infraestructura Leaflet con teselas CARTO Positron de alta resolución, selectores interactivos con pin arrastrable (`VenueLocationPicker`) y soporte de API key libre de marcas de agua.
+- ⚔️ **Auditoría de Competencia Polimórfica** - Métrica de presencia física estricta (`c.present === true`), saneamiento de etiquetas residuales y filtro "Histórico Completo" (`limit(5000)`).
+- 🎓 **Capacitaciones y Evaluaciones** - Gestión integral de sesiones, registro de asistencia y evaluación con ponderación en el *Knowledge Score*.
+- 📍 **Gestión y Geolocalización de Venues** - Importación masiva desde Excel, asignación a clientes y cálculo automático de `global_score`.
+- 📱 **Responsividad Adaptativa** - Navegación ergonómica optimizada para desktop (scroll horizontal de regiones) y dispositivos móviles (selectores desplegables unificados).
+- 🔐 **Autenticación y Seguridad Avanzada** - Supabase Auth, Row Level Security estricto, protección contra inyecciones y bloqueo de interferencias Web3/MetaMask.
+- 🎫 **Sistema de Soporte y Tickets** - Seguimiento de tickets con hilos de comentarios públicos e internos para administradores.
+- 🌐 **Internacionalización** - Soporte nativo para español e inglés.
 
 ---
 
 ## 🚀 Estado Actual
 
 ### ✅ En Producción
-El sistema está **desplegado y operativo** con Supabase como backend:
-- ✅ Autenticación con Supabase Auth (signup, login, recovery)
-- ✅ Base de datos PostgreSQL con RLS completo
-- ✅ Todos los portales funcionando (Inspector, Cliente, Admin)
-- ✅ Importación de venues desde Excel
-- ✅ Sistema completo de inspecciones por producto
-- ✅ Dashboard ejecutivo con analytics sincronizado por producto
-- ✅ Mapa interactivo filtrado por producto seleccionado
-- ✅ Gestión de productos con competidores configurables
-- ✅ Sistema de capacitaciones y evaluaciones
-- ✅ Gestión de usuarios con aprobación
-- ✅ Gestión de regiones
-- ✅ Custom tooltips en métricas
+El sistema se encuentra **desplegado y 100% operativo** sobre infraestructura Vercel (Frontend) y Supabase (Backend PostgreSQL):
+- ✅ Autenticación con Supabase Auth (signup, login, recovery).
+- ✅ Base de datos PostgreSQL con RLS estricto y triggers de consistencia.
+- ✅ Todos los portales activos (Inspector de Campo, Dashboard de Cliente, Panel Administrador).
+- ✅ Theming corporativo multi-tenant persistido en base de datos (`btl_temas`).
+- ✅ Selector de temas en cabecera en caliente para administradores y bloqueo automático por empresa para clientes.
+- ✅ Carga inicial determinística con guardas de montaje (`LoadingSpinner`) y desacople total entre theming y selección de productos.
+- ✅ Métricas de pricing con semáforo de desviación porcentual y gráfico donut de posicionamiento competitivo.
+- ✅ Importadores masivos desde Excel para productos y venues.
+- ✅ Visualización cartográfica territorial CARTO Positron.
+- ✅ Tooltips semánticos con tokens de Tailwind CSS para todos los gráficos Recharts.
 
 ---
 
@@ -46,112 +44,107 @@ El sistema está **desplegado y operativo** con Supabase como backend:
 
 | URL | Modo | Descripción |
 |-----|------|-------------|
-| `/` | Landing | Página de bienvenida con enlaces a todos los portales |
-| `/?mode=demo` | Demo | Dashboard completo sin autenticación |
-| `/?mode=inspector` | Inspector | Crear y gestionar inspecciones de campo |
-| `/?mode=client` | Cliente | Dashboard ejecutivo (solo lectura) |
-| `/?mode=admin` | Admin | Panel de administración completo |
-| `/?mode=update_password` | Recovery | Cambio de contraseña tras recovery |
+| `/` | Landing | Página principal con accesos a todos los portales |
+| `/?mode=demo` | Demo | Dashboard completo interactivo con datos de demostración |
+| `/?mode=inspector` | Inspector | Relevamiento, checklist de campo y registro de inspecciones |
+| `/?mode=client` | Cliente | Dashboard analítico ejecutivo de marca (solo lectura) |
+| `/?mode=admin` | Admin | Panel maestro de configuración, administración y auditoría |
+| `/?mode=update_password` | Recovery | Formulario seguro para restablecimiento de credenciales |
 
 ### Componentes Principales
 
 ```
 /components/
 ├── 🔐 Autenticación
-│   ├── AdminAuth.tsx             - Login/Signup Admin
-│   ├── ClientAuth.tsx            - Login/Signup Cliente
-│   ├── InspectorAuth.tsx         - Login/Signup Inspector
-│   └── UpdatePassword.tsx        - Cambio de contraseña (recovery)
+│   ├── AdminAuth.tsx             - Login/Signup para Administradores
+│   ├── ClientAuth.tsx            - Login/Signup para Clientes de Marca
+│   ├── InspectorAuth.tsx         - Login/Signup para Inspectores de Campo
+│   └── UpdatePassword.tsx        - Flujo de actualización de contraseña
 │
 ├── 📊 Dashboards
-│   ├── AdminDashboard.tsx        - Panel de administración
-│   ├── ClientDashboard.tsx       - Dashboard cliente (orquestador)
-│   ├── InspectorDashboard.tsx    - Dashboard inspector
-│   └── ManagerDashboard.tsx      - Dashboard principal con analytics
+│   ├── AdminDashboard.tsx        - Panel de administración y auditoría
+│   ├── ClientDashboard.tsx       - Dashboard de cliente (orquestador con carga reactiva)
+│   ├── InspectorDashboard.tsx    - Dashboard para personal de campo
+│   └── ManagerDashboard.tsx      - Núcleo analítico, KPIs y agregación de métricas
 │
-├── 📦 Gestión de Productos
-│   ├── ProductManagement.tsx     - CRUD de productos (admin)
-│   ├── ProductImporter.tsx       - Importación masiva de productos
-│   ├── ProductMetrics.tsx        - Métricas por producto (controlado)
-│   ├── ProductSelector.tsx       - Selector de producto (cliente)
-│   ├── ProductSelectorInspection.tsx - Selector de producto (inspector)
-│   └── ClientProductManagement.tsx - Gestión de productos asignados
+├── 📦 Gestión de Productos y Pricing
+│   ├── ProductManagement.tsx     - CRUD de productos y precio de referencia
+│   ├── ProductImporter.tsx       - Importador masivo de SKUs desde Excel
+│   ├── ProductMetrics.tsx        - KPIs de producto, desvío de precio y ejecución
+│   ├── ProductSelector.tsx       - Selector de SKU asignado para clientes
+│   ├── ProductSelectorInspection.tsx - Selector de producto para inspecciones
+│   └── ClientProductManagement.tsx - Asignación granular de SKUs por cliente
 │
-├── 🏢 Gestión de Venues
-│   ├── VenueImporter.tsx         - Importación Excel → BD
-│   ├── VenueManager.tsx          - CRUD de venues (admin)
-│   ├── VenueSelectionForm.tsx    - Selector de venue (inspector)
-│   ├── VenueTable.tsx            - Tabla de venues con scores
-│   ├── VenueDetail.tsx           - Vista detallada + acciones BTL
-│   ├── ClientVenueManager.tsx    - Asignación venues a clientes
-│   └── ClientSelectionForm.tsx   - Selector de cliente
+├── 🏢 Gestión y Geolocalización de Venues
+│   ├── VenueManager.tsx          - CRUD maestro de puntos de venta
+│   ├── VenueLocationPicker.tsx   - Selector geográfico interactivo con pin arrastrable
+│   ├── VenueImporter.tsx         - Importación masiva desde Excel
+│   ├── VenueSelectionForm.tsx    - Selector de venue para auditorías
+│   ├── VenueTable.tsx            - Tabla de puntos de venta con scores globales
+│   ├── VenueDetail.tsx           - Ficha técnica de venue + historial de acciones BTL
+│   ├── ClientVenueManager.tsx    - Asignación de venues a clientes de marca
+│   └── ClientSelectionForm.tsx   - Selector de cliente para asignaciones
 │
-├── 📋 Inspecciones
-│   ├── InspectionForm.tsx        - Formulario de inspección (dropdown competidores)
-│   ├── InspectionHistory.tsx     - Historial con filtros
-│   └── InspectorHeader.tsx       - Header del inspector
+├── 🎨 Multi-Tenant Theming & Branding
+│   ├── SettingsManagement.tsx    - Gestión y edición de temas corporativos (Admin)
+│   ├── ThemeSelector.tsx         - Selector de temas en cabecera en caliente (Admin)
+│   └── ColorSchemeToggle.tsx     - Conmutador de esquema Modo Claro / Modo Oscuro
+│
+├── 📋 Inspecciones y Relevamiento
+│   ├── InspectionForm.tsx        - Formulario de inspección (stock, POP, precios de carta)
+│   ├── InspectionHistory.tsx     - Historial con filtros temporales y de región
+│   └── InspectorHeader.tsx       - Barra de navegación y perfil del inspector
 │
 ├── 🎓 Capacitaciones
-│   ├── TrainingManagement.tsx    - CRUD de capacitaciones (admin)
-│   ├── TrainingList.tsx          - Lista de capacitaciones (inspector)
-│   └── VenueTrainingAnalytics.tsx - Analytics de capacitación por venue
+│   ├── TrainingManagement.tsx    - CRUD y evaluación de capacitaciones (Admin)
+│   ├── TrainingList.tsx          - Lista de entrenamientos e inscripción (Inspector)
+│   └── VenueTrainingAnalytics.tsx - Analítica de capacitación por punto de venta
 │
 ├── 🎫 Tickets y Usuarios
-│   ├── TicketManagement.tsx      - Gestión de tickets
-│   ├── TicketModal.tsx           - Crear/editar ticket
-│   ├── UserManagement.tsx        - Gestión de usuarios
-│   ├── PendingUsersManagement.tsx - Aprobación de usuarios pendientes
-│   └── AdminStats.tsx            - Estadísticas admin
+│   ├── TicketManagement.tsx      - Gestión y resolución de tickets de soporte
+│   ├── TicketModal.tsx           - Modal de creación y comentarios en tickets
+│   ├── UserManagement.tsx        - Gestión de usuarios y asignación de empresa
+│   ├── PendingUsersManagement.tsx - Bandeja de aprobación de usuarios pendientes
+│   └── AdminStats.tsx            - Métricas y estadísticas de uso del sistema
 │
-├── 🌐 Internacionalización
-│   └── LanguageSwitcher.tsx      - Cambio de idioma ES/EN
-│
-├── 🛡️ Seguridad y Debug
-│   ├── SecurityStatus.tsx        - Panel de estado de seguridad
-│   └── DebugPanel.tsx            - Panel de debug (desarrollo)
-│
-├── 📈 Visualizaciones
-│   ├── KPICard.tsx               - Tarjetas de KPIs
-│   ├── PerformanceChart.tsx      - Gráficos de rendimiento
-│   ├── CompetitionChart.tsx      - Análisis de competencia
-│   ├── OpportunityMap.tsx        - Mapa interactivo (filtrado por producto)
-│   ├── OpportunityBreakdown.tsx  - Desglose de oportunidades
-│   ├── ActivationTimeline.tsx    - Timeline de activaciones
-│   ├── InsightCard.tsx           - Tarjetas de insights
-│   ├── FilterChip.tsx            - Chips de filtro
-│   ├── Tooltip.tsx               - Tooltips custom
-│   └── RegionManager.tsx         - Gestión de regiones
+├── 📈 Visualizaciones y Gráficos
+│   ├── KPICard.tsx               - Tarjetas métricas con micro-gráficos
+│   ├── PerformanceChart.tsx      - Rendimiento temporal (desktop chips / mobile dropdown)
+│   ├── CompetitionChart.tsx      - Análisis de presencia y visibilidad de competidores
+│   ├── PricePositioningChart.tsx - Gráfico Donut de posicionamiento de precio vs competencia
+│   ├── OpportunityMap.tsx        - Mapa interactivo CARTO Positron filtrado por producto
+│   ├── OpportunityBreakdown.tsx  - Análisis de brechas de visibilidad y POP
+│   ├── ActivationTimeline.tsx    - Cronograma histórico de activaciones BTL
+│   ├── InsightCard.tsx           - Tarjetas de insights accionables
+│   ├── FilterChip.tsx            - Chips de filtrado interactivo con scroll horizontal
+│   ├── Tooltip.tsx               - Tooltip genérico del sistema
+│   └── RegionManager.tsx         - Configuración territorial de regiones
 │
 └── 🎨 UI Base
-    └── /ui/                      - Librería de componentes UI (81+)
+    ├── LoadingSpinner.tsx        - Spinner de carga reactivo y accesible
+    └── /ui/                      - Librería de componentes UI (81+ componentes Radix)
 ```
 
-### Backend y Utilidades
+### Contextos y Utilidades
 
 ```
+/context/
+└── ThemeContext.tsx       - Motor de theming multi-tenant, resolución por empresa y persistencia
+
 /utils/
-├── AuthContext.tsx        - Contexto de autenticación (roles, sesión, perfil DB)
-├── LanguageContext.tsx    - Contexto de idioma (ES/EN)
-├── api.ts                - API con modo mock/servidor dual
-├── api-direct.ts         - API directa a Supabase (producción)
-├── scoreCalculations.ts  - Cálculos de score (Global, Visibility, POP, Stock, Knowledge)
-├── scoreConfig.ts        - Configuración de pesos y umbrales
-├── badges.ts             - Sistema de badges
-├── constants.ts          - Constantes del sistema
-├── database-config.ts    - Configuración de base de datos
-├── formatters.ts         - Formateo de datos
-├── notifications.ts      - Sistema de notificaciones
-├── translations.ts       - Traducciones ES/EN
-├── validators.ts         - Validadores
+├── AuthContext.tsx        - Contexto de sesión, roles (admin/client/inspector) y perfil de usuario
+├── LanguageContext.tsx    - Contexto de internacionalización (ES/EN)
+├── competitionUtils.ts    - Saneamiento y validación estricta de nombres de competidores
+├── scoreCalculations.ts   - Algoritmos de scoring (Global, Visibility, POP, Stock, Knowledge)
+├── scoreConfig.ts         - Ponderaciones y umbrales de evaluación
+├── badges.ts              - Sistema de insignias y gamificación
+├── constants.ts           - Constantes del sistema
+├── formatters.ts          - Formateo seguro de divisas y porcentajes (Intl.NumberFormat)
+├── notifications.ts       - Notificaciones tipo toast (Sonner)
+├── translations.ts        - Diccionario bilingüe para labels analíticos y de pricing
 └── supabase/
-    ├── client.ts          - Cliente Supabase
-    └── info.tsx           - Config del proyecto
-
-/supabase/functions/server/
-├── index.tsx              - Edge Function principal (Hono server)
-└── kv_store.tsx           - Utilidades KV Store
-
-master_schema.sql          - Schema postgresql completo con RLS
+    ├── client.ts          - Cliente cliente singleton de Supabase
+    └── info.tsx           - Metadatos de conexión
 ```
 
 ---
@@ -159,167 +152,34 @@ master_schema.sql          - Schema postgresql completo con RLS
 ## 🛠️ Tecnologías
 
 | Categoría | Tecnología |
-|-----------|------------|
-| **Framework** | React 18 + TypeScript |
-| **Build** | Vite 7 |
-| **Estilos** | Tailwind CSS v3 |
-| **Backend** | Supabase (Auth, PostgreSQL, Edge Functions, Storage) |
-| **Servidor** | Hono (Edge Function) |
-| **UI Components** | Radix UI (Dialog, Select, Tabs, Tooltip, etc.) |
-| **Gráficos** | Recharts |
-| **Mapas** | Leaflet (React-Leaflet) |
-| **Iconos** | Lucide React |
-| **Excel** | read-excel-file |
+|---|---|
+| **Frontend Framework** | React 18 + TypeScript |
+| **Bundler & Build Tool** | Vite 7 |
+| **Diseño y Estilos** | Tailwind CSS v3 + CSS Variables dinámicas |
+| **Backend & DB** | Supabase (PostgreSQL, Auth, Edge Functions, Storage) |
+| **Motor Cartográfico** | Leaflet + Capa de teselas CARTO Positron |
+| **Gráficos Analíticos** | Recharts (ResponsiveContainer, PieChart, BarChart, LineChart) |
+| **Componentes Accesibles** | Radix UI Primitives |
+| **Iconografía** | Lucide React |
+| **Procesamiento de Archivos**| read-excel-file |
 | **Notificaciones** | Sonner |
-| **Deploy** | Vercel |
+| **Infraestructura Cloud** | Vercel (Frontend) + Supabase Cloud (Backend) |
 
 ---
 
-## 📖 Documentación
+## 📖 Documentación Relacionada
 
-| Archivo | Descripción |
-|---------|-------------|
-| [README.md](README.md) | 📋 Documentación principal del proyecto |
-| [USER_MANUAL.md](USER_MANUAL.md) | 👤 Guía de usuario por perfil |
-| [METRICS.md](METRICS.md) | 📊 Documentación de métricas y cálculos |
-| [ADMIN_MANUAL.md](ADMIN_MANUAL.md) | 👑 Manual del administrador |
-| [DEPLOY.md](DEPLOY.md) | 🚀 Guía de despliegue |
-| [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md) | 🔐 Configuración de seguridad y RLS |
-| [TESTING.md](TESTING.md) | 🧪 Plan de testing |
-| [SCALABILITY_PLAN.md](SCALABILITY_PLAN.md) | 🚀 Plan de escalabilidad y mejoras futuras |
-| [Attributions.md](Attributions.md) | 🙏 Créditos y atribuciones |
-
----
-
-## 🚀 Inicio Rápido
-
-### Instalación
-
-```bash
-npm install
-npm run dev
-```
-
-### Credenciales
-
-Los usuarios se crean a través del sistema de registro con aprobación por parte de un Admin.
-
-### Despliegue
-
-📚 **Ver guía completa:** [DEPLOY.md](DEPLOY.md)
-
-**Resumen:**
-1. Configurar variables de entorno en `.env.local` (Supabase URL, anon key)
-2. Ejecutar `master_schema.sql` en el SQL Editor de Supabase
-3. Desplegar Edge Functions: `supabase functions deploy server`
-4. Desplegar frontend a Vercel: `npm run build` + deploy
-5. Verificar con health check
-
----
-
-## 🎨 Estilo y Diseño
-
-### Paleta de Colores
-
-- **Fondo Principal:** Negro profundo (#0a0a0a) con gradientes slate
-- **Acentos:** Dorado/Ámbar (#d4af37, #fbbf24)
-- **Glassmorfismo:** Backgrounds semi-transparentes con blur
-- **Texto:** Blanco (#ffffff) y grises claros
-- **Estados:** Verde éxito, rojo error, ámbar warning, azul info
-
-### Componentes UI
-
-Librería de 81+ componentes UI en `/components/ui/` basados en Radix UI:
-- Buttons, Cards, Modals, Dialogs
-- Forms, Inputs, Selects, Checkboxes
-- Tables, Tabs, Accordions
-- Charts, Badges, Alerts, Progress
-- Tooltips, Popovers, Dropdowns
-- Y más...
-
----
-
-## 👥 Roles y Permisos
-
-### 🔧 Inspector (Campo)
-- ✅ Crear inspecciones de venues por producto
-- ✅ Ver historial de sus propias inspecciones
-- ✅ Seleccionar venues y productos desde catálogo
-- ✅ Subir fotos y datos de campo
-- ✅ Seleccionar competidores desde lista configurada
-- ✅ Ver capacitaciones disponibles e inscribirse
-- ❌ No puede ver analytics globales
-- ❌ No puede gestionar usuarios
-
-### 👔 Cliente (Ejecutivo)
-- ✅ Ver dashboard completo con analytics filtrado por producto
-- ✅ Ver KPIs y métricas ejecutivas por producto
-- ✅ Ver mapa interactivo filtrado por producto seleccionado
-- ✅ Gestionar sus productos asignados
-- ✅ Crear tickets de soporte
-- ✅ Ver tooltips con información detallada de métricas
-- ❌ No puede crear inspecciones
-- ❌ No puede gestionar usuarios
-- ❌ Solo ve venues asignados
-
-### 👑 Admin (Administrador)
-- ✅ Acceso completo a todo
-- ✅ Gestionar usuarios (crear, editar, eliminar, aprobar)
-- ✅ Gestionar venues (importar, editar, eliminar, asignar a clientes)
-- ✅ Gestionar productos (CRUD, competidores, objetivos)
-- ✅ Gestionar capacitaciones (crear, evaluar, registrar asistencia)
-- ✅ Gestionar regiones
-- ✅ Ver y gestionar tickets
-- ✅ Ver estadísticas del sistema y panel de seguridad
-- ✅ Acceso a panel de debug
-- ✅ Acceso a todos los dashboards (puede verlos como Inspector o Cliente)
-
----
-
-## 🔄 Flujo de Datos
-
-### Selección de Producto (Sync Global)
-
-```
-ClientDashboard (estado central: selectedProductId)
-    ↓
-    ├── ProductMetrics    → métricas filtradas por producto + fecha + región
-    ├── ManagerDashboard  → KPIs, charts filtrados por producto
-    └── OpportunityMap    → venues coloreados por score del producto
-                            (gris = sin inspección para ese producto)
-```
-
-### Inspección por Producto
-
-```
-Inspector abre "Nueva Inspección"
-    ↓
-    Selecciona Venue → Selecciona Producto
-    ↓
-    Completa formulario (checklist, stock, POP, competidores del producto)
-    ↓
-    Se calcula Global Score automáticamente
-    ↓
-    Se guarda inspección en btl_inspecciones
-    ↓
-    Trigger actualiza global_score en btl_puntos_venta
-    ↓
-    Dashboard Cliente refleja el cambio ✅
-```
-
-### Creación y Aprobación de Usuarios
-
-```
-Nuevo usuario se registra (signup)
-    ↓
-    Se crea perfil en btl_usuarios con estado_aprobacion = 'pending'
-    ↓
-    Admin ve en "Usuarios Pendientes"
-    ↓
-    Admin aprueba o rechaza
-    ↓
-    Usuario puede acceder al sistema ✅
-```
+| Documento | Audiencia / Propósito |
+|---|---|
+| [README.md](README.md) | 📋 Resumen técnico y arquitectura general del sistema |
+| [ADMIN_MANUAL.md](ADMIN_MANUAL.md) | 👑 Manual operativo para Administradores (v1.8.3) |
+| [DEPLOY.md](DEPLOY.md) | 🚀 Guía maestra de despliegue, infraestructura y CI/CD |
+| [METRICS.md](METRICS.md) | 📊 Fórmulas analíticas, pesos de score y métricas de pricing |
+| [USER_MANUAL.md](USER_MANUAL.md) | 👤 Guía para usuarios finales e inspectores |
+| [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md) | 🔐 Auditoría de políticas RLS y seguridad |
+| [SCALABILITY_PLAN.md](SCALABILITY_PLAN.md) | 🚀 Hoja de ruta técnica para escalabilidad |
+| [TESTING.md](TESTING.md) | 🧪 Protocolos de validación estática y testing |
+| [Attributions.md](Attributions.md) | 🙏 Créditos y licencias de terceros |
 
 ---
 
@@ -327,112 +187,80 @@ Nuevo usuario se registra (signup)
 
 ### Tablas Principales
 
-| Tabla | Descripción |
-|-------|-------------|
-| `btl_usuarios` | Perfiles de usuario con roles y aprobación |
-| `btl_puntos_venta` | Venues con coordenadas, segmento y global_score |
-| `btl_productos` | Catálogo de productos con competidores y objetivos |
-| `btl_inspecciones` | Inspecciones (1 por producto por visita) |
-| `btl_reportes` | Tickets de soporte |
-| `btl_ticket_comentarios` | Comentarios en tickets |
-| `btl_capacitaciones` | Capacitaciones/entrenamientos |
-| `btl_capacitacion_asistentes` | Asistencia y evaluaciones |
-| `btl_temas_capacitacion` | Catálogo de temas |
-| `btl_regiones` | Regiones geográficas |
-| `btl_clientes_venues` | Asignación venues ↔ clientes |
-| `btl_cliente_productos` | Productos asignados a clientes |
-| `btl_acciones` | Acciones BTL en venues |
-| `btl_config` | Configuración del sistema |
-
-### Triggers
-
-- `update_venue_global_score` → Al crear inspección, actualiza `global_score` del venue
-- `auto_approve_admin` → Aprueba automáticamente usuarios con rol admin
-- `update_updated_at_column` → Actualiza campo `updated_at` en cada tabla
-
-### Row Level Security (RLS)
-
-Todas las tablas tienen RLS habilitado con políticas diferenciadas por rol:
-- **Admins**: Acceso total a todo
-- **Clientes**: Solo ven venues asignados y todas las inspecciones
-- **Inspectores**: Ven todos los venues, solo sus propias inspecciones
-
-Ver detalle en [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md).
+| Tabla | Propósito y Contenido |
+|---|---|
+| `btl_usuarios` | Perfiles de usuario, roles (`admin`, `client`, `inspector`), estado de aprobación y `empresa` |
+| `btl_temas` | Configuración multi-tenant: slugs, nombres, paletas semánticas y banderas de branding |
+| `btl_puntos_venta` | Venues auditados con coordenadas geográficas, segmento, región y `global_score` |
+| `btl_productos` | Catálogo de SKUs, competidores configurados, metas de ejecución y `precio_referencia` |
+| `btl_cliente_productos` | Tabla de asociación N:M para asignar productos permitidos a cada cliente |
+| `btl_clientes_venues` | Tabla de asociación N:M para restringir venues visibles por cliente |
+| `btl_inspecciones` | Relevamientos de campo (1 por SKU por visita), checklist, POP, competidores y `precio_venta` |
+| `btl_reportes` | Tickets de soporte técnico y requerimientos operativos |
+| `btl_ticket_comentarios` | Mensajes e hilos de comentarios públicos o internos por ticket |
+| `btl_capacitaciones` | Entrenamientos para inspectores con cupos, fecha y temarios |
+| `btl_capacitacion_asistentes`| Registro de asistencia y evaluación de inspectores |
+| `btl_temas_capacitacion` | Catálogo maestro de asignaturas y temas formativos |
+| `btl_regiones` | Catálogo geográfico de regiones operativas |
+| `btl_acciones` | Historial de activaciones BTL ejecutadas en cada venue |
+| `btl_config` | Parámetros globales y configuración del sistema |
 
 ---
 
-## 🔐 Seguridad
+## 🔄 Arquitectura Desacoplada: Theming vs Datos
 
-- ✅ Autenticación con Supabase Auth (email/password)
-- ✅ Row Level Security (RLS) en todas las tablas
-- ✅ Helper functions: `is_admin()`, `is_inspector()`, `current_user_id()`
-- ✅ Sistema de aprobación de usuarios
-- ✅ Tokens JWT para API
-- ✅ Validación en frontend y backend
-- ✅ Variables de entorno protegidas
-- ✅ Service Role Key solo en servidor (Edge Functions)
-- ✅ Protección contra extensiones del navegador (MetaMask, Web3)
-- ✅ Bloqueo de inyección de scripts de extensiones
-- ✅ Email confirmation flow
+El sistema implementa una separación estricta entre la **Identidad Visual Corporativa** y el **Filtrado Analítico de Datos**:
+
+1. **Theming y Marca (`ThemeContext`):**
+   - Determinado por el atributo `empresa` en `btl_usuarios`.
+   - Se resuelve contra `btl_temas`. Modifica las variables CSS globales, colores primarios/secundarios, acentos y el logo de la cabecera.
+   - Es inmutable para clientes e inspectores (sin selector en cabecera ni mutación por selección de SKU).
+2. **Filtrado Analítico de Datos (`selectedProductId`):**
+   - Determinado por la tabla `btl_cliente_productos`.
+   - Modifica exclusivamente las cláusulas de consulta en base de datos (`.eq('producto_id', ...)`), calculando KPIs, desvíos de precios y presencia competitiva sin alterar la interfaz visual corporativa.
+
+---
+
+## 🔐 Seguridad y Row Level Security (RLS)
+
+- **Aislamiento por Rol:** Políticas RLS activas en el 100% de las tablas.
+- **Clientes:** Solo pueden leer venues asignados en `btl_clientes_venues` e inspecciones vinculadas a sus productos asignados en `btl_cliente_productos`.
+- **Inspectores:** Tienen lectura sobre venues para auditar en campo, pero solo pueden ver y editar sus propias inspecciones.
+- **Administradores:** Control integral mediante la función de base de datos `is_admin()`.
+- **Sanitización de Datos:** Manejo de defensas tipadas contra cadenas vacías, valores nulos y control de división por cero en indicadores porcentuales.
+
+---
+
+## 👥 Roles y Permisos
+
+| Capacidad / Módulo | Inspector | Cliente | Administrador |
+|---|:---:|:---:|:---:|
+| Crear inspecciones de campo | ✅ | ❌ | ✅ |
+| Ver historial propio de visitas | ✅ | ❌ | ✅ |
+| Ver Dashboard Ejecutivo con Analytics | ❌ | ✅ | ✅ |
+| Ver mapa con scores de producto | ❌ | ✅ | ✅ |
+| Cambiar producto en análisis (dropdown) | ❌ | ✅ | ✅ |
+| Cambiar tema corporativo en caliente (header) | ❌ | ❌ | ✅ |
+| Modificar paletas corporativas (`btl_temas`) | ❌ | ❌ | ✅ |
+| Crear y editar SKUs y precios de referencia | ❌ | ❌ | ✅ |
+| Asignar productos o venues a clientes | ❌ | ❌ | ✅ |
+| Aprobar o rechazar usuarios pendientes | ❌ | ❌ | ✅ |
+| Inscribirse en capacitaciones | ✅ | ❌ | ✅ |
+| Crear y evaluar capacitaciones | ❌ | ❌ | ✅ |
+| Crear tickets de soporte | ✅ | ✅ | ✅ |
 
 ---
 
 ## 📱 Responsividad
 
-- ✅ Desktop (1920px+) - Experiencia completa
-- ✅ Laptop (1440px) - Optimizado
-- ✅ Tablet (768px) - Adaptado
-- ✅ Mobile (375px+) - Layout móvil
+- **Desktop (1920px+ / 1440px):** Barra de filtros con scroll horizontal sin desbordamiento de chips, gráficos Recharts en grid multicolumna y tooltips semánticos flotantes.
+- **Tablet (768px - 1024px):** Layout adaptado con mapa interactivo y tablas con scroll horizontal nativo.
+- **Mobile (375px+):** Reemplazo de chips por menús desplegables estilizados (`<select>`), navegación ergonómica en cabecera y gráficos de competencia en columnas apiladas.
 
 ---
 
-## 🎯 Próximas Mejoras (Opcionales)
+## 📄 Metadatos y Versión
 
-- [ ] Exportar reportes en PDF
-- [ ] Notificaciones push
-- [ ] Dashboard en tiempo real con websockets
-- [ ] Más visualizaciones (Sankey, Funnel, etc.)
-- [ ] Historial de cambios (audit log)
-- [ ] Modo offline con sync
-
----
-
-## 🆘 Soporte
-
-### Problemas Comunes
-
-Ver sección de troubleshooting en:
-- [DEPLOY.md](DEPLOY.md)
-- [SECURITY_CONFIGURATION.md](SECURITY_CONFIGURATION.md)
-
-### Debugging
-
-1. Abre consola del navegador (F12)
-2. Activa el Debug Panel desde Admin Dashboard
-3. Revisa logs del servidor en Supabase Dashboard
-
----
-
-## 📄 Licencia
-
-Proyecto privado para agencia de marketing.
-
----
-
-## 🙏 Créditos
-
-Ver [Attributions.md](Attributions.md) para créditos completos.
-
----
-
-**Versión:** 2.0.0  
-**Última actualización:** Marzo 2026  
+**Versión:** 1.8.3  
+**Última actualización:** Septiembre 2026  
 **Estado:** ✅ Producción
-
----
-
-## 🎉 ¡Disfruta del Dashboard!
-
-El sistema está completamente funcional y desplegado. Para cualquier duda, consulta la documentación o contacta al equipo de desarrollo.
-
-**Happy monitoring! 🥃✨**

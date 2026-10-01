@@ -219,8 +219,8 @@ export function VenueSelectionForm({ onVenueSelect }: VenueSelectionFormProps) {
             {venues.length === 0 && !searchQuery && (
               <div className="text-center py-12 border-2 border-dashed border-border-subtle rounded-lg">
                 <MapPin className="w-16 h-16 text-content-muted mx-auto mb-4" />
-                <h3 className="text-lg text-content-main font-semibold mb-2">{t('common.no_data')}</h3>
-                <p className="text-content-muted mb-4">{t('inspector.start_adding_venue')}</p>
+                <h3 className="text-lg text-content-main font-semibold mb-2">Sin locales asignados</h3>
+                <p className="text-content-muted mb-4 max-w-md mx-auto">No tienes puntos de venta asignados a tu ruta. Contacta a tu administrador para la asignación de locales o añade un nuevo punto de venta.</p>
                 <button
                   onClick={() => setShowNewVenueForm(true)}
                   className="inline-flex items-center gap-2 bg-theme-primary hover:bg-theme-secondary text-white px-6 py-2 rounded-lg font-medium transition-colors"

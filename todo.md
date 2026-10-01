@@ -239,3 +239,24 @@
 - [x] Verificación estática de compilación TypeScript (`npx tsc --noEmit` = 0 errores)
 - [x] Documentación técnica y funcional en `walkthrough.md` (Sprint 29)
 
+## Fase 30: Auditoría y Sincronización Integral de Documentación Maestra (v1.8.3)
+- [x] Reescritura y expansión de `ADMIN_MANUAL.md` cubriendo Theming Multi-Tenant, asignación de SKUs por cliente, Pricing de referencia, geolocalización CARTO Positron, importación Excel y auditoría de competencia
+- [x] Actualización de `DEPLOY.md` incorporando `VITE_CARTO_API_KEY`, bootstrap de admin con columna `empresa` y pipeline CI/CD
+- [x] Actualización de `README.md` sincronizando el inventario de componentes, tablas del esquema (`btl_temas`), arquitectura desacoplada y versión v1.8.3
+- [x] Verificación estática de compilación (`npx tsc --noEmit`)
+- [x] Registro y actualización de bitácora en `walkthrough.md` y `todo.md`
+
+## Fase 31: Asignación N:M de PDVs y Privacidad Estricta de Historial para Inspectores
+- [x] Creación de tabla intermedia `btl_inspector_puntos_venta` (FKs `btl_usuarios` y `btl_puntos_venta`, restricción de unicidad, marcas de tiempo e índices compuestos de rendimiento)
+- [x] Implementación de políticas RLS en `btl_inspector_puntos_venta` (acceso `ALL` para admins, `SELECT` propio para inspectores)
+- [x] Refactorización de políticas RLS en `btl_puntos_venta` (visibilidad de inspectores restringida a locales asignados en `btl_inspector_puntos_venta`)
+- [x] Refactorización de políticas RLS en `btl_inspecciones` (aislamiento estricto de lectura a relevamientos propios `usuario_id = current_user_id()`, preservando permisos de inserción)
+- [x] Actualización de `master_schema.sql` y generación de script de migración SQL `supabase/migrations/20261001_inspector_venues_rls.sql`
+- [x] Creación del modelo y tipos TypeScript en `types/index.ts` y métodos helper en `utils/api-direct.ts`
+- [x] Creación de componente `components/InspectorVenueManager.tsx` para la gestión administrativa N:M de inspectores por punto de venta e inspector
+- [x] Integración del módulo de asignación en `components/VenueDetail.tsx`, `components/VenueManager.tsx` y `components/UserManagement.tsx`
+- [x] Adaptación de la experiencia operativa del inspector en `components/InspectorDashboard.tsx` y `components/VenueSelectionForm.tsx` con manejo de estados vacíos para rutas no asignadas
+- [x] Filtrado defensivo y manejo de estados vacíos en `components/InspectionHistory.tsx` respaldando el aislamiento del motor de base de datos
+- [x] Validación de compilación estática `npx tsc --noEmit` (0 errores de compilación)
+- [x] Actualización de `todo.md` y bitácora estructurada en `walkthrough.md`
+

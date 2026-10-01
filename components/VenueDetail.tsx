@@ -1,4 +1,4 @@
-import { ArrowLeft, MapPin, Phone, Check, X, Award, Ticket } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Check, X, Award, Ticket, UserCheck } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 
 import { useState, useEffect } from 'react';
@@ -7,8 +7,10 @@ import { supabase } from '../utils/supabase/client';
 import { useLanguage } from '../utils/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { TicketModal } from './TicketModal';
+import { InspectorVenueManager } from './InspectorVenueManager';
 import { getDemoVenueDetail } from '../utils/demoData';
 import { LoadingSpinner } from './LoadingSpinner';
+import { getUserRole } from '../utils/api-direct';
 
 interface Venue {
   id: string;
@@ -42,7 +44,18 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
   const [perfectServeScore, setPerfectServeScore] = useState(0);
   const [perfectServeChecklist, setPerfectServeChecklist] = useState<{ item: string; status: boolean }[]>([]);
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [showInspectorsModal, setShowInspectorsModal] = useState(false);
   const [avgProductScore, setAvgProductScore] = useState<number | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadUserRole();
+  }, []);
+
+  const loadUserRole = async () => {
+    const role = await getUserRole();
+    setUserRole(role);
+  };
 
   const isMock = isDemo || (typeof venueId === 'string' && (venueId.startsWith('v') || !venueId.includes('-')));
 
@@ -338,16 +351,27 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
                 </Tooltip>
                 <div className="text-xs sm:text-sm text-content-muted">{t('venue_detail.out_of_100')}</div>
               </div>
-              <button
-                className="shrink-0 lg:w-full bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-lg flex items-center justify-center gap-2"
-                onClick={() => setShowTicketModal(true)}
-              >
-                <Ticket className="w-4 h-4" />
-                Crear Ticket
-              </button>
+                <div className="flex items-center gap-2">
+                  {(userRole === 'admin' || userRole === 'superadmin') && (
+                    <button
+                      className="bg-surface-card-subtle hover:bg-surface-card border border-border-subtle text-content-main px-4 py-2 sm:px-5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-sm flex items-center justify-center gap-2"
+                      onClick={() => setShowInspectorsModal(true)}
+                    >
+                      <UserCheck className="w-4 h-4 text-theme-primary" />
+                      Asignar Inspectores
+                    </button>
+                  )}
+                  <button
+                    className="shrink-0 bg-gradient-to-r from-theme-secondary to-theme-primary hover:brightness-110 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all shadow-lg flex items-center justify-center gap-2"
+                    onClick={() => setShowTicketModal(true)}
+                  >
+                    <Ticket className="w-4 h-4" />
+                    Crear Ticket
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-4 sm:mb-8">
@@ -482,6 +506,15 @@ export function VenueDetail({ venueId, selectedProductId, onBack, isDemo = false
           session={null}
           onClose={() => setShowTicketModal(false)}
           preselectedVenueId={venueId}
+        />
+      )}
+
+      {/* Inspector Assignment Modal */}
+      {showInspectorsModal && (
+        <InspectorVenueManager
+          venueId={venue.id}
+          venueName={venue.nombre}
+          onClose={() => setShowInspectorsModal(false)}
         />
       )}
 

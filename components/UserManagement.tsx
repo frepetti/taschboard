@@ -4,6 +4,7 @@ import { supabase } from '../utils/supabase/client';
 import { authAPI, adminAPI } from '../utils/api';
 import { useTheme } from '../context/ThemeContext';
 import { ClientVenueManager } from './ClientVenueManager';
+import { InspectorVenueManager } from './InspectorVenueManager';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -698,8 +699,8 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
           </button>
         </div>
 
-        {/* Tabs (only for clients) */}
-        {role === 'client' && (
+        {/* Tabs (for clients and inspectors) */}
+        {(role === 'client' || role === 'inspector') && (
           <div className="flex border-b border-border-subtle px-6">
             <button
               onClick={() => setActiveTab('profile')}
@@ -817,11 +818,19 @@ function EditUserModal({ user, onClose, onSuccess }: { user: any, onClose: () =>
             </form>
           ) : (
             <div className="h-full min-h-[400px]">
-              <ClientVenueManager
-                clientId={user.id}
-                clientName={user.name}
-                embedded={true}
-              />
+              {role === 'inspector' ? (
+                <InspectorVenueManager
+                  inspectorId={user.id}
+                  inspectorName={user.name}
+                  embedded={true}
+                />
+              ) : (
+                <ClientVenueManager
+                  clientId={user.id}
+                  clientName={user.name}
+                  embedded={true}
+                />
+              )}
             </div>
           )}
         </div>

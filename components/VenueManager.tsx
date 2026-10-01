@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { VenueImporter } from './VenueImporter';
-import { MapPin, Edit2, Trash2, Plus, Save, X, Map } from 'lucide-react';
+import { MapPin, Edit2, Trash2, Plus, Save, X, Map, UserCheck } from 'lucide-react';
+import { InspectorVenueManager } from './InspectorVenueManager';
 import { supabase } from '../utils/supabase/client';
 import { toast } from 'sonner';
 import { ConfirmDialog } from './ui/ConfirmDialog';
@@ -26,6 +27,7 @@ export function VenueManager({ session }: VenueManagerProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentVenue, setCurrentVenue] = useState<any>({});
   const [venueToDelete, setVenueToDelete] = useState<string | null>(null);
+  const [inspectorManagerVenue, setInspectorManagerVenue] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -325,6 +327,13 @@ export function VenueManager({ session }: VenueManagerProps) {
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => setInspectorManagerVenue(venue)}
+                            className="p-2 hover:bg-theme-primary/10 rounded-lg text-content-muted hover:text-theme-primary transition-colors"
+                            title="Asignar Inspectores"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => openEditModal(venue)}
                             className="p-2 hover:bg-theme-primary/10 rounded-lg text-content-muted hover:text-theme-primary transition-colors"
                             title="Editar"
@@ -496,6 +505,14 @@ export function VenueManager({ session }: VenueManagerProps) {
             </div>
           </div>
         </div>
+      )}
+      {/* Inspector Manager Modal */}
+      {inspectorManagerVenue && (
+        <InspectorVenueManager
+          venueId={inspectorManagerVenue.id}
+          venueName={inspectorManagerVenue.nombre}
+          onClose={() => setInspectorManagerVenue(null)}
+        />
       )}
     </div>
   );

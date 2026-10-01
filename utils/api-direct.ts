@@ -650,3 +650,96 @@ export async function checkAuthStatus() {
     return { authenticated: false, error: error.message };
   }
 }
+
+// ============================================
+// ASIGNACIÓN INSPECTOR - VENUES
+// ============================================
+
+/**
+ * Obtener venues asignados a un inspector
+ */
+export async function getInspectorVenues(inspectorId: string) {
+  try {
+    const { data, error } = await (supabase.from('btl_inspector_puntos_venta' as any) as any)
+      .select(`
+        id,
+        punto_venta_id,
+        created_at,
+        venue:btl_puntos_venta(*)
+      `)
+      .eq('inspector_id', inspectorId);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error: any) {
+    console.error('❌ Error loading inspector venues:', error);
+    throw error;
+  }
+}
+
+/**
+ * Asignar un venue a un inspector
+ */
+export async function assignVenueToInspector(inspectorId: string, venueId: string) {
+  try {
+    const { data, error } = await (supabase.from('btl_inspector_puntos_venta' as any) as any)
+      .insert({
+        inspector_id: inspectorId,
+        punto_venta_id: venueId
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error: any) {
+    console.error('❌ Error assigning venue to inspector:', error);
+    throw error;
+  }
+}
+
+/**
+ * Desasignar un venue de un inspector
+ */
+export async function unassignVenueFromInspector(assignmentId: string) {
+  try {
+    const { error } = await (supabase.from('btl_inspector_puntos_venta' as any) as any)
+      .delete()
+      .eq('id', assignmentId);
+
+    if (error) throw error;
+    return true;
+  } catch (error: any) {
+    console.error('❌ Error unassigning venue from inspector:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener inspectores asignados a un punto de venta (venueId)
+ */
+export async function getVenueInspectors(venueId: string) {
+  try {
+    const { data, error } = await (supabase.from('btl_inspector_puntos_venta' as any) as any)
+      .select(`
+        id,
+        inspector_id,
+        created_at,
+        inspector:btl_usuarios!btl_inspector_puntos_venta_inspector_id_fkey(
+          id,
+          nombre,
+          email,
+          rol,
+          empresa,
+          activo
+        )
+      `)
+      .eq('punto_venta_id', venueId);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error: any) {
+    console.error('❌ Error loading venue inspectors:', error);
+    throw error;
+  }
+}

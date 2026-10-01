@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS btl_reportes CASCADE;
 DROP TABLE IF EXISTS btl_inspecciones CASCADE;
 DROP TABLE IF EXISTS btl_cliente_productos CASCADE;
 DROP TABLE IF EXISTS btl_clientes_venues CASCADE;
+DROP TABLE IF EXISTS btl_inspector_puntos_venta CASCADE;
 DROP TABLE IF EXISTS btl_puntos_venta CASCADE;
 DROP TABLE IF EXISTS btl_capacitacion_asistentes CASCADE;
 DROP TABLE IF EXISTS btl_capacitaciones CASCADE;
@@ -270,6 +271,19 @@ CREATE TABLE btl_clientes_venues (
     UNIQUE(cliente_id, venue_id)
 );
 
+-- Inspectores <-> Venues (Asignación)
+CREATE TABLE btl_inspector_puntos_venta (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    inspector_id UUID REFERENCES btl_usuarios(id) ON DELETE CASCADE,
+    punto_venta_id UUID REFERENCES btl_puntos_venta(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(inspector_id, punto_venta_id)
+);
+
+CREATE INDEX idx_inspector_puntos_venta_inspector ON btl_inspector_puntos_venta(inspector_id);
+CREATE INDEX idx_inspector_puntos_venta_venue ON btl_inspector_puntos_venta(punto_venta_id);
+CREATE INDEX idx_inspector_puntos_venta_composite ON btl_inspector_puntos_venta(inspector_id, punto_venta_id);
+
 -- Clientes <-> Productos (Preferencias)
 CREATE TABLE btl_cliente_productos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -378,6 +392,7 @@ ALTER TABLE btl_inspecciones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_reportes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_ticket_comentarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_clientes_venues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE btl_inspector_puntos_venta ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_cliente_productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_capacitacion_asistentes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE btl_temas_capacitacion ENABLE ROW LEVEL SECURITY;
@@ -499,9 +514,9 @@ CREATE POLICY "venues_inspector_read" ON btl_puntos_venta
   FOR SELECT 
   USING (
     EXISTS (
-      SELECT 1 FROM btl_usuarios 
-      WHERE auth_user_id = auth.uid() 
-      AND rol = 'inspector'
+      SELECT 1 FROM btl_inspector_puntos_venta ipv
+      WHERE ipv.punto_venta_id = btl_puntos_venta.id
+      AND ipv.inspector_id = current_user_id()
     )
   );
 
@@ -617,6 +632,19 @@ DROP POLICY IF EXISTS "clientes_venues_read_own" ON btl_clientes_venues;
 CREATE POLICY "clientes_venues_read_own" ON btl_clientes_venues 
   FOR SELECT 
   USING (cliente_id = current_user_id());
+
+-- ==============================================================================
+-- INSPECTOR VENUES (Asignación de Inspectores a Puntos de Venta)
+-- ==============================================================================
+DROP POLICY IF EXISTS "inspector_venues_admin_all" ON btl_inspector_puntos_venta;
+CREATE POLICY "inspector_venues_admin_all" ON btl_inspector_puntos_venta 
+  FOR ALL 
+  USING (is_admin());
+
+DROP POLICY IF EXISTS "inspector_venues_read_own" ON btl_inspector_puntos_venta;
+CREATE POLICY "inspector_venues_read_own" ON btl_inspector_puntos_venta 
+  FOR SELECT 
+  USING (inspector_id = current_user_id());
 
 -- ==============================================================================
 -- CLIENTE PRODUCTOS (Preferencias)

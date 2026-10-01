@@ -17,6 +17,26 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
   const [selectedInspection, setSelectedInspection] = useState<any>(null);
   const [venueNames, setVenueNames] = useState<Record<string, string>>({});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentBtlUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from('btl_usuarios')
+            .select('id')
+            .eq('auth_user_id', user.id)
+            .single();
+          if (data) setCurrentUserId(data.id);
+        }
+      } catch (e) {
+        console.error('Error fetching current btl_user:', e);
+      }
+    };
+    fetchCurrentBtlUser();
+  }, []);
 
   const handleDelete = async (e: React.MouseEvent) => {
     // ... existing delete logic ...
@@ -150,7 +170,12 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
     ? availableProducts
     : Array.from(new Set(safeInspections.map(i => i.btl_productos?.nombre).filter(Boolean)));
 
-  const filteredInspections = safeInspections.filter(inspection => {
+  // Defensive isolation: if role is inspector, ensure only inspections with matching usuario_id are shown
+  const inspectorIsolatedInspections = (userRole === 'inspector' && currentUserId)
+    ? safeInspections.filter(i => i.usuario_id === currentUserId)
+    : safeInspections;
+
+  const filteredInspections = inspectorIsolatedInspections.filter(inspection => {
     const venueName = venueNames[inspection.punto_venta_id]?.toLowerCase() || '';
     const productName = inspection.btl_productos?.nombre || '';
     const matchesSearch = venueName.includes(searchTerm.toLowerCase());
@@ -215,7 +240,14 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
         </div>
 
         <div className="space-y-3">
-          {filteredInspections.map((inspection, index) => {
+          {filteredInspections.length === 0 ? (
+            <div className="bg-surface-card border border-border-subtle rounded-xl p-12 shadow-sm text-center">
+              <Clock className="w-16 h-16 text-content-muted mx-auto mb-4" />
+              <h3 className="text-xl text-content-main font-semibold mb-2">No se encontraron inspecciones</h3>
+              <p className="text-content-muted text-sm">No existen inspecciones registradas que coincidan con los criterios de búsqueda.</p>
+            </div>
+          ) : (
+            filteredInspections.map((inspection, index) => {
             // Calcular ID secuencial (el más reciente es #1)
             const sequentialId = filteredInspections.length - index;
 
@@ -294,7 +326,8 @@ export function InspectionHistory({ inspections, onRefresh, onBack, onEdit, user
                 </div>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </div>
 
